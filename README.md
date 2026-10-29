@@ -17,10 +17,11 @@ A comprehensive technical repository and interactive AI-assisted workbench desig
   - **Schematic Inspector:** Interactive canvas with Pan & Zoom controls for high-resolution plate diagrams.
   - **Embedded Video Workshop:** Curated bench video guides (field stripping, parts machining, 3D cycle animations, military training).
   - **Armorer Specs & Stoppages:** Interactive 4-Position Stoppage diagnostic matrix and shop tolerances.
-- **Local AI Gunsmith Assistant:**
-  - Direct bridge to local LLMs via **Ollama** (`http://127.0.0.1:11434`) or **LM Studio** (`http://127.0.0.1:1234/v1`).
-  - Context-injected technical data (spring tensions, striker protrusions, headspace, gas porting).
-  - Built-in fallback expert knowledge engine when offline.
+- **Hybrid AI Gunsmith Assistant (Local AI Machine + Web Cloud LLMs):**
+  - **Local AI Machines:** Connect to **Ollama** or **LM Studio** running on localhost or on a dedicated GPU/AI rig on your workshop LAN (e.g. `http://192.168.1.150:11434`).
+  - **Web-Based Cloud LLMs:** Use **Google Gemini** (`gemini-1.5-flash`, `gemini-2.0-flash`, `gemini-1.5-pro`), **OpenAI** (`gpt-4o-mini`, `gpt-4o`), or **OpenRouter / Groq / DeepSeek** directly with your API key.
+  - **Context-Injected Armorer Reasoning:** Automatically loads firearm tolerances, spring tensions, headspace specs, and stoppage matrices into the model's prompt.
+  - **Built-in Fallback Knowledge Engine:** Works 100% offline without any keys or local LLM server running.
 - **Mobile & Tablet Optimized:**
   - Responsive layout for smartphones (iPhone/Android) and tablets (iPad).
   - Bottom navigation bar: View Switcher between Library, Workbench Viewer, and AI Assistant.

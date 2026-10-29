@@ -320,33 +320,57 @@
     </button>
   </nav>
 
-  <!-- Local LLM Settings Modal (Native Accessible <dialog>) -->
+  <!-- Local LLM & Web AI Settings Modal (Native Accessible <dialog>) -->
   <dialog id="settingsDialog" class="settings-modal">
     <div class="modal-header">
-      <h3>LOCAL LLM CONFIGURATION</h3>
+      <h3>AI MODEL &amp; PROVIDER CONFIGURATION</h3>
       <button id="closeSettingsBtn" class="modal-close-btn">&times;</button>
     </div>
     <form id="settingsForm" class="modal-body">
       <div class="form-group">
-        <label for="llmBackendSelect">Active LLM Provider:</label>
+        <label for="llmBackendSelect">AI Machine &amp; Provider Source:</label>
         <select id="llmBackendSelect">
-          <option value="auto">Auto-Detect Best Available (Ollama / LM Studio)</option>
-          <option value="ollama">Ollama (http://127.0.0.1:11434)</option>
-          <option value="lmstudio">LM Studio (http://127.0.0.1:1234/v1)</option>
-          <option value="builtin">Built-in Armorer Knowledge Engine (Offline)</option>
+          <optgroup label="Auto-Detection">
+            <option value="auto">Auto-Detect (Local AI Machine or Cloud)</option>
+          </optgroup>
+          <optgroup label="Local AI Machines (LAN / Workshop PC)">
+            <option value="ollama">Local AI Machine: Ollama (http://127.0.0.1:11434 or LAN IP)</option>
+            <option value="lmstudio">Local AI Machine: LM Studio (http://127.0.0.1:1234/v1 or LAN IP)</option>
+          </optgroup>
+          <optgroup label="Web-Based Cloud LLMs">
+            <option value="gemini">Google Gemini Web (1.5 Flash / 1.5 Pro / 2.0 Flash)</option>
+            <option value="openai">OpenAI ChatGPT Web (GPT-4o-mini / GPT-4o)</option>
+            <option value="custom_web">OpenRouter / Groq / DeepSeek / Cloud Endpoint</option>
+          </optgroup>
+          <optgroup label="Offline Fallback">
+            <option value="builtin">Built-in Armorer Knowledge Engine (100% Offline)</option>
+          </optgroup>
         </select>
       </div>
 
+      <!-- Endpoint URL (Visible for Local AI Rig or Custom Web) -->
+      <div class="form-group" id="endpointGroup">
+        <label for="llmEndpointInput" id="endpointLabel">AI Machine Host / Endpoint URL:</label>
+        <input type="text" id="llmEndpointInput" placeholder="http://127.0.0.1:11434">
+        <small class="field-hint" id="endpointHint">Default is localhost, or enter your dedicated LAN AI machine IP (e.g., http://192.168.1.150:11434).</small>
+      </div>
+
+      <!-- API Key Field (Visible for Web Providers) -->
+      <div class="form-group" id="apiKeyGroup">
+        <label for="llmApiKeyInput">Web API Key:</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="password" id="llmApiKeyInput" placeholder="Enter API Key (AIzaSy... / sk-...)">
+          <button type="button" id="toggleKeyVisibilityBtn" class="btn-secondary" style="padding: 0 10px; font-size: 11px;">Show</button>
+        </div>
+        <small class="field-hint" id="apiKeyHint">Saved securely on your device. For Gemini, get a key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--brass-accent);">aistudio.google.com</a>.</small>
+      </div>
+
+      <!-- Model Name Selection -->
       <div class="form-group">
         <label for="llmModelSelect">Model Name:</label>
         <select id="llmModelSelect">
-          <option value="auto">Auto / Default Loaded</option>
+          <option value="auto">Auto / Recommended Default</option>
         </select>
-      </div>
-
-      <div class="form-group">
-        <label for="llmEndpointInput">Custom Endpoint URL (Optional):</label>
-        <input type="text" id="llmEndpointInput" placeholder="http://127.0.0.1:11434">
       </div>
 
       <div class="form-group">
@@ -357,7 +381,7 @@
 
       <div class="modal-footer">
         <button type="button" id="testConnBtn" class="btn-secondary">Test Connection</button>
-        <button type="submit" class="btn-primary">Save Settings</button>
+        <button type="submit" class="btn-primary">Save Configuration</button>
       </div>
       <div id="connTestResult" class="conn-result"></div>
     </form>

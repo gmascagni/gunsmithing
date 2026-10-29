@@ -36,9 +36,34 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     firearm_id: str
     messages: List[ChatMessage]
-    backend: Optional[str] = "auto" # "ollama", "lmstudio", "builtin"
+    backend: Optional[str] = "auto" # "ollama", "lmstudio", "gemini", "openai", "custom_web", "builtin"
     model: Optional[str] = None
     temperature: Optional[float] = 0.3
+    api_key: Optional[str] = None
+    endpoint: Optional[str] = None
+
+class LLMConfig(BaseModel):
+    backend: str = "auto"
+    model: Optional[str] = "auto"
+    endpoint: Optional[str] = None
+    api_key: Optional[str] = None
+    temperature: Optional[float] = 0.3
+
+CONFIG_FILE = BASE_DIR / "web_app" / "config.json"
+
+def get_saved_config() -> Dict[str, Any]:
+    if CONFIG_FILE.exists():
+        try:
+            return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {
+        "backend": "auto",
+        "model": "auto",
+        "endpoint": "http://127.0.0.1:11434",
+        "api_key": "",
+        "temperature": 0.3
+    }
 
 # In-memory cached gunsmith knowledge
 def get_firearm_path(firearm_id: str) -> Path:
@@ -278,69 +303,210 @@ async def get_schematic_image(firearm_id: str, filename: str):
     media_type = "image/jpeg" if filename.lower().endswith((".jpeg", ".jpg")) else "image/png"
     return FileResponse(str(fpath), media_type=media_type)
 
+@app.get("/api/llm/config")
+async def get_config():
+    cfg = get_saved_config()
+    # Mask API keys for security in UI display
+    safe_cfg = dict(cfg)
+    if safe_cfg.get("api_key"):
+        safe_cfg["api_key_masked"] = safe_cfg["api_key"][:4] + "..." + safe_cfg["api_key"][-4:] if len(safe_cfg["api_key"]) > 8 else "***"
+    return safe_cfg
+
+@app.post("/api/llm/config")
+async def update_config(cfg: LLMConfig):
+    cur = get_saved_config()
+    cur.update({
+        "backend": cfg.backend,
+        "model": cfg.model or "auto",
+        "endpoint": cfg.endpoint or cur.get("endpoint", "http://127.0.0.1:11434"),
+        "temperature": cfg.temperature if cfg.temperature is not None else 0.3
+    })
+    if cfg.api_key:
+        cur["api_key"] = cfg.api_key
+    CONFIG_FILE.write_text(json.dumps(cur, indent=2), encoding="utf-8")
+    return {"status": "saved", "config": cur}
+
+@app.post("/api/llm/test")
+async def test_llm_connection(req: Dict[str, Any]):
+    backend = req.get("backend", "auto")
+    endpoint = req.get("endpoint", "")
+    api_key = req.get("api_key", "")
+    model = req.get("model", "")
+
+    # Test Google Gemini (Web)
+    if backend == "gemini":
+        key = api_key or os.environ.get("GEMINI_API_KEY", "")
+        if not key:
+            return {"success": False, "error": "No Gemini API key provided."}
+        mod = model if model and model != "auto" else "gemini-1.5-flash"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={key}"
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.post(url, json={"contents": [{"parts": [{"text": "Hello, respond with 'OK'."}]}]})
+                if res.status_code == 200:
+                    return {"success": True, "message": f"Connected to Google Gemini ({mod}) successfully!"}
+                else:
+                    return {"success": False, "error": f"Gemini API returned status {res.status_code}: {res.text[:150]}"}
+        except Exception as e:
+            return {"success": False, "error": f"Failed to reach Gemini: {str(e)}"}
+
+    # Test OpenAI / Custom Web
+    elif backend in ["openai", "custom_web"]:
+        key = api_key or (os.environ.get("OPENAI_API_KEY", "") if backend == "openai" else "")
+        if not key:
+            return {"success": False, "error": f"No API key provided for {backend}."}
+        url = endpoint if endpoint else ("https://api.openai.com/v1/chat/completions" if backend == "openai" else "")
+        if not url:
+            return {"success": False, "error": "Custom Web endpoint URL is required."}
+        mod = model if model and model != "auto" else ("gpt-4o-mini" if backend == "openai" else "default")
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {"model": mod, "messages": [{"role": "user", "content": "Ping"}], "max_tokens": 5}
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.post(url, json=payload, headers=headers)
+                if res.status_code == 200:
+                    return {"success": True, "message": f"Connected to {backend.upper()} ({mod}) successfully!"}
+                else:
+                    return {"success": False, "error": f"API returned status {res.status_code}: {res.text[:150]}"}
+        except Exception as e:
+            return {"success": False, "error": f"Failed to connect: {str(e)}"}
+
+    # Test Local Ollama
+    elif backend == "ollama":
+        ep = endpoint if endpoint else "http://127.0.0.1:11434"
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                res = await client.get(f"{ep.rstrip('/')}/api/tags")
+                if res.status_code == 200:
+                    models = [m["name"] for m in res.json().get("models", [])]
+                    return {"success": True, "message": f"Connected to Local Ollama machine ({ep})! Found models: {', '.join(models[:4])}"}
+                else:
+                    return {"success": False, "error": f"Ollama host returned status {res.status_code}"}
+        except Exception as e:
+            return {"success": False, "error": f"Unable to reach local Ollama machine at {ep}: {str(e)}"}
+
+    # Test Local LM Studio
+    elif backend == "lmstudio":
+        ep = endpoint if endpoint else "http://127.0.0.1:1234/v1"
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                res = await client.get(f"{ep.rstrip('/')}/models")
+                if res.status_code == 200:
+                    models = [m["id"] for m in res.json().get("data", [])]
+                    return {"success": True, "message": f"Connected to Local LM Studio machine ({ep})! Found models: {', '.join(models[:4])}"}
+                else:
+                    return {"success": False, "error": f"LM Studio host returned status {res.status_code}"}
+        except Exception as e:
+            return {"success": False, "error": f"Unable to reach LM Studio machine at {ep}: {str(e)}"}
+
+    return {"success": True, "message": "Built-in Armorer Knowledge Engine active (offline)."}
+
 @app.get("/api/llm/backends")
 async def check_llm_backends():
     backends = []
+    cfg = get_saved_config()
     
-    # Check Ollama on port 11434
+    # 1. Local AI Machine: Ollama (localhost or custom host)
+    ollama_ep = cfg.get("endpoint") if cfg.get("backend") == "ollama" and cfg.get("endpoint") else "http://127.0.0.1:11434"
     try:
         async with httpx.AsyncClient(timeout=1.5) as client:
-            resp = await client.get("http://127.0.0.1:11434/api/tags")
+            resp = await client.get(f"{ollama_ep.rstrip('/')}/api/tags")
             if resp.status_code == 200:
                 models = [m["name"] for m in resp.json().get("models", [])]
                 backends.append({
                     "id": "ollama",
-                    "name": "Ollama (Local LLM)",
-                    "endpoint": "http://127.0.0.1:11434",
+                    "name": "Local AI Machine (Ollama)",
+                    "endpoint": ollama_ep,
                     "status": "online",
+                    "type": "local",
                     "models": models,
-                    "default_model": models[0] if models else "llama3"
+                    "default_model": models[0] if models else "qwen3.5:4b"
                 })
     except Exception:
         backends.append({
             "id": "ollama",
-            "name": "Ollama",
-            "endpoint": "http://127.0.0.1:11434",
+            "name": "Local AI Machine (Ollama)",
+            "endpoint": ollama_ep,
             "status": "offline",
+            "type": "local",
             "models": [],
-            "default_model": "llama3"
+            "default_model": "qwen3.5:4b"
         })
 
-    # Check LM Studio on port 1234
+    # 2. Local AI Machine: LM Studio (localhost or custom host)
+    lm_ep = cfg.get("endpoint") if cfg.get("backend") == "lmstudio" and cfg.get("endpoint") else "http://127.0.0.1:1234/v1"
     try:
         async with httpx.AsyncClient(timeout=1.5) as client:
-            resp = await client.get("http://127.0.0.1:1234/v1/models")
+            resp = await client.get(f"{lm_ep.rstrip('/')}/models")
             if resp.status_code == 200:
                 models = [m["id"] for m in resp.json().get("data", [])]
                 backends.append({
                     "id": "lmstudio",
-                    "name": "LM Studio (Local OpenAI-Compatible)",
-                    "endpoint": "http://127.0.0.1:1234/v1",
+                    "name": "Local AI Machine (LM Studio)",
+                    "endpoint": lm_ep,
                     "status": "online",
+                    "type": "local",
                     "models": models,
                     "default_model": models[0] if models else "local-model"
                 })
     except Exception:
         backends.append({
             "id": "lmstudio",
-            "name": "LM Studio",
-            "endpoint": "http://127.0.0.1:1234/v1",
+            "name": "Local AI Machine (LM Studio)",
+            "endpoint": lm_ep,
             "status": "offline",
+            "type": "local",
             "models": [],
             "default_model": "local-model"
         })
 
-    # Always provide Built-in Gunsmith Expert Engine
+    # 3. Web-Based Cloud: Google Gemini
+    has_gemini_key = bool(cfg.get("api_key") or os.environ.get("GEMINI_API_KEY"))
+    backends.append({
+        "id": "gemini",
+        "name": "Google Gemini (Web Cloud)",
+        "endpoint": "https://generativelanguage.googleapis.com",
+        "status": "configured" if has_gemini_key else "needs_key",
+        "type": "web",
+        "models": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
+        "default_model": "gemini-1.5-flash"
+    })
+
+    # 4. Web-Based Cloud: OpenAI
+    has_openai_key = bool(os.environ.get("OPENAI_API_KEY"))
+    backends.append({
+        "id": "openai",
+        "name": "OpenAI / ChatGPT (Web Cloud)",
+        "endpoint": "https://api.openai.com/v1",
+        "status": "configured" if has_openai_key else "needs_key",
+        "type": "web",
+        "models": ["gpt-4o-mini", "gpt-4o"],
+        "default_model": "gpt-4o-mini"
+    })
+
+    # 5. Web-Based Cloud: Custom OpenAI-compatible (Groq / OpenRouter / DeepSeek)
+    backends.append({
+        "id": "custom_web",
+        "name": "OpenRouter / Groq / DeepSeek (Web Cloud)",
+        "endpoint": "https://openrouter.ai/api/v1",
+        "status": "configured" if cfg.get("backend") == "custom_web" and cfg.get("api_key") else "needs_key",
+        "type": "web",
+        "models": ["llama-3.3-70b-versatile", "deepseek-chat", "custom"],
+        "default_model": "llama-3.3-70b-versatile"
+    })
+
+    # 6. Built-in Offline Expert Engine
     backends.append({
         "id": "builtin",
-        "name": "Built-in Armorer Knowledge Engine",
+        "name": "Built-in Armorer Knowledge Engine (Offline)",
         "endpoint": "internal",
         "status": "online",
+        "type": "offline",
         "models": ["gunsmith-expert-v1"],
         "default_model": "gunsmith-expert-v1"
     })
 
-    return {"backends": backends}
+    return {"backends": backends, "saved_config": cfg}
 
 def generate_fallback_expert_response(query: str, firearm_data: Dict[str, Any]) -> str:
     """Intelligent rule-based expert answer when local LLM is offline or cold-starting."""
@@ -435,63 +601,139 @@ async def chat_handler(req: ChatRequest):
         f"Format your response with clear markdown headers, bold bullet points, and step-by-step procedures."
     )
 
-    # 1. Check if Ollama requested or available
-    if req.backend in ["ollama", "auto"]:
+    cfg = get_saved_config()
+    backend = req.backend or cfg.get("backend", "auto")
+    model = req.model or cfg.get("model", "auto")
+    endpoint = req.endpoint or cfg.get("endpoint", "")
+    api_key = req.api_key or cfg.get("api_key", "")
+    temp = req.temperature if req.temperature is not None else cfg.get("temperature", 0.3)
+
+    # 1. Google Gemini (Web Cloud)
+    if backend == "gemini" or (backend == "auto" and (api_key or os.environ.get("GEMINI_API_KEY")) and (model and "gemini" in model)):
+        key = api_key or os.environ.get("GEMINI_API_KEY", "")
+        if key:
+            mod = model if model and model != "auto" else "gemini-1.5-flash"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={key}"
+            payload = {
+                "system_instruction": {"parts": [{"text": system_prompt}]},
+                "contents": [{"role": "user", "parts": [{"text": user_query}]}],
+                "generationConfig": {"temperature": temp}
+            }
+            try:
+                async with httpx.AsyncClient(timeout=15.0) as client:
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                return JSONResponse({
+                                    "reply": parts[0].get("text", "").strip(),
+                                    "backend_used": f"Google Gemini ({mod}) [Cloud Web]",
+                                    "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III", "Mark Novak Anvil 033"]
+                                })
+                    else:
+                        return JSONResponse({
+                            "reply": f"⚠️ Gemini API Error (HTTP {resp.status_code}): {resp.text[:200]}",
+                            "backend_used": "Gemini API Error",
+                            "sources": []
+                        })
+            except Exception as e:
+                if backend == "gemini":
+                    return JSONResponse({"reply": f"⚠️ Failed to connect to Gemini Web: {str(e)}", "backend_used": "Error", "sources": []})
+
+    # 2. OpenAI / Custom Web Cloud (OpenRouter, Groq, DeepSeek)
+    if backend in ["openai", "custom_web"] or (backend == "auto" and (api_key or os.environ.get("OPENAI_API_KEY")) and model and ("gpt" in model or "claude" in model or "llama" in model)):
+        key = api_key or (os.environ.get("OPENAI_API_KEY", "") if backend == "openai" else "")
+        target_url = endpoint if endpoint else ("https://api.openai.com/v1/chat/completions" if backend == "openai" else "")
+        if target_url and key:
+            mod = model if model and model != "auto" else ("gpt-4o-mini" if backend == "openai" else "default")
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            messages = [{"role": "system", "content": system_prompt}]
+            for m in req.messages[-4:]:
+                messages.append({"role": m.role, "content": m.content})
+            payload = {"model": mod, "messages": messages, "temperature": temp}
+            try:
+                async with httpx.AsyncClient(timeout=15.0) as client:
+                    resp = await client.post(target_url, json=payload, headers=headers)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        ans = data["choices"][0]["message"]["content"].strip()
+                        label = "OpenAI" if "openai" in target_url else "Web Cloud LLM"
+                        return JSONResponse({
+                            "reply": ans,
+                            "backend_used": f"{label} ({mod}) [Cloud Web]",
+                            "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III"]
+                        })
+                    else:
+                        return JSONResponse({
+                            "reply": f"⚠️ Web LLM API Error (HTTP {resp.status_code}): {resp.text[:200]}",
+                            "backend_used": "Web API Error",
+                            "sources": []
+                        })
+            except Exception as e:
+                if backend in ["openai", "custom_web"]:
+                    return JSONResponse({"reply": f"⚠️ Failed to connect to Web LLM: {str(e)}", "backend_used": "Error", "sources": []})
+
+    # 3. Local AI Machine: Ollama (localhost or LAN host like http://192.168.1.x:11434)
+    if backend in ["ollama", "auto"]:
+        ep = endpoint if endpoint else "http://127.0.0.1:11434"
         try:
-            model_to_use = req.model or "qwen3.5:4b"
+            model_to_use = model if model and model != "auto" else "qwen3.5:4b"
             prompt_full = f"{system_prompt}\n\nUser Question: {user_query}\n\nMaster Gunsmith Response:"
             payload = {
                 "model": model_to_use,
                 "prompt": prompt_full,
                 "stream": False,
-                "options": {
-                    "temperature": req.temperature or 0.3
-                }
+                "options": {"temperature": temp}
             }
-            async with httpx.AsyncClient(timeout=8.0) as client:
-                resp = await client.post("http://127.0.0.1:11434/api/generate", json=payload)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(f"{ep.rstrip('/')}/api/generate", json=payload)
                 if resp.status_code == 200:
                     ans = resp.json().get("response", "").strip()
                     if ans:
+                        host_tag = "Localhost" if "127.0.0.1" in ep or "localhost" in ep else f"LAN AI Rig ({ep})"
                         return JSONResponse({
                             "reply": ans,
-                            "backend_used": f"Ollama ({model_to_use})",
+                            "backend_used": f"Ollama ({model_to_use}) [{host_tag}]",
                             "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III", "Mark Novak Anvil 033"]
                         })
         except Exception:
-            pass # fall through to LM studio or builtin
+            pass
 
-    # 2. Check if LM Studio requested or available
-    if req.backend in ["lmstudio", "auto"]:
+    # 4. Local AI Machine: LM Studio (localhost or LAN host like http://192.168.1.x:1234/v1)
+    if backend in ["lmstudio", "auto"]:
+        ep = endpoint if endpoint else "http://127.0.0.1:1234/v1"
         try:
-            model_to_use = req.model or "meta-llama-3.1-8b-instruct-abliterated"
+            model_to_use = model if model and model != "auto" else "meta-llama-3.1-8b-instruct-abliterated"
             messages = [{"role": "system", "content": system_prompt}]
             for m in req.messages[-4:]:
                 messages.append({"role": m.role, "content": m.content})
-                
             payload = {
                 "model": model_to_use,
                 "messages": messages,
-                "temperature": req.temperature or 0.3
+                "temperature": temp
             }
-            async with httpx.AsyncClient(timeout=8.0) as client:
-                resp = await client.post("http://127.0.0.1:1234/v1/chat/completions", json=payload)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(f"{ep.rstrip('/')}/chat/completions", json=payload)
                 if resp.status_code == 200:
                     data = resp.json()
                     ans = data["choices"][0]["message"]["content"].strip()
+                    host_tag = "Localhost" if "127.0.0.1" in ep or "localhost" in ep else f"LAN AI Rig ({ep})"
                     return JSONResponse({
                         "reply": ans,
-                        "backend_used": f"LM Studio ({model_to_use})",
+                        "backend_used": f"LM Studio ({model_to_use}) [{host_tag}]",
                         "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III"]
                     })
         except Exception:
             pass
 
-    # 3. Fallback to built-in expert engine
+    # 5. Fallback to Built-in Expert Engine
     fallback_reply = generate_fallback_expert_response(user_query, firearm_data)
     return JSONResponse({
         "reply": fallback_reply,
-        "backend_used": "Built-in Armorer Knowledge Engine",
+        "backend_used": "Built-in Armorer Knowledge Engine (Offline)",
         "sources": ["1917 Savage Arms Lewis Hand-Book", "1942 UK Stoppages Handbook", "Mark Novak Anvil 033"]
     })
 

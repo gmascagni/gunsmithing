@@ -1,10 +1,12 @@
-// Armorer's Workbench — Frontend Logic & Mobile Controller
+// Armorer's Workbench — Frontend Logic & Hybrid AI Controller (Local + Web Cloud)
 
 let currentFirearm = "Lewis_Automatic_Machine_Gun";
 let firearmData = null;
 let currentSchematicZoom = 1.0;
 let activeLLMBackend = "auto";
 let activeLLMModel = "auto";
+let activeLLMEndpoint = "";
+let activeLLMApiKey = "";
 let availableBackends = [];
 let currentMobileView = "library"; // "library", "preview", "assistant"
 
@@ -50,6 +52,14 @@ const settingsDialog = document.getElementById("settingsDialog");
 const closeSettingsBtn = document.getElementById("closeSettingsBtn");
 const llmBackendSelect = document.getElementById("llmBackendSelect");
 const llmModelSelect = document.getElementById("llmModelSelect");
+const llmEndpointInput = document.getElementById("llmEndpointInput");
+const llmApiKeyInput = document.getElementById("llmApiKeyInput");
+const toggleKeyVisibilityBtn = document.getElementById("toggleKeyVisibilityBtn");
+const endpointGroup = document.getElementById("endpointGroup");
+const apiKeyGroup = document.getElementById("apiKeyGroup");
+const endpointLabel = document.getElementById("endpointLabel");
+const endpointHint = document.getElementById("endpointHint");
+const apiKeyHint = document.getElementById("apiKeyHint");
 const testConnBtn = document.getElementById("testConnBtn");
 const connTestResult = document.getElementById("connTestResult");
 
@@ -68,6 +78,7 @@ const pdfMobileDocName = document.getElementById("pdfMobileDocName");
 document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   initMobileView();
+  loadSavedSettings();
   await checkLLMBackends();
   await loadNetworkInfo();
   await loadFirearm(currentFirearm);
@@ -164,6 +175,7 @@ function setupEventListeners() {
   // Settings Dialog (Native Accessible <dialog>)
   llmStatusPill.addEventListener("click", () => {
     settingsDialog.showModal();
+    updateSettingsFields();
   });
 
   closeSettingsBtn.addEventListener("click", () => {
@@ -177,18 +189,49 @@ function setupEventListeners() {
     }
   });
 
-  llmBackendSelect.addEventListener("change", updateModelDropdown);
+  llmBackendSelect.addEventListener("change", updateSettingsFields);
 
   document.getElementById("llmTempRange").addEventListener("input", (e) => {
     document.getElementById("tempVal").textContent = e.target.value;
   });
 
-  document.getElementById("settingsForm").addEventListener("submit", (e) => {
+  toggleKeyVisibilityBtn.addEventListener("click", () => {
+    if (llmApiKeyInput.type === "password") {
+      llmApiKeyInput.type = "text";
+      toggleKeyVisibilityBtn.textContent = "Hide";
+    } else {
+      llmApiKeyInput.type = "password";
+      toggleKeyVisibilityBtn.textContent = "Show";
+    }
+  });
+
+  document.getElementById("settingsForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     activeLLMBackend = llmBackendSelect.value;
     activeLLMModel = llmModelSelect.value;
+    activeLLMEndpoint = llmEndpointInput.value.trim();
+    activeLLMApiKey = llmApiKeyInput.value.trim();
+
+    saveSettings();
     updateStatusPill();
     settingsDialog.close();
+
+    // Persist to server config
+    try {
+      await fetch("/api/llm/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          backend: activeLLMBackend,
+          model: activeLLMModel,
+          endpoint: activeLLMEndpoint,
+          api_key: activeLLMApiKey,
+          temperature: parseFloat(document.getElementById("llmTempRange").value)
+        })
+      });
+    } catch (err) {
+      console.warn("Could not sync config to server:", err);
+    }
   });
 
   testConnBtn.addEventListener("click", testLLMConnection);
@@ -208,6 +251,157 @@ function setupEventListeners() {
     copyUrlBtn.textContent = "Copied!";
     setTimeout(() => { copyUrlBtn.textContent = origText; }, 2000);
   });
+}
+
+// LocalStorage Settings Persistence
+function loadSavedSettings() {
+  activeLLMBackend = localStorage.getItem("armorer_llm_backend") || "auto";
+  activeLLMModel = localStorage.getItem("armorer_llm_model") || "auto";
+  activeLLMEndpoint = localStorage.getItem("armorer_llm_endpoint") || "";
+  activeLLMApiKey = localStorage.getItem("armorer_llm_api_key") || "";
+
+  llmBackendSelect.value = activeLLMBackend;
+  if (activeLLMEndpoint) llmEndpointInput.value = activeLLMEndpoint;
+  if (activeLLMApiKey) llmApiKeyInput.value = activeLLMApiKey;
+}
+
+function saveSettings() {
+  localStorage.setItem("armorer_llm_backend", activeLLMBackend);
+  localStorage.setItem("armorer_llm_model", activeLLMModel);
+  localStorage.setItem("armorer_llm_endpoint", activeLLMEndpoint);
+  localStorage.setItem("armorer_llm_api_key", activeLLMApiKey);
+}
+
+// Update Settings Fields based on selected Provider (Local Machine vs Web Cloud)
+function updateSettingsFields() {
+  const backend = llmBackendSelect.value;
+  llmModelSelect.innerHTML = '<option value="auto">Auto / Recommended Default</option>';
+
+  if (backend === "gemini") {
+    endpointGroup.style.display = "none";
+    apiKeyGroup.style.display = "block";
+    apiKeyHint.innerHTML = 'Saved securely in your browser. Get a free API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--brass-accent);">aistudio.google.com</a>.';
+    const geminiModels = [
+      { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Fast, High Quality - Recommended)" },
+      { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Next-Gen Fast Inference)" },
+      { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (Deep Reasoning & Analysis)" }
+    ];
+    geminiModels.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.name;
+      if (m.id === activeLLMModel) opt.selected = true;
+      llmModelSelect.appendChild(opt);
+    });
+  } else if (backend === "openai") {
+    endpointGroup.style.display = "none";
+    apiKeyGroup.style.display = "block";
+    apiKeyHint.innerHTML = 'Enter your OpenAI API key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--brass-accent);">platform.openai.com</a>.';
+    const openaiModels = [
+      { id: "gpt-4o-mini", name: "GPT-4o Mini (Fast & Cost Efficient - Recommended)" },
+      { id: "gpt-4o", name: "GPT-4o (Omni Flagship Model)" }
+    ];
+    openaiModels.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.name;
+      if (m.id === activeLLMModel) opt.selected = true;
+      llmModelSelect.appendChild(opt);
+    });
+  } else if (backend === "custom_web") {
+    endpointGroup.style.display = "block";
+    apiKeyGroup.style.display = "block";
+    endpointLabel.textContent = "Web Cloud API Base URL:";
+    llmEndpointInput.placeholder = "https://openrouter.ai/api/v1/chat/completions";
+    endpointHint.textContent = "Compatible with OpenRouter, Groq, DeepSeek, Together, or any cloud OpenAI-compliant API.";
+    apiKeyHint.textContent = "Enter your cloud API token / Bearer key.";
+    const customModels = [
+      { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B (Groq / OpenRouter)" },
+      { id: "deepseek-chat", name: "DeepSeek-V3" },
+      { id: "custom", name: "Custom / As Configured on Endpoint" }
+    ];
+    customModels.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      opt.textContent = m.name;
+      if (m.id === activeLLMModel) opt.selected = true;
+      llmModelSelect.appendChild(opt);
+    });
+  } else if (backend === "ollama") {
+    endpointGroup.style.display = "block";
+    apiKeyGroup.style.display = "none";
+    endpointLabel.textContent = "Ollama Machine Host / LAN IP:";
+    llmEndpointInput.placeholder = "http://127.0.0.1:11434";
+    endpointHint.textContent = "Default is localhost, or enter your dedicated LAN AI machine IP (e.g. http://192.168.1.150:11434).";
+
+    const ollamaBackend = availableBackends.find(b => b.id === "ollama");
+    if (ollamaBackend && ollamaBackend.models) {
+      ollamaBackend.models.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        if (m === activeLLMModel) opt.selected = true;
+        llmModelSelect.appendChild(opt);
+      });
+    }
+  } else if (backend === "lmstudio") {
+    endpointGroup.style.display = "block";
+    apiKeyGroup.style.display = "none";
+    endpointLabel.textContent = "LM Studio Machine Host / LAN IP:";
+    llmEndpointInput.placeholder = "http://127.0.0.1:1234/v1";
+    endpointHint.textContent = "Default is localhost, or enter your dedicated LAN AI machine IP (e.g. http://192.168.1.150:1234/v1).";
+
+    const lmBackend = availableBackends.find(b => b.id === "lmstudio");
+    if (lmBackend && lmBackend.models) {
+      lmBackend.models.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        if (m === activeLLMModel) opt.selected = true;
+        llmModelSelect.appendChild(opt);
+      });
+    }
+  } else {
+    // Auto or Builtin
+    endpointGroup.style.display = "none";
+    apiKeyGroup.style.display = "none";
+  }
+}
+
+// Test Connection for Any Provider (Local Machine or Web Cloud)
+async function testLLMConnection() {
+  connTestResult.style.display = "block";
+  connTestResult.style.color = "var(--brass-accent)";
+  connTestResult.textContent = "Testing connection to selected AI provider...";
+
+  const backend = llmBackendSelect.value;
+  const endpoint = llmEndpointInput.value.trim();
+  const apiKey = llmApiKeyInput.value.trim();
+  const model = llmModelSelect.value;
+
+  try {
+    const res = await fetch("/api/llm/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        backend: backend,
+        endpoint: endpoint,
+        api_key: apiKey,
+        model: model
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      connTestResult.style.color = "var(--accent-green)";
+      connTestResult.textContent = `✓ ${data.message}`;
+    } else {
+      connTestResult.style.color = "var(--accent-red)";
+      connTestResult.textContent = `⚠️ ${data.error}`;
+    }
+  } catch (err) {
+    connTestResult.style.color = "var(--accent-red)";
+    connTestResult.textContent = "⚠️ Network connection test failed. Please verify endpoint URL.";
+  }
 }
 
 // Mobile View Controller
@@ -621,7 +815,9 @@ async function handleChatSubmit() {
       firearm_id: currentFirearm,
       messages: [{ role: "user", content: query }],
       backend: activeLLMBackend,
-      model: activeLLMModel !== "auto" ? activeLLMModel : null
+      model: activeLLMModel !== "auto" ? activeLLMModel : null,
+      endpoint: activeLLMEndpoint || null,
+      api_key: activeLLMApiKey || null
     };
 
     const res = await fetch("/api/chat", {
@@ -633,7 +829,7 @@ async function handleChatSubmit() {
     typingMsg.remove();
 
     if (!res.ok) {
-      appendMessage("assistant", "⚠️ Error: Unable to query AI assistant. Ensure local backend is accessible.");
+      appendMessage("assistant", "⚠️ Error: Unable to query AI assistant. Ensure local backend or web model is accessible.");
       return;
     }
 
@@ -705,7 +901,6 @@ async function checkLLMBackends() {
     const data = await res.json();
     availableBackends = data.backends;
     updateStatusPill();
-    populateSettingsDropdowns();
   } catch (e) {
     llmStatusText.textContent = "Offline Mode";
     document.querySelector(".status-dot").className = "status-dot offline";
@@ -718,83 +913,41 @@ function updateStatusPill() {
   const ollama = availableBackends.find(b => b.id === "ollama");
   const lmstudio = availableBackends.find(b => b.id === "lmstudio");
 
-  if (activeLLMBackend === "builtin") {
-    llmStatusText.textContent = "Built-in Expert";
+  if (activeLLMBackend === "gemini") {
+    llmStatusText.textContent = `☁️ Gemini (${activeLLMModel !== 'auto' ? activeLLMModel : '1.5-flash'})`;
     dot.className = "status-dot pulsing";
-  } else if (activeLLMBackend === "ollama" && ollama?.status === "online") {
-    llmStatusText.textContent = `Ollama (${ollama.default_model})`;
+  } else if (activeLLMBackend === "openai") {
+    llmStatusText.textContent = `☁️ OpenAI (${activeLLMModel !== 'auto' ? activeLLMModel : 'gpt-4o-mini'})`;
     dot.className = "status-dot pulsing";
-  } else if (activeLLMBackend === "lmstudio" && lmstudio?.status === "online") {
-    llmStatusText.textContent = `LM Studio (${lmstudio.default_model})`;
+  } else if (activeLLMBackend === "custom_web") {
+    llmStatusText.textContent = `☁️ Web LLM (${activeLLMModel !== 'auto' ? activeLLMModel : 'custom'})`;
+    dot.className = "status-dot pulsing";
+  } else if (activeLLMBackend === "ollama") {
+    const host = activeLLMEndpoint && !activeLLMEndpoint.includes("127.0.0.1") ? "LAN AI" : "Ollama";
+    llmStatusText.textContent = `🖥️ ${host} (${activeLLMModel !== 'auto' ? activeLLMModel : (ollama?.default_model || 'local')})`;
+    dot.className = ollama?.status === "online" ? "status-dot pulsing" : "status-dot";
+  } else if (activeLLMBackend === "lmstudio") {
+    const host = activeLLMEndpoint && !activeLLMEndpoint.includes("127.0.0.1") ? "LAN AI" : "LM Studio";
+    llmStatusText.textContent = `🖥️ ${host} (${activeLLMModel !== 'auto' ? activeLLMModel : (lmstudio?.default_model || 'local')})`;
+    dot.className = lmstudio?.status === "online" ? "status-dot pulsing" : "status-dot";
+  } else if (activeLLMBackend === "builtin") {
+    llmStatusText.textContent = "⚡ Built-in Expert";
     dot.className = "status-dot pulsing";
   } else {
-    // Auto Mode: check what's online
-    if (ollama && ollama.status === "online") {
-      llmStatusText.textContent = `Ollama (${ollama.default_model})`;
+    // Auto Mode: check what's online or configured
+    if (activeLLMApiKey && activeLLMModel && activeLLMModel.includes("gemini")) {
+      llmStatusText.textContent = "☁️ Gemini Auto";
+      dot.className = "status-dot pulsing";
+    } else if (ollama && ollama.status === "online") {
+      llmStatusText.textContent = `🖥️ Ollama (${ollama.default_model})`;
       dot.className = "status-dot pulsing";
     } else if (lmstudio && lmstudio.status === "online") {
-      llmStatusText.textContent = `LM Studio (${lmstudio.default_model})`;
+      llmStatusText.textContent = `🖥️ LM Studio (${lmstudio.default_model})`;
       dot.className = "status-dot pulsing";
     } else {
-      llmStatusText.textContent = "Built-in Expert Engine";
+      llmStatusText.textContent = "⚡ Built-in Engine";
       dot.className = "status-dot pulsing";
     }
-  }
-}
-
-function populateSettingsDropdowns() {
-  updateModelDropdown();
-}
-
-function updateModelDropdown() {
-  const selectedBackend = llmBackendSelect.value;
-  llmModelSelect.innerHTML = '<option value="auto">Auto / Default Loaded</option>';
-
-  let backendObj = null;
-  if (selectedBackend === "auto") {
-    backendObj = availableBackends.find(b => b.status === "online" && b.id !== "builtin");
-  } else {
-    backendObj = availableBackends.find(b => b.id === selectedBackend);
-  }
-
-  if (backendObj && backendObj.models && backendObj.models.length > 0) {
-    backendObj.models.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = m;
-      llmModelSelect.appendChild(opt);
-    });
-  }
-}
-
-async function testLLMConnection() {
-  connTestResult.style.display = "block";
-  connTestResult.style.color = "var(--brass-accent)";
-  connTestResult.textContent = "Testing connection...";
-
-  try {
-    const res = await fetch("/api/llm/backends");
-    const data = await res.json();
-    availableBackends = data.backends;
-    const selected = llmBackendSelect.value;
-    
-    if (selected === "builtin") {
-      connTestResult.style.color = "var(--accent-green)";
-      connTestResult.textContent = "✓ Built-in Armorer Knowledge Engine active.";
-      return;
-    }
-
-    const b = availableBackends.find(item => item.id === selected);
-    if (b && b.status === "online") {
-      connTestResult.style.color = "var(--accent-green)";
-      connTestResult.textContent = `✓ ${b.name} reachable! Found ${b.models.length} model(s).`;
-    } else {
-      connTestResult.style.color = "var(--accent-amber)";
-      connTestResult.textContent = `⚠️ Provider ${selected} appears offline. Assistant will automatically use the built-in knowledge engine.`;
-    }
-  } catch (err) {
-    connTestResult.style.color = "var(--accent-red)";
-    connTestResult.textContent = "Connection test failed.";
   }
 }
 
