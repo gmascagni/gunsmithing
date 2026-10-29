@@ -24,6 +24,7 @@ for f in ["app.css", "favicon.svg", "favicon.ico", "favicon-32x32.png", "favicon
 # 3. Generate data.js containing all platforms, manuals, schematics, specs, and videos
 base_repo_raw = "https://raw.githubusercontent.com/gmascagni/gunsmithing/main"
 base_blob = "https://github.com/gmascagni/gunsmithing/raw/main"
+base_blob_view = "https://github.com/gmascagni/gunsmithing/blob/main"
 
 all_data = {}
 for fid, meta in FIREARMS_METADATA.items():
@@ -38,6 +39,8 @@ for fid, meta in FIREARMS_METADATA.items():
                 "title": mf.stem.replace("_", " "),
                 "filename": mf.name,
                 "size_mb": size_mb,
+                "raw_url": f"{base_blob}/{fid}/manuals/{mf.name}",
+                "github_url": f"{base_blob_view}/{fid}/manuals/{mf.name}",
                 "url": f"{base_blob}/{fid}/manuals/{mf.name}",
                 "local_url": f"/api/manuals/{fid}/{mf.name}"
             })
@@ -64,10 +67,12 @@ for fid, meta in FIREARMS_METADATA.items():
 data_js_content = f"// Static firearms repository data for GitHub Pages deployment\nwindow.STATIC_FIREARMS_DATA = {json.dumps(all_data, indent=2)};\n"
 (docs_dir / "data.js").write_text(data_js_content, encoding="utf-8")
 
-# 4. Create docs/index.html with relative paths
+# 4. Create docs/index.html with relative paths and blank initial iframe
 index_html = (static_dir / "index.html").read_text(encoding="utf-8")
 index_html = index_html.replace('href="/static/', 'href="./')
 index_html = index_html.replace('src="/static/', 'src="./')
+# Ensure pdfFrame starts empty on static pages
+index_html = index_html.replace('src="/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf"', 'src="about:blank"')
 index_html = index_html.replace('<script src="./app.js"></script>', '<script src="./data.js"></script>\n  <script src="./app.js"></script>')
 (docs_dir / "index.html").write_text(index_html, encoding="utf-8")
 
@@ -91,8 +96,9 @@ app_js = app_js.replace(target_load, replacement_load, 1)
 # Enhance selectManual to support GitHub raw / Google docs viewer
 target_manual = '  const pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;'
 replacement_manual = '''  const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
   let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
-  if (manualObj && manualObj.url && (window.location.hostname.includes("github.io") || window.location.protocol === "file:")) {
+  if (isStatic && manualObj && manualObj.url) {
     pdfUrl = manualObj.url;
   }'''
 
@@ -100,8 +106,11 @@ app_js = app_js.replace(target_manual, replacement_manual, 1)
 
 # Enhance pdfFrame.src assignment
 target_frame = '  pdfFrame.src = pdfUrl;'
-replacement_frame = '''  if (window.location.hostname.includes("github.io")) {
-    pdfFrame.src = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+replacement_frame = '''  if (isStatic && manualObj) {
+    // On GitHub Pages: use Google Docs viewer or direct link
+    pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(manualObj.url)}&embedded=true`;
+    btnPdfFullscreen.href = manualObj.github_url || manualObj.url;
+    btnExternalLink.href = manualObj.github_url || manualObj.url;
   } else {
     pdfFrame.src = pdfUrl;
   }'''
@@ -111,7 +120,8 @@ app_js = app_js.replace(target_frame, replacement_frame, 1)
 # Enhance chat handling for static GitHub Pages fallback
 target_chat = '    const res = await fetch("/api/chat", {'
 replacement_chat = '''    // If running statically on GitHub Pages without Python backend, run client-side expert engine
-    if (window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA) {
+    const isStaticMode = window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA;
+    if (isStaticMode) {
       const reply = generateClientSideExpertReply(text, firearmData);
       setTimeout(() => {
         typingIndicator.remove();

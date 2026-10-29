@@ -150,6 +150,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 American Machinist Manufacture of the Lewis Machine Gun",
         "filename": "1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "size_mb": 9.5,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf"
       },
@@ -158,6 +160,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 British Instruction on the Lewis Automatic Machine Gun",
         "filename": "1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "size_mb": 4.58,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf"
       },
@@ -166,6 +170,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 Savage Arms Lewis Machine Gun Handbook",
         "filename": "1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "size_mb": 3.09,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf"
       },
@@ -174,6 +180,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1918 RAF Instructional Notes on the Lewis Gun",
         "filename": "1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "size_mb": 2.98,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf"
       },
@@ -182,6 +190,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1940 UK Armourers Handbook Part III Light Machine Guns",
         "filename": "1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "size_mb": 53.29,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf"
       },
@@ -190,6 +200,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1940 UK Guns for the Home Guard Lewis",
         "filename": "1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "size_mb": 20.7,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf"
       },
@@ -198,6 +210,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1942 Manual of Modern Automatic Guns",
         "filename": "1942_Manual_of_Modern_Automatic_Guns.pdf",
         "size_mb": 3.81,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1942_Manual_of_Modern_Automatic_Guns.pdf"
       },
@@ -206,6 +220,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1942 UK How to Remedy and Prevent Stoppages",
         "filename": "1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "size_mb": 15.83,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf"
       }
@@ -763,6 +779,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Glock Armorers Manual Gen 1 to 5",
         "filename": "Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "size_mb": 22.48,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Glock_Armorers_Manual_Gen_1_to_5.pdf"
       },
@@ -771,6 +789,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Glock Factory Armorers Manual",
         "filename": "Glock_Factory_Armorers_Manual.pdf",
         "size_mb": 6.35,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Glock_Factory_Armorers_Manual.pdf"
       }
@@ -2299,6 +2319,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger 10 22 Carbine Manual",
         "filename": "Ruger_10_22_Carbine_Manual.pdf",
         "size_mb": 2.18,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_10_22_Carbine_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Firearms/manuals/Ruger_10_22_Carbine_Manual.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_10_22_Carbine_Manual.pdf",
         "local_url": "/api/manuals/Ruger_Firearms/Ruger_10_22_Carbine_Manual.pdf"
       },
@@ -2307,6 +2329,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger GP100 Revolver Manual",
         "filename": "Ruger_GP100_Revolver_Manual.pdf",
         "size_mb": 1.77,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_GP100_Revolver_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Firearms/manuals/Ruger_GP100_Revolver_Manual.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_GP100_Revolver_Manual.pdf",
         "local_url": "/api/manuals/Ruger_Firearms/Ruger_GP100_Revolver_Manual.pdf"
       },
@@ -2315,6 +2339,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger Mark I Standard Pistol Manual",
         "filename": "Ruger_Mark_I_Standard_Pistol_Manual.pdf",
         "size_mb": 1.58,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Firearms/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Firearms/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
         "local_url": "/api/manuals/Ruger_Firearms/Ruger_Mark_I_Standard_Pistol_Manual.pdf"
       }
@@ -2810,6 +2836,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Beretta 92F 92FS 9mm Manual",
         "filename": "Beretta_92F_92FS_9mm_Manual.pdf",
         "size_mb": 3.34,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
         "local_url": "/api/manuals/Beretta_Pistols/Beretta_92F_92FS_9mm_Manual.pdf"
       },
@@ -2818,6 +2846,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "US Army TM 9 1005 317 10 M9 Pistol",
         "filename": "US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "size_mb": 0.6,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "local_url": "/api/manuals/Beretta_Pistols/US_Army_TM_9_1005_317_10_M9_Pistol.pdf"
       }
@@ -3482,6 +3512,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Practical Gunsmithing American Gunsmith",
         "filename": "Practical_Gunsmithing_American_Gunsmith.pdf",
         "size_mb": 44.42,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
         "local_url": "/api/manuals/General_Gunsmithing/Practical_Gunsmithing_American_Gunsmith.pdf"
       },
@@ -3490,6 +3522,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "The Gunsmiths Manual Practical Guide",
         "filename": "The_Gunsmiths_Manual_Practical_Guide.pdf",
         "size_mb": 21.27,
+        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
         "url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
         "local_url": "/api/manuals/General_Gunsmithing/The_Gunsmiths_Manual_Practical_Guide.pdf"
       }

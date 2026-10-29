@@ -80,9 +80,31 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
   initMobileView();
   loadSavedSettings();
-  await checkLLMBackends();
-  await loadNetworkInfo();
-  await loadFirearm(currentFirearm);
+  
+  // 1. ALWAYS load active firearm platform FIRST so UI renders immediately
+  try {
+    await loadFirearm(currentFirearm);
+  } catch (err) {
+    console.error("Failed to load initial firearm:", err);
+  }
+
+  // 2. Probe local backend / LLM endpoints if running with Python backend
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+  if (!isStatic) {
+    try {
+      await checkLLMBackends();
+    } catch (e) {}
+    try {
+      await loadNetworkInfo();
+    } catch (e) {}
+  } else {
+    // GitHub Pages static mode status
+    if (llmStatusText && llmStatusPill) {
+      llmStatusText.textContent = "Offline Knowledge Engine";
+      const dot = llmStatusPill.querySelector(".status-dot");
+      if (dot) dot.className = "status-dot online";
+    }
+  }
 });
 
 // Setup UI Events
@@ -661,12 +683,16 @@ function selectManual(filename, title, switchToPreview = true) {
   });
 
   const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
   let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
-  if (manualObj && manualObj.url && (window.location.hostname.includes("github.io") || window.location.protocol === "file:")) {
+  if (isStatic && manualObj && manualObj.url) {
     pdfUrl = manualObj.url;
   }
-  if (window.location.hostname.includes("github.io")) {
-    pdfFrame.src = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+  if (isStatic && manualObj) {
+    // On GitHub Pages: use Google Docs viewer or direct link
+    pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(manualObj.url)}&embedded=true`;
+    btnPdfFullscreen.href = manualObj.github_url || manualObj.url;
+    btnExternalLink.href = manualObj.github_url || manualObj.url;
   } else {
     pdfFrame.src = pdfUrl;
   }
@@ -933,7 +959,8 @@ async function handleChatSubmit() {
     };
 
     // If running statically on GitHub Pages without Python backend, run client-side expert engine
-    if (window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA) {
+    const isStaticMode = window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA;
+    if (isStaticMode) {
       const reply = generateClientSideExpertReply(text, firearmData);
       setTimeout(() => {
         typingIndicator.remove();
