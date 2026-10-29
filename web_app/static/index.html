@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Armorer's Workbench — Gunsmith Technical Repository & AI Assistant</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Header Bar -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="brand-badge">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>ARMORER'S WORKBENCH</h1>
+        <span class="brand-sub">FIREARMS TECHNICAL REPOSITORY &amp; LOCAL AI ASSISTANT</span>
+      </div>
+    </div>
+
+    <!-- Global Live Search -->
+    <div class="header-search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="globalSearchInput" placeholder="Search manuals, stoppages, specs, repairs, schematics..." autocomplete="off">
+      <div id="searchResultsPopup" class="search-popup hidden"></div>
+    </div>
+
+    <!-- Active Firearm & Local LLM Badge -->
+    <div class="header-controls">
+      <div class="firearm-picker">
+        <label for="firearmSelect">PLATFORM:</label>
+        <select id="firearmSelect">
+          <option value="Lewis_Automatic_Machine_Gun">Lewis Light Machine Gun (.303 / .30-06)</option>
+        </select>
+      </div>
+
+      <button id="llmStatusPill" class="llm-pill" title="Click to configure Local LLM settings">
+        <span class="status-dot pulsing"></span>
+        <span id="llmStatusText">Detecting LLM...</span>
+        <svg class="pill-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Workspace -->
+  <main class="workbench-layout">
+
+    <!-- LEFT PANEL: Library Navigator -->
+    <aside class="panel-library">
+      <div class="panel-header">
+        <h2>TECHNICAL LIBRARY</h2>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="library-tabs">
+        <button class="lib-tab active" data-tab="manuals">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Manuals <span id="manualsCount" class="count-badge">8</span>
+        </button>
+        <button class="lib-tab" data-tab="schematics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Schematics <span id="schematicsCount" class="count-badge">59</span>
+        </button>
+        <button class="lib-tab" data-tab="videos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          Videos <span id="videosCount" class="count-badge">9</span>
+        </button>
+        <button class="lib-tab" data-tab="stoppages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Stoppages <span class="count-badge">4</span>
+        </button>
+      </nav>
+
+      <!-- Search in Tab -->
+      <div class="tab-filter-box">
+        <input type="text" id="tabFilterInput" placeholder="Filter this list...">
+      </div>
+
+      <!-- Tab Content Views -->
+      <div class="library-content-area">
+        <!-- Manuals List -->
+        <div id="manualsListView" class="list-container active"></div>
+
+        <!-- Schematics Grid -->
+        <div id="schematicsGridView" class="grid-container hidden"></div>
+
+        <!-- Videos List -->
+        <div id="videosListView" class="list-container hidden"></div>
+
+        <!-- Stoppages Matrix -->
+        <div id="stoppagesListView" class="list-container hidden"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: Multi-Mode Workshop Previewer -->
+    <section class="panel-preview">
+      <div class="preview-toolbar">
+        <div class="preview-mode-buttons">
+          <button class="mode-btn active" data-mode="pdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Document Viewer
+          </button>
+          <button class="mode-btn" data-mode="schematic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            Schematic Inspector
+          </button>
+          <button class="mode-btn" data-mode="video">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Video Workshop
+          </button>
+          <button class="mode-btn" data-mode="dossier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Armorer Specs
+          </button>
+        </div>
+
+        <div class="preview-status" id="previewTitle">
+          Savage Arms Lewis Machine Gun Hand-Book (1917/18)
+        </div>
+
+        <div class="preview-actions">
+          <a id="btnExternalLink" href="#" target="_blank" class="action-icon-btn" title="Open in New Tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Preview Stages -->
+      <div class="preview-stage-container">
+        <!-- 1. PDF Stage -->
+        <div id="pdfStage" class="stage active">
+          <iframe id="pdfFrame" src="/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf"></iframe>
+        </div>
+
+        <!-- 2. Schematic Inspector Stage -->
+        <div id="schematicStage" class="stage hidden">
+          <div class="schematic-controls">
+            <button id="zoomInBtn" title="Zoom In">+</button>
+            <button id="zoomOutBtn" title="Zoom Out">-</button>
+            <button id="zoomResetBtn" title="Reset Zoom">Reset</button>
+            <span id="zoomLevel">100%</span>
+          </div>
+          <div class="schematic-canvas" id="schematicCanvas">
+            <img id="schematicImg" src="" alt="Schematic Plate">
+          </div>
+        </div>
+
+        <!-- 3. Video Workshop Stage -->
+        <div id="videoStage" class="stage hidden">
+          <div class="video-container">
+            <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div class="video-meta-box" id="videoMetaBox">
+            <h3 id="videoMetaTitle">Video Title</h3>
+            <div class="video-meta-creator" id="videoMetaCreator">Creator</div>
+            <p id="videoMetaSummary">Summary of the procedure.</p>
+          </div>
+        </div>
+
+        <!-- 4. Armorer Specs & Stoppages Stage -->
+        <div id="dossierStage" class="stage hidden">
+          <div class="dossier-inner">
+            <div class="dossier-card alert-warning">
+              <h4>⚠️ CRITICAL WORKSHOP SAFETY: RETURN MAINSPRING</h4>
+              <p>The return spring is a flat spiral clock spring inside a circular gear casing. <strong>NEVER</strong> remove the trigger group or gear casing without first easing spring tension under control using the tension key or holding the pinion teeth. Uncontrolled release will shear the pinion teeth and fracture the spring arbor.</p>
+            </div>
+
+            <div class="dossier-grid">
+              <div class="dossier-card">
+                <h3>Spring Tension &amp; Pinion Calibration</h3>
+                <div class="spec-highlight">12 to 14 LBS PULL</div>
+                <p>Measured at the cocking handle as it initiates rearward stroke. Standard baseline from complete slack is <strong>2 to 2½ full revolutions</strong> of the gear casing.</p>
+              </div>
+
+              <div class="dossier-card">
+                <h3>Striker (Firing Pin) Protrusion</h3>
+                <div class="spec-highlight">0.050" to 0.060"</div>
+                <p>Striker is fixed directly to the vertical post of the operating rod. Protrusion through the bolt face must be verified with the bolt locked in full battery.</p>
+              </div>
+
+              <div class="dossier-card">
+                <h3>Gas Regulator Ports</h3>
+                <div class="spec-highlight">'S' (Small) / 'L' (Large)</div>
+                <p>Rotate regulator cup to 'S' for clean weapon in normal service; rotate to 'L' to overcome heavy carbon fouling, freezing temperatures, or sandy field conditions.</p>
+              </div>
+
+              <div class="dossier-card">
+                <h3>Headspace Tolerances (.303 British)</h3>
+                <div class="spec-highlight">0.058" GO / 0.064" NO-GO</div>
+                <p>Gauged from the barrel breech face to the bolt recess face. Maximum allowable FIELD headspace is <strong>0.070"</strong>.</p>
+              </div>
+            </div>
+
+            <div class="dossier-card">
+              <h3>Immediate Action: 4-Position Stoppage System</h3>
+              <table class="stoppage-table">
+                <thead>
+                  <tr>
+                    <th>Cocking Handle Position</th>
+                    <th>Diagnosis</th>
+                    <th>Armorer &amp; Shop Remedy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Position 1</strong> (Fully Forward)</td>
+                    <td>Misfire, dud cartridge, empty pan, or worn striker.</td>
+                    <td>Recock; check pan feed pawls; verify striker protrusion (min 0.050").</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Position 2</strong> (1"–2" Mid-Stroke)</td>
+                    <td>Short recoil; weak return spring; heavy carbon in gas cylinder.</td>
+                    <td>Increase spring tension 1–2 clicks; scrape carbon from gas cup and cylinder.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Position 3</strong> (Near Full Rear)</td>
+                    <td>Failure to extract or eject; ruptured cartridge case in chamber.</td>
+                    <td>Inspect extractor claws and ejector pivot; use broken shell extractor for separated cases.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Position 4</strong> (Jammed Full Rear)</td>
+                    <td>Mechanical bind; broken clock spring; sheared rack/pinion tooth.</td>
+                    <td>Strip gear casing; check mainspring; roll piston rod on flat to verify straightness.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: AI Gunsmith Assistant -->
+    <aside class="panel-assistant">
+      <div class="assistant-header">
+        <div class="assistant-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h3>ARMORER ASSISTANT</h3>
+        </div>
+        <button id="clearChatBtn" class="clear-btn" title="Clear Conversation">Clear</button>
+      </div>
+
+      <!-- Quick Prompt Suggestions -->
+      <div class="quick-prompts">
+        <button class="prompt-chip" data-query="What is the exact return spring tension and how is it adjusted?">Spring Tension</button>
+        <button class="prompt-chip" data-query="How do I troubleshoot a Position 2 stoppage?">Pos 2 Stoppage</button>
+        <button class="prompt-chip" data-query="Explain the striker replacement and protrusion tolerance.">Striker Repair</button>
+        <button class="prompt-chip" data-query="What are the safety steps for field stripping the Lewis Gun?">Field Strip Safety</button>
+        <button class="prompt-chip" data-query="How do I clean and decontaminate after firing corrosive ammo?">Corrosive Ammo</button>
+      </div>
+
+      <!-- Chat History Stream -->
+      <div class="chat-history" id="chatHistory">
+        <div class="chat-msg system">
+          <div class="msg-avatar">AI</div>
+          <div class="msg-content">
+            <p><strong>Master Armorer Assistant Ready.</strong></p>
+            <p>Connected to technical manuals, schematics, and armorer tolerances for the <strong>Lewis Light Machine Gun</strong>. Ask any technical question about servicing, field stripping, troubleshooting stoppages, or parts machining.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Form -->
+      <form id="chatForm" class="chat-input-area">
+        <textarea id="chatInput" placeholder="Ask a gunsmith question..." rows="2"></textarea>
+        <button type="submit" id="sendBtn" class="send-btn" title="Send Question">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </aside>
+
+  </main>
+
+  <!-- Local LLM Settings Modal (Native Accessible <dialog>) -->
+  <dialog id="settingsDialog" class="settings-modal">
+    <div class="modal-header">
+      <h3>LOCAL LLM CONFIGURATION</h3>
+      <button id="closeSettingsBtn" class="modal-close-btn">&times;</button>
+    </div>
+    <form id="settingsForm" class="modal-body">
+      <div class="form-group">
+        <label for="llmBackendSelect">Active LLM Provider:</label>
+        <select id="llmBackendSelect">
+          <option value="auto">Auto-Detect Best Available (Ollama / LM Studio)</option>
+          <option value="ollama">Ollama (http://127.0.0.1:11434)</option>
+          <option value="lmstudio">LM Studio (http://127.0.0.1:1234/v1)</option>
+          <option value="builtin">Built-in Armorer Knowledge Engine (Offline)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="llmModelSelect">Model Name:</label>
+        <select id="llmModelSelect">
+          <option value="auto">Auto / Default Loaded</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="llmEndpointInput">Custom Endpoint URL (Optional):</label>
+        <input type="text" id="llmEndpointInput" placeholder="http://127.0.0.1:11434">
+      </div>
+
+      <div class="form-group">
+        <label for="llmTempRange">Temperature: <span id="tempVal">0.3</span></label>
+        <input type="range" id="llmTempRange" min="0" max="1" step="0.05" value="0.3">
+        <small class="field-hint">Lower temperature (0.1–0.3) produces more precise, factual gunsmith specifications.</small>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="testConnBtn" class="btn-secondary">Test Connection</button>
+        <button type="submit" class="btn-primary">Save Settings</button>
+      </div>
+      <div id="connTestResult" class="conn-result"></div>
+    </form>
+  </dialog>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
