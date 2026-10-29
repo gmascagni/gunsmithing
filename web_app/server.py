@@ -15,6 +15,11 @@ import httpx
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
+try:
+    from web_app.firearms_data import FIREARMS_METADATA
+except ImportError:
+    from firearms_data import FIREARMS_METADATA
+
 app = FastAPI(title="Armorer's Workbench", version="1.0.0")
 
 app.add_middleware(
@@ -102,161 +107,24 @@ def load_firearm_data(firearm_id: str) -> Dict[str, Any]:
                 "url": f"/api/schematics/{firearm_id}/{sf.name}"
             })
             
-    # 3. Videos
-    videos = [
-        {
-            "id": "IkPNHiLMFL0",
-            "title": "Anvil 033: Lewis Gun Firing Pin and Oprod Repair",
-            "creator": "Mark Novak / Anvil",
-            "category": "Gunsmithing & Repair",
-            "url": "https://www.youtube.com/watch?v=IkPNHiLMFL0",
-            "embed_url": "https://www.youtube-nocookie.com/embed/IkPNHiLMFL0",
-            "summary": "Master-level gunsmithing repair. Machining a replacement striker/firing pin, annealing, hardening to ~50-52 HRC, fitting to op-rod post, and testing bolt lockup headspace."
-        },
-        {
-            "id": "I3ZA9rg8uKI",
-            "title": "Project Lightening Ep. 04: Field Strip",
-            "creator": "C&Rsenal & Forgotten Weapons",
-            "category": "Disassembly & Assembly",
-            "url": "https://www.youtube.com/watch?v=I3ZA9rg8uKI",
-            "embed_url": "https://www.youtube-nocookie.com/embed/I3ZA9rg8uKI",
-            "summary": "Step-by-step takedown: Buttstock removal, releasing return spring tension safely, dropping trigger group, sliding out bolt & piston, and removing feed arm."
-        },
-        {
-            "id": "Mnp4J-5UNZI",
-            "title": "Lewis Light Machine Gun - Step By Step Disassembly & Reassembly",
-            "creator": "Historical Firearms Bench",
-            "category": "Disassembly & Assembly",
-            "url": "https://www.youtube.com/watch?v=Mnp4J-5UNZI",
-            "embed_url": "https://www.youtube-nocookie.com/embed/Mnp4J-5UNZI",
-            "summary": "Tabletop bench view of component pin extraction, barrel shroud disassembly, and timing the rack teeth with the pinion."
-        },
-        {
-            "id": "kI1p1kqkbdA",
-            "title": "World of Guns: Complete 3D Disassembly & Assembly",
-            "creator": "Noble Empire",
-            "category": "3D Mechanism & Cutaway",
-            "url": "https://www.youtube.com/watch?v=kI1p1kqkbdA",
-            "embed_url": "https://www.youtube-nocookie.com/embed/kI1p1kqkbdA",
-            "summary": "3D interactive exploded view showing all 62+ component parts, screws, spring plungers, locking lugs, and pan magazine inner rotor."
-        },
-        {
-            "id": "TS9bR9EiRd8",
-            "title": "Animation Of The Mechanisms Of The Lewis LMG",
-            "creator": "Mechanism Dynamics",
-            "category": "3D Mechanism & Cutaway",
-            "url": "https://www.youtube.com/watch?v=TS9bR9EiRd8",
-            "embed_url": "https://www.youtube-nocookie.com/embed/TS9bR9EiRd8",
-            "summary": "Detailed animated slow-motion sequence of gas tap expansion, cup piston push, clock spring rewind, helical cam unlocking, and pan feed arm ratcheting."
-        },
-        {
-            "id": "OMDsdTzEG3Y",
-            "title": "Original Lewis Gun Stop-Motion Operations Footage",
-            "creator": "War Office / US War Dept Archives",
-            "category": "Historical & Training",
-            "url": "https://www.youtube.com/watch?v=OMDsdTzEG3Y",
-            "embed_url": "https://www.youtube-nocookie.com/embed/OMDsdTzEG3Y",
-            "summary": "Vintage military training footage demonstrating operation through sectioned metal cutaways."
-        },
-        {
-            "id": "FlsEmE5pM10",
-            "title": "Primer 034: The Lewis Gun Documentary",
-            "creator": "C&Rsenal",
-            "category": "Historical & Technical Deep Dive",
-            "url": "https://www.youtube.com/watch?v=FlsEmE5pM10",
-            "embed_url": "https://www.youtube-nocookie.com/embed/FlsEmE5pM10",
-            "summary": "In-depth history of Isaac Newton Lewis' design, BSA manufacturing, live fire with high-speed camera footage showing bolt rebound and muzzle venturi cooling."
-        },
-        {
-            "id": "gUXu47SzeG0",
-            "title": "US Navy MkVI Lewis Gun in .30-06 for the Marines",
-            "creator": "Forgotten Weapons",
-            "category": "Variants & Armorer Differences",
-            "url": "https://www.youtube.com/watch?v=gUXu47SzeG0",
-            "embed_url": "https://www.youtube-nocookie.com/embed/gUXu47SzeG0",
-            "summary": "Examination of Savage Arms M1917 chambered in rimless .30-06: altered feed arm, feed pawls, and magazine rim depths."
-        },
-        {
-            "id": "k5FTHSYEo7A",
-            "title": "Savage M1918 Aircraft Lewis Gun",
-            "creator": "Forgotten Weapons",
-            "category": "Variants & Armorer Differences",
-            "url": "https://www.youtube.com/watch?v=k5FTHSYEo7A",
-            "embed_url": "https://www.youtube-nocookie.com/embed/k5FTHSYEo7A",
-            "summary": "Aircraft variant with spade grips, deleted cooling radiator, 97-round high-capacity pan, and silk-bag cartridge deflector chute."
-        }
-    ]
-    
-    # 4. Stoppages Diagnostic Data
-    stoppages = [
-        {
-            "position": "Position 1: Cocking Handle Fully Forward",
-            "short_desc": "Bolt closed on chamber; gun fails to fire upon trigger pull",
-            "causes": [
-                "Empty magazine or pan center rotor jammed.",
-                "Broken or shortened striker (firing pin tip chipped or deformed).",
-                "Defective primer or dud cartridge.",
-                "Piston post striker not reaching primer due to incomplete bolt rotation into battery."
-            ],
-            "action": "Immediate Action: Cock gun, observe feedway, cycle new round. If persistent: Check striker protrusion (spec 0.050\"-0.060\") and examine pan feed pawls."
-        },
-        {
-            "position": "Position 2: Cocking Handle at 1\" to 2\" Mid-Stroke",
-            "short_desc": "Bolt stopped during forward travel before fully locking",
-            "causes": [
-                "Damaged or dented cartridge case jammed in feedway.",
-                "Weak return mainspring (pinion tension under 12 lbs).",
-                "Severe carbon encrustation in gas cylinder or piston head.",
-                "Weak or deformed cartridge guide spring in feed cover."
-            ],
-            "action": "Immediate Action: Pull cocking handle rearward, clear jammed cartridge, check pan teeth. Gunsmith Action: Increase clock spring tension 1-2 clicks; scrape carbon from gas regulator cup and cylinder."
-        },
-        {
-            "position": "Position 3: Cocking Handle Near Full Rear",
-            "short_desc": "Bolt stopped near recoil limit; failure to extract or eject spent case",
-            "causes": [
-                "Broken extractor claw or fatigued extractor spring.",
-                "Broken ejector arm (pivoted in left receiver wall).",
-                "Ruptured case neck or head separation left inside chamber.",
-                "Gas regulator port set too small for dirty conditions (short recoil)."
-            ],
-            "action": "Gunsmith Action: Inspect extractors and ejector tip. Use broken-shell extractor for separated cases. Rotate gas regulator from 'S' (Small) to 'L' (Large) port."
-        },
-        {
-            "position": "Position 4: Cocking Handle Jammed Full Rear",
-            "short_desc": "Gun locked open; cocking handle cannot be pushed forward",
-            "causes": [
-                "Broken clock return spring binding inside circular gear casing.",
-                "Foreign debris or sheared gear tooth jammed in pinion teeth.",
-                "Bent piston rod from excessive gas pressure or barrel shroud drop.",
-                "Loose set screw or damaged rack."
-            ],
-            "action": "Gunsmith Action: Remove buttstock and ease gear casing. Inspect spiral mainspring and pinion teeth. Roll piston rod on precision flat to verify straightness."
-        }
-    ]
-    
-    # 5. Workshop Specifications & Tolerances
-    specs = {
-        "calibers": ".303 British (Mk VII rimmed) / .30-06 Springfield (US M1917/1918 rimless)",
-        "operation": "Gas-operated (cup piston), open-bolt, rotating 4-lug bolt, rack & pinion clock spring return",
-        "feed": "47-round pan magazine (infantry) / 97-round pan magazine (aircraft/naval)",
-        "cyclic_rate": "500 - 600 rounds/min",
-        "spring_tension": "12 to 14 lbs pull measured at cocking handle (approx 2 to 2.5 full turns of gear casing from slack)",
-        "striker_protrusion": "0.050\" to 0.060\" through bolt face at full battery",
-        "gas_regulator": "Two-orifice cup: 'S' (Small - normal operation) / 'L' (Large - foul/cold conditions)",
-        "headspace_303": "Rimmed: GO = 0.058\", NO-GO = 0.064\", FIELD = 0.070\"",
-        "cooling_system": "Aluminum longitudinal fluted radiator enclosed in steel jacket with muzzle blast venturi cowl"
-    }
+    # 3. Pull Platform Metadata from FIREARMS_METADATA
+    meta = FIREARMS_METADATA.get(firearm_id, {
+        "name": firearm_id.replace("_", " "),
+        "subtitle": "Technical Manuals, Schematics & Video References",
+        "specs": {},
+        "stoppages": [],
+        "videos": []
+    })
     
     return {
         "id": firearm_id,
-        "name": "Lewis Automatic Machine Gun",
-        "subtitle": "Model 1914 / 1917 / 1918 (.303 British & .30-06 Springfield)",
+        "name": meta.get("name", firearm_id.replace("_", " ")),
+        "subtitle": meta.get("subtitle", "Technical Repository"),
         "manuals": manuals,
         "schematics": schematics,
-        "videos": videos,
-        "stoppages": stoppages,
-        "specs": specs
+        "videos": meta.get("videos", []),
+        "stoppages": meta.get("stoppages", []),
+        "specs": meta.get("specs", {})
     }
 
 @app.get("/", response_class=HTMLResponse)
@@ -509,95 +377,269 @@ async def check_llm_backends():
     return {"backends": backends, "saved_config": cfg}
 
 def generate_fallback_expert_response(query: str, firearm_data: Dict[str, Any]) -> str:
-    """Intelligent rule-based expert answer when local LLM is offline or cold-starting."""
+    """Intelligent rule-based expert answer tailored to active firearm platform when LLM is offline."""
     q = query.lower()
+    fid = firearm_data.get("id", "")
+    fname = firearm_data.get("name", "Firearm")
     
-    if any(k in q for k in ["tension", "spring", "clock", "pinion", "mainspring", "lbs"]):
-        return (
-            "### Return Mainspring (Clock Spring) & Pinion Calibration\n\n"
-            "**Primary Spec:**\n"
-            "* Normal operating tension is **12 to 14 lbs pull**, measured with a spring scale hooked to the cocking handle as it initiates rearward stroke.\n"
-            "* Standard baseline from complete slack is **2 to 2½ full revolutions** of the circular gear casing.\n\n"
-            "**Gunsmith Procedure:**\n"
-            "1. **Safety Warning:** Never release the gear casing catch with the spring under load without holding the pinion firmly. Releasing uncontrolled will shear the pinion teeth or fracture the spring arbor.\n"
-            "2. To increase tension (for sluggish cycling or short recoil): rotate gear casing clockwise 1–2 clicks.\n"
-            "3. To decrease tension (for excessive bolt bounce or buffer battering): relieve one notch counterclockwise.\n\n"
-            "*Reference Manual:* [Savage Arms Lewis Machine Gun Hand-Book (p. 41-45)](/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf)"
-        )
-    elif any(k in q for k in ["striker", "firing pin", "oprod", "operating rod", "repair", "replace"]):
-        return (
-            "### Striker (Firing Pin) & Operating Rod Servicing\n\n"
-            "**Component Architecture:**\n"
-            "* The striker is rigidly mounted directly to the vertical post of the operating rod/piston rack. It does *not* have an internal firing pin spring in the bolt.\n"
-            "* It reaches the primer only during the final 1/2-inch forward stroke as the helical cam completes 4-lug bolt lockup.\n\n"
-            "**Tolerances & Replacement:**\n"
-            "* **Striker Protrusion:** Must measure **0.050\" to 0.060\"** beyond the bolt face when in full battery.\n"
-            "* If the striker is broken or chipped: drive out the transverse taper pin holding the striker in the piston post, extract the old striker, machine a replacement from tool steel (O1 or W1), harden and temper to ~50–52 HRC, and re-pin.\n\n"
-            "*Recommended Bench Video:* [Mark Novak - Anvil 033: Lewis Gun Firing Pin and Oprod Repair](https://www.youtube.com/watch?v=IkPNHiLMFL0)"
-        )
-    elif any(k in q for k in ["stoppage", "jam", "troubleshoot", "malfunction", "position"]):
-        return (
-            "### Lewis Gun 4-Position Stoppage Diagnostic Matrix\n\n"
-            "Diagnose malfunctions immediately by the resting position of the cocking handle:\n\n"
-            "1. **Position 1 (Handle Fully Forward):** Misfire. Dud cartridge, empty pan, worn/broken striker tip, or bolt not completely cammed into battery.\n"
-            "2. **Position 2 (Handle at 1\" to 2\" Mid-Stroke):** Short recoil / feed stoppage. Weak return spring, dented cartridge case, or heavy carbon in gas cylinder.\n"
-            "3. **Position 3 (Handle Near Full Rear):** Extraction / Ejection failure. Broken extractor claws, broken ejector arm (left receiver wall), or ruptured cartridge case stuck in chamber.\n"
-            "4. **Position 4 (Handle Jammed Full Rear):** Severe mechanical lock. Broken return spring binding in gear casing, sheared rack/pinion tooth, or bent piston rod.\n\n"
-            "*Reference Manual:* [1942 UK: How to Remedy and Prevent Stoppages](/api/manuals/Lewis_Automatic_Machine_Gun/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf)"
-        )
-    elif any(k in q for k in ["strip", "disassemble", "takedown", "field strip", "take down"]):
-        return (
-            "### Field Stripping & Takedown Sequence\n\n"
-            "1. **Clear Weapon:** Confirm chamber empty and feedway clear. Ease bolt forward under trigger control.\n"
-            "2. **Remove Buttstock:** Depress the spring-loaded buttstock latch at the front lower edge of the stock; slide the butt assembly rearward off the receiver dovetail.\n"
-            "3. **Release Mainspring Tension:** Cock handle slightly to access gear casing catch. Disengage catch and ease the spiral clock spring to complete slack.\n"
-            "4. **Drop Trigger Housing:** Pull the trigger and slide the trigger/pistol grip group downward and rearward along its receiver rails.\n"
-            "5. **Withdraw Operating Rod & Bolt:** Retract cocking handle to the disassembly enlargement cut, pull handle outward to detach, then slide bolt and piston rod out the rear.\n"
-            "6. **Lift Feed Cover:** Pivot feed cover latch, swing cover upward to access feed arm and feed pawls.\n\n"
-            "*Bench Video:* [C&Rsenal Project Lightening Episode 04: Field Strip](https://www.youtube.com/watch?v=I3ZA9rg8uKI)"
-        )
-    elif any(k in q for k in ["clean", "corrosive", "oil", "lubricat", "maintain"]):
-        return (
-            "### Cleaning & Chemical Care Protocols\n\n"
-            "* **Corrosive Primer Neutralization:** Surplus military .303 and .30-06 ammunition leaves corrosive potassium chlorate salts. Flush bore, chamber, and gas port with hot soapy water or boiling water before cleaning with solvent (Hoppe's No. 9 / Ballistol).\n"
-            "* **Gas Piston & Cup:** Soak the cupped piston head in carbon remover (Kroil or Slip 2000). Scrape carbon with brass scrapers. Avoid emery cloth that reduces piston diameter.\n"
-            "* **Pan Magazine Lubrication Caution:** Do **NOT** oil the internal spiral track heavily. Wet lubricant collects powder residue and dirt, causing the pan center rotor to drag and fail feeding."
-        )
-    elif any(k in q for k in ["gas", "regulator", "cup", "port"]):
-        return (
-            "### Gas Regulator Adjustments & Settings\n\n"
-            "* The gas regulator cup at the front gas block features two port orifices:\n"
-            "  * **'S' (Small Port):** Factory standard setting for normal shooting with standard service ammunition.\n"
-            "  * **'L' (Large Port):** Port to select when firing with heavy carbon buildup, sandy conditions, or in sub-zero weather.\n"
-            "* If the gun experiences short recoil (stovepipes, failure to advance pan magazine), switch regulator to the large port."
-        )
+    # 1. Glock Pistols Platform
+    if "glock" in fid.lower():
+        if any(k in q for k in ["sear", "cruciform", "engagement", "orange", "plate", "drop safety"]):
+            return (
+                "### Glock Cruciform Sear Engagement Specification\n\n"
+                "* **Safety Requirement:** Minimum **66% (2/3)** surface overlap between the striker lug and trigger bar cruciform sear plate.\n"
+                "* **Armorer Inspection Protocol:** Install the orange Armorer Inspection Cover Plate (`SP 02096`) onto the slide rear. Cock the action, illuminate with an inspection light, and observe sear shelf overlap under 10x magnification.\n"
+                "* **⚠️ CRITICAL SAFETY WARNING:** Overlap under 66% introduces extreme risk of accidental discharge upon drop/impact or uncontrolled multi-fire/full-auto slip."
+            )
+        elif any(k in q for k in ["lube", "oil", "lubricat", "clean", "drop"]):
+            return (
+                "### Glock Factory 5-Drop Lubrication Protocol\n\n"
+                "Apply **exactly 5 drops** of clean gun oil:\n"
+                "1. **Drops 1 & 2:** One drop split evenly along both slide rail channels.\n"
+                "2. **Drops 3 & 4:** One drop split along front slide rails.\n"
+                "3. **Drop 5:** One drop spread on barrel exterior circumference and barrel hood.\n"
+                "4. **Half Drop (Crucial):** One tiny drop where the trigger bar cruciform bird-head wipes across the connector cam ramp.\n\n"
+                "⚠️ **MANDATORY ARMORER WARNING:** NEVER lubricate the firing pin channel, striker sleeve, or safety plunger hole. Oil in the channel creates hydrodynamic drag, collecting brass shavings and causing light primer strikes."
+            )
+        elif any(k in q for k in ["trigger", "polish", "connector", "25", "cent"]):
+            return (
+                "### Glock 25¢ Trigger Polish & Connector Tuning\n\n"
+                "* **Surfaces to Polish:** Mirror polish with Flitz or Mothers polish:\n"
+                "  1. Cruciform sear shelf\n"
+                "  2. Connector cam ramp face\n"
+                "  3. Trigger bar safety plunger bump\n"
+                "  4. Firing pin safety plunger dome\n"
+                "  5. Striker lug contact face\n"
+                "* **Rules:** Use felt bob or cotton cloth only. DO NOT use stones, files, or sandpaper. Never alter factory 90° sear angles.\n"
+                "* **Connector Gap:** Maintain 0.005\" to 0.010\" clearance between connector top tab and trigger housing."
+            )
+        elif any(k in q for k in ["stoppage", "extract", "stovepipe", "fte", "jam", "eject"]):
+            return (
+                "### Glock Extraction & Malfunction Diagnostics\n\n"
+                "* **Failure to Extract / Stovepipe:**\n"
+                "  1. Check extractor claw edge under magnification for chipping or rounded nose.\n"
+                "  2. Check Spring Loaded Bearing: must match caliber (black for 9mm LCI, white for .40 S&W).\n"
+                "  3. In Gen 4 9mm: upgrade old 336 ejector to **30274** (or Gen 5 **47021**) ejector bar to eliminate erratic brass-to-face ejection."
+            )
+        elif any(k in q for k in ["strip", "disassemble", "takedown", "pin"]):
+            return (
+                "### Glock Detail Disassembly & Pin Punch Sequence\n\n"
+                "1. **Clear Weapon:** Drop magazine, lock slide open, visually/physically verify chamber empty.\n"
+                "2. **Field Strip:** Pull trigger to decock striker, pull slide rearward 1/8\", pull down slide lock tabs on both sides, slide off forward.\n"
+                "3. **Frame Pin Order:** On 3-pin frames (Gen 3/4), push out the **top locking block pin FIRST** using a 3/32\" armorer punch. This relieves spring tension off the trigger pin below it, allowing the trigger pin to push out effortlessly without battering the frame."
+            )
+        else:
+            return (
+                f"### Glock Armorer Technical Overview\n\n"
+                f"* **System:** Safe-Action striker-fired short recoil system.\n"
+                f"* **Cruciform Sear Engagement:** Minimum 66% (2/3 overlap) via orange inspection cover plate.\n"
+                f"* **Connector Gap:** 0.005\" to 0.010\" clearance.\n"
+                f"* **Lubrication:** Strict 5-drop rule; keep striker channel 100% dry.\n"
+                f"* **Primary Guides:** Consult the *Glock Armorer's Manual (Gen 1–5)* in the library."
+            )
+
+    # 2. Ruger Firearms Platform
+    elif "ruger" in fid.lower():
+        if any(k in q for k in ["10/22", "1022", "torque", "v-block", "action screw"]):
+            return (
+                "### Ruger 10/22 Factory Torque Specifications\n\n"
+                "* **Takedown Action Screw:** **15 to 20 in-lbs** for wood/synthetic stocks; up to **25 in-lbs** for metal pillar-bedded stocks.\n"
+                "* **Barrel V-Block Clamp Screws:** **25 to 30 in-lbs** tightening evenly in alternating 5 in-lb increments.\n"
+                "* **⚠️ Armorer Precaution:** Never overtighten the V-block beyond 30 in-lbs, as this causes barrel tenon droop and destroys accuracy.\n"
+                "* **Bolt Headspace (Rim Recess):** Factory rim recess is 0.0425\" to 0.0435\" depth."
+            )
+        elif any(k in q for k in ["magazine", "rotary", "rotary mag", "tension", "spool"]):
+            return (
+                "### Ruger 10/22 Rotary Magazine Pre-Tensioning\n\n"
+                "1. Disassemble central 9/64\" hex nut and clean lead wax from rotor flutes.\n"
+                "2. Insert clock spring arbor into rotor notch.\n"
+                "3. **Pre-Load Spring:** Rotate the rotor counter-clockwise exactly **1-1/4 full turns (450°)** before seating into the magazine feed lips.\n"
+                "4. Cinch central allen screw until snug without cracking polymer casing."
+            )
+        elif any(k in q for k in ["mark", "mk", "strut", "reassembly", "jigsaw", "jammed"]):
+            return (
+                "### Ruger Mark I / II / III Reassembly & Hammer Strut Alignment\n\n"
+                "* **The Golden Rule:** The hammer strut must nest directly into the mainspring housing plunger cup.\n"
+                "* **Fail-Safe Procedure:**\n"
+                "  1. With bolt stop pin pushed up through frame, point pistol muzzle **45° upward**, pull trigger to let hammer fall forward.\n"
+                "  2. Invert pistol pointing muzzle **upward**, allowing the hammer strut to dangle freely toward the mainspring housing.\n"
+                "  3. Swing mainspring housing closed — verify you feel spring resistance in the final 1/4\" before latching."
+            )
+        elif any(k in q for k in ["gp100", "revolver", "cylinder", "gap", "endshake"]):
+            return (
+                "### Ruger GP100 Revolver Armorer Clearances\n\n"
+                "* **Barrel-to-Cylinder Gap (BCG):** **0.004\" to 0.007\"** nominal with feeler gauge (0.008\" maximum service limit).\n"
+                "* **Cylinder Endshake (Axial Play):** Maximum **0.002\"** allowable play. If excessive, install stainless steel crane bearing shims.\n"
+                "* **Headspace:** 0.060\" to 0.068\" cartridge rim to recoil shield.\n"
+                "* **Firing Pin Protrusion:** 0.048\" to 0.055\" with transfer bar held raised."
+            )
+        else:
+            return (
+                f"### Ruger Firearms Armorer Summary\n\n"
+                f"* **10/22 Carbine:** V-block torque 25–30 in-lbs; action screw 15–20 in-lbs; rotary mag 1-1/4 turns.\n"
+                f"* **Mark Series:** Hammer strut gravity cup alignment; Mark IV one-button takedown.\n"
+                f"* **GP100:** Cylinder gap 0.004\"–0.007\"; endshake ≤ 0.002\".\n"
+                f"* Consult the factory manuals in the preview window for complete exploded views."
+            )
+
+    # 3. Beretta Pistols Platform
+    elif "beretta" in fid.lower():
+        if any(k in q for k in ["dead trigger", "trigger bar", "spring", "right grip"]):
+            return (
+                "### Beretta 92FS / M9 Dead Trigger Diagnosis\n\n"
+                "* **Primary Symptom:** Trigger pulls rearward with zero resistance; hammer fails to cock.\n"
+                "* **Root Cause:** The forward leg of the trigger bar spring has slipped out of its groove on the underside of the trigger bar. This almost always happens when removing or loosening the right grip panel.\n"
+                "* **Remedy:** Remove right grip panel, hook spring leg securely into trigger bar groove, and verify grip bushing does not pinch spring upon tightening."
+            )
+        elif any(k in q for k in ["locking block", "block", "lug", "wing", "fracture"]):
+            return (
+                "### Beretta 92 Locking Block Inspection & Service Life\n\n"
+                "* **Service Life:** Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds.\n"
+                "* **Generations:** Upgrade Gen 1 blocks (sharp square cuts) to Gen 3 kits (radiused stress-relief cuts).\n"
+                "* **Inspection:** Check block wings under 10x magnification for micro-fissures. Also replace recoil spring every 3,000–5,000 rounds."
+            )
+        elif any(k in q for k in ["d spring", "trigger pull", "double action", "tuning"]):
+            return (
+                "### Factory Beretta 'D' Hammer Spring Upgrade\n\n"
+                "* Installing the factory **Beretta 92D (DAO) mainspring** drops standard double-action trigger pull from ~12 lbs down to a smooth, reliable **8.0 to 8.5 lbs**.\n"
+                "* Unlike aftermarket ultra-light springs, the factory D spring maintains 100% primer ignition reliability across all standard NATO ammunition."
+            )
+        else:
+            return (
+                f"### Beretta 92FS / M9 Technical Summary\n\n"
+                f"* **Operating System:** Short-recoil falling locking block with non-tilting barrel.\n"
+                f"* **Tolerances:** Locking block replacement at 15k–20k rds; recoil spring at 3k–5k rds.\n"
+                f"* **Safety Feature:** Oversized 92FS hammer pin engages slide channel to prevent rearward slide separation.\n"
+                f"* Consult the *Beretta 92FS Full Technical Manual* in the preview panel."
+            )
+
+    # 4. General Gunsmithing Workshop Platform
+    elif "general" in fid.lower() or "smithing" in fid.lower():
+        if any(k in q for k in ["headspace", "gauge", "go", "no-go", "field"]):
+            return (
+                "### Masterclass: Headspace Gauging Standards\n\n"
+                "* **GO Gauge:** Minimum allowable chamber length. Bolt must close smoothly without binding.\n"
+                "* **NO-GO Gauge:** Maximum allowable chamber length for new or rechambered rifles. Bolt must NOT close with light finger pressure.\n"
+                "* **FIELD Gauge:** Absolute maximum safe limit for service rifles. If bolt closes on FIELD gauge, the firearm is **UNSAFE TO FIRE** (extreme risk of case head separation and gas blowout).\n"
+                "* **Armorer Protocol:** Always strip bolt extractors and ejector plungers before gauging to ensure true metal-on-metal reading."
+            )
+        elif any(k in q for k in ["cerrosafe", "chamber cast", "casting", "alloy"]):
+            return (
+                "### Chamber Casting with Cerrosafe Low-Melt Alloy\n\n"
+                "* **Melting Point:** 160°F to 190°F in clean ladle.\n"
+                "* **Bore Prep:** Plug bore 1/2\" ahead of chamber throat with tight oiled patch; preheat barrel slightly with heat gun.\n"
+                "* **CRITICAL TIMING WINDOW:** Cerrosafe shrinks during initial cooling, then expands. It reaches **exact 1:1 chamber dimensions at PRECISELY 1 HOUR after pouring**. Measure your cast at the 1-hour mark with micrometer."
+            )
+        elif any(k in q for k in ["blue", "bluing", "rust", "tank", "caustic"]):
+            return (
+                "### Bluing Disciplines: Slow Rust vs Hot Caustic\n\n"
+                "* **Traditional Slow Rust Bluing:** Acid solution rusting -> sweat in humidity box -> boil in distilled water to convert red Fe2O3 to black Fe3O4 -> card with 0.003\" wire wheel. Best for soldered double barrels.\n"
+                "* **Hot Caustic Salts:** 285°F to 292°F sodium hydroxide/nitrate tank. Never add cold water to hot salts. Complete degreasing in boiling cleaner is mandatory."
+            )
+        else:
+            return (
+                f"### General Gunsmithing Core Disciplines\n\n"
+                f"* **Headspace:** Bolt must close on GO, must not close on FIELD.\n"
+                f"* **Fasteners:** Hollow-ground parallel bits only; zero tapered screwdrivers.\n"
+                f"* **Chamber Casting:** Cerrosafe 1-hour measurement window.\n"
+                f"* **Barrels:** 11-degree target crown concentric to bore axis.\n"
+                f"* Consult *Practical Gunsmithing* and *US Army TM 9-1005* in the library."
+            )
+
+    # 5. Lewis Machine Gun Platform
     else:
-        return (
-            f"### Gunsmith Technical Summary for: *{query}*\n\n"
-            "For the **Lewis Light Machine Gun**:\n"
-            "* **Operation:** Open-bolt, gas-operated via cup-faced piston and Archimedean spiral spring (pinion & rack).\n"
-            "* **Key Calibrations:** Spring pull at cocking handle = **12 to 14 lbs**; Striker protrusion = **0.050\" to 0.060\"**; Headspace (.303) = 0.058\" GO / 0.064\" NO-GO.\n"
-            "* **Consult Primary Documents:** You can preview all 8 original manuals, inspect 59 high-resolution schematic plates, or watch video takedowns directly in the center preview window."
-        )
+        if any(k in q for k in ["tension", "spring", "clock", "pinion", "mainspring", "lbs"]):
+            return (
+                "### Return Mainspring (Clock Spring) & Pinion Calibration\n\n"
+                "**Primary Spec:**\n"
+                "* Normal operating tension is **12 to 14 lbs pull**, measured with a spring scale hooked to the cocking handle as it initiates rearward stroke.\n"
+                "* Standard baseline from complete slack is **2 to 2½ full revolutions** of the circular gear casing.\n\n"
+                "**Gunsmith Procedure:**\n"
+                "1. **Safety Warning:** Never release the gear casing catch with the spring under load without holding the pinion firmly. Releasing uncontrolled will shear the pinion teeth or fracture the spring arbor.\n"
+                "2. To increase tension (for sluggish cycling or short recoil): rotate gear casing clockwise 1–2 clicks.\n"
+                "3. To decrease tension (for excessive bolt bounce or buffer battering): relieve one notch counterclockwise.\n\n"
+                "*Reference Manual:* [Savage Arms Lewis Machine Gun Hand-Book (p. 41-45)](/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf)"
+            )
+        elif any(k in q for k in ["striker", "firing pin", "oprod", "operating rod", "repair", "replace"]):
+            return (
+                "### Striker (Firing Pin) & Operating Rod Servicing\n\n"
+                "**Component Architecture:**\n"
+                "* The striker is rigidly mounted directly to the vertical post of the operating rod/piston rack. It does *not* have an internal firing pin spring in the bolt.\n"
+                "* It reaches the primer only during the final 1/2-inch forward stroke as the helical cam completes 4-lug bolt lockup.\n\n"
+                "**Tolerances & Replacement:**\n"
+                "* **Striker Protrusion:** Must measure **0.050\" to 0.060\"** beyond the bolt face when in full battery.\n"
+                "* If the striker is broken or chipped: drive out the transverse taper pin holding the striker in the piston post, extract the old striker, machine a replacement from tool steel (O1 or W1), harden and temper to ~50–52 HRC, and re-pin.\n\n"
+                "*Recommended Bench Video:* [Mark Novak - Anvil 033: Lewis Gun Firing Pin and Oprod Repair](https://www.youtube.com/watch?v=IkPNHiLMFL0)"
+            )
+        elif any(k in q for k in ["stoppage", "jam", "troubleshoot", "malfunction", "position"]):
+            return (
+                "### Lewis Gun 4-Position Stoppage Diagnostic Matrix\n\n"
+                "Diagnose malfunctions immediately by the resting position of the cocking handle:\n\n"
+                "1. **Position 1 (Handle Fully Forward):** Misfire. Dud cartridge, empty pan, worn/broken striker tip, or bolt not completely cammed into battery.\n"
+                "2. **Position 2 (Handle at 1\" to 2\" Mid-Stroke):** Short recoil / feed stoppage. Weak return spring, dented cartridge case, or heavy carbon in gas cylinder.\n"
+                "3. **Position 3 (Handle Near Full Rear):** Extraction / Ejection failure. Broken extractor claws, broken ejector arm (left receiver wall), or ruptured cartridge case stuck in chamber.\n"
+                "4. **Position 4 (Handle Jammed Full Rear):** Severe mechanical lock. Broken return spring binding in gear casing, sheared rack/pinion tooth, or bent piston rod.\n\n"
+                "*Reference Manual:* [1942 UK: How to Remedy and Prevent Stoppages](/api/manuals/Lewis_Automatic_Machine_Gun/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf)"
+            )
+        elif any(k in q for k in ["strip", "disassemble", "takedown", "field strip", "take down"]):
+            return (
+                "### Field Stripping & Takedown Sequence\n\n"
+                "1. **Clear Weapon:** Confirm chamber empty and feedway clear. Ease bolt forward under trigger control.\n"
+                "2. **Remove Buttstock:** Depress the spring-loaded buttstock latch at the front lower edge of the stock; slide the butt assembly rearward off the receiver dovetail.\n"
+                "3. **Release Mainspring Tension:** Cock handle slightly to access gear casing catch. Disengage catch and ease the spiral clock spring to complete slack.\n"
+                "4. **Drop Trigger Housing:** Pull the trigger and slide the trigger/pistol grip group downward and rearward along its receiver rails.\n"
+                "5. **Withdraw Operating Rod & Bolt:** Retract cocking handle to the disassembly enlargement cut, pull handle outward to detach, then slide bolt and piston rod out the rear.\n"
+                "6. **Lift Feed Cover:** Pivot feed cover latch, swing cover upward to access feed arm and feed pawls.\n\n"
+                "*Bench Video:* [C&Rsenal Project Lightening Episode 04: Field Strip](https://www.youtube.com/watch?v=I3ZA9rg8uKI)"
+            )
+        elif any(k in q for k in ["clean", "corrosive", "oil", "lubricat", "maintain"]):
+            return (
+                "### Cleaning & Chemical Care Protocols\n\n"
+                "* **Corrosive Primer Neutralization:** Surplus military .303 and .30-06 ammunition leaves corrosive potassium chlorate salts. Flush bore, chamber, and gas port with hot soapy water or boiling water before cleaning with solvent (Hoppe's No. 9 / Ballistol).\n"
+                "* **Gas Piston & Cup:** Soak the cupped piston head in carbon remover (Kroil or Slip 2000). Scrape carbon with brass scrapers. Avoid emery cloth that reduces piston diameter.\n"
+                "* **Pan Magazine Lubrication Caution:** Do **NOT** oil the internal spiral track heavily. Wet lubricant collects powder residue and dirt, causing the pan center rotor to drag and fail feeding."
+            )
+        elif any(k in q for k in ["gas", "regulator", "cup", "port"]):
+            return (
+                "### Gas Regulator Adjustments & Settings\n\n"
+                "* The gas regulator cup at the front gas block features two port orifices:\n"
+                "  * **'S' (Small Port):** Factory standard setting for normal shooting with standard service ammunition.\n"
+                "  * **'L' (Large Port):** Port to select when firing with heavy carbon buildup, sandy conditions, or in sub-zero weather.\n"
+                "* If the gun experiences short recoil (stovepipes, failure to advance pan magazine), switch regulator to the large port."
+            )
+        else:
+            return (
+                f"### Gunsmith Technical Summary for: *{query}*\n\n"
+                f"For the **{fname}**:\n"
+                f"* **Calibers & System:** {firearm_data.get('subtitle', '')}\n"
+                f"* **Key Calibrations:** Spring tension = 12–14 lbs; Striker protrusion = 0.050\"–0.060\"; Headspace (.303) = 0.058\" GO / 0.064\" NO-GO.\n"
+                f"* **Consult Primary Documents:** You can preview all original manuals, inspect high-resolution schematic plates, or watch video takedowns directly in the center preview window."
+            )
 
 @app.post("/api/chat")
 async def chat_handler(req: ChatRequest):
     firearm_data = load_firearm_data(req.firearm_id)
     user_query = req.messages[-1].content if req.messages else ""
     
-    # System prompt injected with gunsmith technical specifications
+    # Dynamic specifications string
+    specs_lines = [f"- {k.replace('_', ' ').title()}: {v}" for k, v in firearm_data.get('specs', {}).items()]
+    specs_str = "\n".join(specs_lines) if specs_lines else "- Refer to factory armorer manuals in repository."
+
+    # Dynamic document sources
+    doc_sources = [m["title"] for m in firearm_data.get("manuals", [])[:2]]
+    if firearm_data.get("videos"):
+        doc_sources.append(firearm_data["videos"][0]["title"])
+    if not doc_sources:
+        doc_sources = [firearm_data.get("name", "Technical Dossier")]
+    
+    # System prompt injected with platform technical specifications
     system_prompt = (
         f"You are an expert master gunsmith and armorer assistant helping a technician service, repair, clean, "
         f"troubleshoot, and maintain firearms. You have access to the complete workshop technical files for the "
-        f"{firearm_data['name']} ({firearm_data['subtitle']}).\n"
-        f"KEY SPECIFICATIONS:\n"
-        f"- Calibers: {firearm_data['specs']['calibers']}\n"
-        f"- Operation: {firearm_data['specs']['operation']}\n"
-        f"- Spring Tension: {firearm_data['specs']['spring_tension']}\n"
-        f"- Striker Protrusion: {firearm_data['specs']['striker_protrusion']}\n"
-        f"- Gas Regulator: {firearm_data['specs']['gas_regulator']}\n"
-        f"- Headspace: {firearm_data['specs']['headspace_303']}\n\n"
-        f"Always provide precise, technical, armorer-level advice with safety warnings (e.g., releasing clock spring tension safely, open-bolt headspace, corrosive ammo). "
+        f"{firearm_data['name']} ({firearm_data['subtitle']}).\n\n"
+        f"KEY WORKSHOP SPECIFICATIONS & TOLERANCES:\n"
+        f"{specs_str}\n\n"
+        f"Always provide precise, technical, armorer-level advice with safety warnings (e.g. spring safety, headspace limits, zero lubricant where prohibited, torque specs). "
         f"Format your response with clear markdown headers, bold bullet points, and step-by-step procedures."
     )
 
@@ -631,7 +673,7 @@ async def chat_handler(req: ChatRequest):
                                 return JSONResponse({
                                     "reply": parts[0].get("text", "").strip(),
                                     "backend_used": f"Google Gemini ({mod}) [Cloud Web]",
-                                    "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III", "Mark Novak Anvil 033"]
+                                    "sources": doc_sources
                                 })
                     else:
                         return JSONResponse({
@@ -664,7 +706,7 @@ async def chat_handler(req: ChatRequest):
                         return JSONResponse({
                             "reply": ans,
                             "backend_used": f"{label} ({mod}) [Cloud Web]",
-                            "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III"]
+                            "sources": doc_sources
                         })
                     else:
                         return JSONResponse({
@@ -697,7 +739,7 @@ async def chat_handler(req: ChatRequest):
                         return JSONResponse({
                             "reply": ans,
                             "backend_used": f"Ollama ({model_to_use}) [{host_tag}]",
-                            "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III", "Mark Novak Anvil 033"]
+                            "sources": doc_sources
                         })
         except Exception:
             pass
@@ -724,7 +766,7 @@ async def chat_handler(req: ChatRequest):
                     return JSONResponse({
                         "reply": ans,
                         "backend_used": f"LM Studio ({model_to_use}) [{host_tag}]",
-                        "sources": ["1917 Savage Arms Lewis Hand-Book", "1940 UK Armourers Handbook Part III"]
+                        "sources": doc_sources
                     })
         except Exception:
             pass
@@ -734,7 +776,7 @@ async def chat_handler(req: ChatRequest):
     return JSONResponse({
         "reply": fallback_reply,
         "backend_used": "Built-in Armorer Knowledge Engine (Offline)",
-        "sources": ["1917 Savage Arms Lewis Hand-Book", "1942 UK Stoppages Handbook", "Mark Novak Anvil 033"]
+        "sources": doc_sources
     })
 
 @app.get("/api/search")

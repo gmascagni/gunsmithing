@@ -79,6 +79,10 @@ python .\_tools\extract_pdf_schematics.py ".\Lewis_Automatic_Machine_Gun\manuals
 | Category | Firearm Model | Status | Downloaded Manuals | Extracted Schematics | Curated Videos | Workshop Guide |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Light Machine Guns** | **Lewis Automatic Machine Gun** (.303 & .30-06) | **Complete** | 8 Manuals (119 MB) | 59 Plates | 9 Videos | [View Dossier](file:///c:/Users/gmasc/Downloads/Gun%20Manuals/Lewis_Automatic_Machine_Gun/README.md) |
+| **Striker Handguns** | **Glock Safe-Action Pistols** (Gen 1–5) | **Complete** | 2 Manuals (38 MB) | 48 Plates | 8 Videos | [View Dossier](file:///c:/Users/gmasc/Downloads/Gun%20Manuals/Glock_Pistols/README.md) |
+| **Rifles / Pistols / Revolvers** | **Ruger Firearms** (10/22, Mark I–IV, GP100) | **Complete** | 3 Manuals (15 MB) | 36 Plates | 9 Videos | [View Dossier](file:///c:/Users/gmasc/Downloads/Gun%20Manuals/Ruger_Firearms/README.md) |
+| **Service Handguns** | **Beretta Pistols** (92FS, M9 Series) | **Complete** | 2 Manuals (12 MB) | 32 Plates | 8 Videos | [View Dossier](file:///c:/Users/gmasc/Downloads/Gun%20Manuals/Beretta_Pistols/README.md) |
+| **Bench Disciplines** | **General Gunsmithing & Workshop Standards** | **Complete** | 2 Manuals (42 MB) | 68 Plates | 8 Videos | [View Dossier](file:///c:/Users/gmasc/Downloads/Gun%20Manuals/General_Gunsmithing/README.md) |
 
 ---
 

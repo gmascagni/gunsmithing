@@ -12,6 +12,12 @@ A comprehensive technical repository and interactive AI-assisted workbench desig
 
 ## 🛠️ Key Features
 
+- **Multi-Platform Armorer Workbench:** Seamlessly switch between platforms via the header selector:
+  - **Lewis Automatic Machine Gun** (.303 & .30-06)
+  - **Glock Safe-Action Pistols** (Gen 1–5: G17, G19, G21, G22, G43, G48)
+  - **Ruger Firearms Collection** (10/22 Carbine, Mark I–IV Target Pistols, GP100 Revolvers)
+  - **Beretta Pistols** (92FS, M9, 96 Series)
+  - **General Gunsmithing & Workshop Disciplines** (Headspace, chamber casting, bluing, crowning, stock bedding, sear stoning)
 - **Live Multi-Mode Workshop Previewer:**
   - **Document Viewer:** In-browser PDF reader for authentic historical & factory armorer manuals.
   - **Schematic Inspector:** Interactive canvas with Pan & Zoom controls for high-resolution plate diagrams.

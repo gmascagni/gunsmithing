@@ -39,6 +39,7 @@ const stoppagesListView = document.getElementById("stoppagesListView");
 const globalSearchInput = document.getElementById("globalSearchInput");
 const searchResultsPopup = document.getElementById("searchResultsPopup");
 const tabFilterInput = document.getElementById("tabFilterInput");
+const firearmSelect = document.getElementById("firearmSelect");
 
 const chatHistory = document.getElementById("chatHistory");
 const chatForm = document.getElementById("chatForm");
@@ -86,6 +87,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Setup UI Events
 function setupEventListeners() {
+  // Firearm Platform Selector
+  if (firearmSelect) {
+    firearmSelect.addEventListener("change", async (e) => {
+      const selected = e.target.value;
+      if (selected && selected !== currentFirearm) {
+        currentFirearm = selected;
+        await loadFirearm(currentFirearm);
+        if (firearmData) {
+          addMessage(
+            "assistant",
+            `Switched active platform to **${escapeHtml(firearmData.name)}** (${escapeHtml(firearmData.subtitle)}).\n\nLoaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench video guides**. How can I assist you on the bench?`,
+            "Platform Switched"
+          );
+        }
+      }
+    });
+  }
+
   // Mode switcher tabs (top of center preview)
   document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.addEventListener("click", () => switchPreviewMode(btn.dataset.mode));
@@ -499,6 +518,8 @@ async function loadFirearm(firearmId) {
     const res = await fetch(`/api/firearms/${firearmId}`);
     if (!res.ok) throw new Error("Failed to load firearm data");
     firearmData = await res.json();
+    currentFirearm = firearmId;
+    if (firearmSelect) firearmSelect.value = firearmId;
 
     document.getElementById("manualsCount").textContent = firearmData.manuals.length;
     document.getElementById("schematicsCount").textContent = firearmData.schematics.length;
@@ -508,15 +529,87 @@ async function loadFirearm(firearmId) {
     renderSchematicsGrid(firearmData.schematics);
     renderVideosList(firearmData.videos);
     renderStoppagesList(firearmData.stoppages);
+    renderDossier(firearmData);
 
-    // Default: select the primary Savage manual
+    // Default: select the primary manual
     if (firearmData.manuals.length > 0) {
-      const primary = firearmData.manuals.find(m => m.filename.includes("Savage")) || firearmData.manuals[0];
+      const primary = firearmData.manuals.find(m => {
+        const fn = m.filename.toLowerCase();
+        return fn.includes("savage") || fn.includes("armorer") || fn.includes("92fs") || fn.includes("1022") || fn.includes("practical");
+      }) || firearmData.manuals[0];
       selectManual(primary.filename, primary.title, false);
+    }
+
+    if (firearmData.schematics.length > 0) {
+      schematicImg.src = firearmData.schematics[0].url;
+      btnExternalLink.href = firearmData.schematics[0].url;
     }
   } catch (err) {
     console.error("Error loading firearm:", err);
   }
+}
+
+// Render Dynamic Dossier Specifications
+function renderDossier(data) {
+  const container = document.querySelector("#dossierStage .dossier-inner");
+  if (!container) return;
+
+  let html = `
+    <div class="dossier-header-box" style="margin-bottom: 1.25rem;">
+      <h2 style="color: var(--accent); margin: 0 0 0.25rem 0; font-family: var(--font-mono); font-size: 1.3rem;">${escapeHtml(data.name)}</h2>
+      <div style="color: var(--text-muted); font-size: 0.9rem;">${escapeHtml(data.subtitle)}</div>
+    </div>
+  `;
+
+  // Specs grid
+  if (data.specs && Object.keys(data.specs).length > 0) {
+    html += `<div class="dossier-grid">`;
+    for (const [key, val] of Object.entries(data.specs)) {
+      const label = key.replace(/_/g, " ").toUpperCase();
+      html += `
+        <div class="dossier-card">
+          <h3>${escapeHtml(label)}</h3>
+          <div class="spec-highlight" style="font-size: 0.95rem; line-height: 1.4;">${escapeHtml(val)}</div>
+        </div>
+      `;
+    }
+    html += `</div>`;
+  }
+
+  // Stoppage / Diagnostic Matrix table
+  if (data.stoppages && data.stoppages.length > 0) {
+    html += `
+      <div class="dossier-card" style="margin-top: 1.25rem;">
+        <h3>Immediate Action &amp; Malfunction Diagnostic Matrix</h3>
+        <div class="table-responsive">
+          <table class="stoppage-table">
+            <thead>
+              <tr>
+                <th style="min-width: 140px;">Condition / Position</th>
+                <th>Probable Causes</th>
+                <th>Armorer &amp; Bench Remedy</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+    data.stoppages.forEach(s => {
+      html += `
+        <tr>
+          <td><strong>${escapeHtml(s.position)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(s.short_desc || "")}</small></td>
+          <td><ul style="margin: 0; padding-left: 1.2rem;">${(s.causes || []).map(c => `<li>${escapeHtml(c)}</li>`).join("")}</ul></td>
+          <td style="color: var(--accent); font-weight: 500;">${escapeHtml(s.action)}</td>
+        </tr>
+      `;
+    });
+    html += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
 }
 
 // Render Manuals
@@ -529,10 +622,13 @@ function renderManualsList(manuals) {
     card.dataset.search = (m.title + " " + m.filename).toLowerCase();
     
     let badgeText = "MANUAL";
-    if (m.filename.includes("Savage")) badgeText = "FACTORY";
-    else if (m.filename.includes("Armourer")) badgeText = "ARMORER";
-    else if (m.filename.includes("Machinist")) badgeText = "MACHINING";
-    else if (m.filename.includes("Stoppages")) badgeText = "DIAGNOSTICS";
+    const fn = m.filename.toLowerCase();
+    if (fn.includes("savage")) badgeText = "FACTORY";
+    else if (fn.includes("armorer") || fn.includes("armourer")) badgeText = "ARMORER";
+    else if (fn.includes("machinist")) badgeText = "MACHINING";
+    else if (fn.includes("stoppages")) badgeText = "DIAGNOSTICS";
+    else if (fn.includes("practical") || fn.includes("gunsmithing")) badgeText = "WORKSHOP";
+    else if (fn.includes("maintenance") || fn.includes("technical")) badgeText = "TECHNICAL";
 
     card.innerHTML = `
       <div class="doc-card-header">
