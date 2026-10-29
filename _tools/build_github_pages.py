@@ -1,0 +1,175 @@
+import os
+import json
+import shutil
+from pathlib import Path
+import sys
+
+sys.path.append(str(Path(__file__).resolve().parent.parent / "web_app"))
+from firearms_data import FIREARMS_METADATA
+
+root = Path(__file__).resolve().parent.parent
+docs_dir = root / "docs"
+docs_dir.mkdir(exist_ok=True)
+
+# 1. Create .nojekyll
+(docs_dir / ".nojekyll").write_text("", encoding="utf-8")
+
+# 2. Copy favicon assets and app.css
+static_dir = root / "web_app" / "static"
+for f in ["app.css", "favicon.svg", "favicon.ico", "favicon-32x32.png", "favicon-16x16.png", "apple-touch-icon.png"]:
+    src = static_dir / f
+    if src.exists():
+        shutil.copy2(src, docs_dir / f)
+
+# 3. Generate data.js containing all platforms, manuals, schematics, specs, and videos
+base_repo_raw = "https://raw.githubusercontent.com/gmascagni/gunsmithing/main"
+base_blob = "https://github.com/gmascagni/gunsmithing/raw/main"
+
+all_data = {}
+for fid, meta in FIREARMS_METADATA.items():
+    fdir = root / fid
+    manuals = []
+    schematics = []
+    if (fdir / "manuals").exists():
+        for mf in sorted((fdir / "manuals").glob("*.pdf")):
+            size_mb = round(mf.stat().st_size / (1024 * 1024), 2)
+            manuals.append({
+                "id": mf.name,
+                "title": mf.stem.replace("_", " "),
+                "filename": mf.name,
+                "size_mb": size_mb,
+                "url": f"{base_blob}/{fid}/manuals/{mf.name}",
+                "local_url": f"/api/manuals/{fid}/{mf.name}"
+            })
+    if (fdir / "schematics").exists():
+        for sf in sorted((fdir / "schematics").glob("*.png")) + sorted((fdir / "schematics").glob("*.jpg")) + sorted((fdir / "schematics").glob("*.jpeg")):
+            schematics.append({
+                "id": sf.name,
+                "title": sf.stem.replace("_", " "),
+                "filename": sf.name,
+                "url": f"{base_repo_raw}/{fid}/schematics/{sf.name}",
+                "local_url": f"/api/schematics/{fid}/{sf.name}"
+            })
+    all_data[fid] = {
+        "id": fid,
+        "name": meta["name"],
+        "subtitle": meta["subtitle"],
+        "specs": meta["specs"],
+        "stoppages": meta["stoppages"],
+        "videos": meta["videos"],
+        "manuals": manuals,
+        "schematics": schematics
+    }
+
+data_js_content = f"// Static firearms repository data for GitHub Pages deployment\nwindow.STATIC_FIREARMS_DATA = {json.dumps(all_data, indent=2)};\n"
+(docs_dir / "data.js").write_text(data_js_content, encoding="utf-8")
+
+# 4. Create docs/index.html with relative paths
+index_html = (static_dir / "index.html").read_text(encoding="utf-8")
+index_html = index_html.replace('href="/static/', 'href="./')
+index_html = index_html.replace('src="/static/', 'src="./')
+index_html = index_html.replace('<script src="./app.js"></script>', '<script src="./data.js"></script>\n  <script src="./app.js"></script>')
+(docs_dir / "index.html").write_text(index_html, encoding="utf-8")
+
+# 5. Create docs/app.js adapted for GitHub Pages static fallback
+app_js = (static_dir / "app.js").read_text(encoding="utf-8")
+
+# Enhance loadFirearm to check window.STATIC_FIREARMS_DATA
+target_load = 'async function loadFirearm(firearmId) {'
+replacement_load = '''async function loadFirearm(firearmId) {
+  try {
+    if (window.STATIC_FIREARMS_DATA && window.STATIC_FIREARMS_DATA[firearmId]) {
+      firearmData = window.STATIC_FIREARMS_DATA[firearmId];
+    } else {
+      const res = await fetch(`/api/firearms/${firearmId}`);
+      if (!res.ok) throw new Error("Failed to load firearm data");
+      firearmData = await res.json();
+    }'''
+
+app_js = app_js.replace(target_load, replacement_load, 1)
+
+# Enhance selectManual to support GitHub raw / Google docs viewer
+target_manual = '  const pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;'
+replacement_manual = '''  const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
+  let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
+  if (manualObj && manualObj.url && (window.location.hostname.includes("github.io") || window.location.protocol === "file:")) {
+    pdfUrl = manualObj.url;
+  }'''
+
+app_js = app_js.replace(target_manual, replacement_manual, 1)
+
+# Enhance pdfFrame.src assignment
+target_frame = '  pdfFrame.src = pdfUrl;'
+replacement_frame = '''  if (window.location.hostname.includes("github.io")) {
+    pdfFrame.src = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+  } else {
+    pdfFrame.src = pdfUrl;
+  }'''
+
+app_js = app_js.replace(target_frame, replacement_frame, 1)
+
+# Enhance chat handling for static GitHub Pages fallback
+target_chat = '    const res = await fetch("/api/chat", {'
+replacement_chat = '''    // If running statically on GitHub Pages without Python backend, run client-side expert engine
+    if (window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA) {
+      const reply = generateClientSideExpertReply(text, firearmData);
+      setTimeout(() => {
+        typingIndicator.remove();
+        addMessage("assistant", reply, "Built-in Armorer Engine (Client)");
+      }, 500);
+      return;
+    }
+    const res = await fetch("/api/chat", {'''
+
+app_js = app_js.replace(target_chat, replacement_chat, 1)
+
+# Add client-side expert reply function to end of app_js
+client_expert_fn = '''
+// Client-side rule-based knowledge engine for GitHub Pages
+function generateClientSideExpertReply(query, firearmData) {
+  const q = query.toLowerCase();
+  const fid = (firearmData && firearmData.id) ? firearmData.id.toLowerCase() : "";
+  const fname = firearmData ? firearmData.name : "Firearm";
+
+  if (fid.includes("glock")) {
+    if (q.includes("sear") || q.includes("cruciform") || q.includes("engagement") || q.includes("drop")) {
+      return "### Glock Cruciform Sear Engagement Specification\\n\\n* **Safety Requirement:** Minimum **66% (2/3)** surface overlap between striker lug and trigger bar cruciform sear plate.\\n* **Armorer Inspection:** Install orange Armorer Inspection Cover Plate (SP 02096). Verify engagement under 10x magnification.\\n* ⚠️ **Warning:** Less than 66% overlap introduces risk of accidental discharge or full-auto slip.";
+    } else if (q.includes("lube") || q.includes("oil") || q.includes("clean") || q.includes("drop")) {
+      return "### Glock Factory 5-Drop Lubrication Protocol\\n\\n1. **Drops 1 & 2:** Rear slide rail channels.\\n2. **Drops 3 & 4:** Front slide rail cuts.\\n3. **Drop 5:** Barrel hood and circumference.\\n4. **Half Drop:** Trigger bar cruciform wipe across connector ramp.\\n\\n⚠️ **MANDATORY WARNING:** NEVER lubricate the firing pin channel or safety plunger cavity. Keep 100% dry.";
+    } else if (q.includes("trigger") || q.includes("25") || q.includes("polish")) {
+      return "### Glock 25¢ Trigger Polish Job\\n\\n* Mirror polish with Flitz/Mothers on cruciform sear shelf, connector ramp, safety plunger dome, and trigger bar tab.\\n* Never alter factory 90° sear angles or remove metal.";
+    }
+  } else if (fid.includes("ruger")) {
+    if (q.includes("10/22") || q.includes("torque") || q.includes("v-block")) {
+      return "### Ruger 10/22 Factory Torque Specifications\\n\\n* **Takedown Action Screw:** **15 to 20 in-lbs** (wood/synthetic) / 25 in-lbs (pillar bedded).\\n* **Barrel V-Block Clamp Screws:** **25 to 30 in-lbs** in alternating 5 in-lb increments.\\n* **Rim Recess Headspace:** 0.0425\\\" to 0.0435\\\".";
+    } else if (q.includes("magazine") || q.includes("rotary")) {
+      return "### Ruger 10/22 Rotary Magazine Pre-Tensioning\\n\\n* Pre-load the rotor clock spring exactly **1-1/4 full turns (450°)** counter-clockwise before seating into feed lips.";
+    } else if (q.includes("mark") || q.includes("strut") || q.includes("reassembly")) {
+      return "### Ruger Mark Series Hammer Strut Alignment\\n\\n* Point muzzle 45° upward, pull trigger to drop hammer forward, point muzzle up so hammer strut dangles into mainspring housing cup before closing.";
+    }
+  } else if (fid.includes("beretta")) {
+    if (q.includes("dead trigger") || q.includes("spring") || q.includes("grip")) {
+      return "### Beretta 92FS / M9 Dead Trigger Remedy\\n\\n* **Root Cause:** Forward leg of trigger bar spring unseated from underside groove (common after removing right grip panel).\\n* **Remedy:** Reseat spring leg into slot and verify grip bushing does not pinch spring.";
+    } else if (q.includes("locking block") || q.includes("block")) {
+      return "### Beretta 92 Locking Block Tolerances\\n\\n* Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds with Gen 3 radiused kit. Replace recoil spring every 3,000–5,000 rounds.";
+    }
+  } else if (fid.includes("general") || fid.includes("smithing")) {
+    if (q.includes("headspace") || q.includes("gauge") || q.includes("go")) {
+      return "### Headspace Gauging Rules\\n\\n* **GO:** Minimum chamber; bolt MUST close.\\n* **NO-GO:** Max new chamber; bolt must NOT close with light finger pressure.\\n* **FIELD:** Absolute service limit. If bolt closes on FIELD, the firearm is **UNSAFE TO FIRE**.";
+    } else if (q.includes("cerrosafe") || q.includes("cast")) {
+      return "### Cerrosafe Chamber Casting Timing\\n\\n* Pour at 160°–190°F. Measure cast at **PRECISELY 1 HOUR after pouring** for 1:1 true chamber dimension.";
+    }
+  } else {
+    if (q.includes("tension") || q.includes("spring") || q.includes("clock")) {
+      return "### Lewis Gun Return Mainspring Calibration\\n\\n* Normal operating tension is **12 to 14 lbs pull** at cocking handle.\\n* Baseline from slack is **2 to 2½ full revolutions** of gear casing.";
+    }
+  }
+
+  // General summary
+  return `### Armorer Technical Summary: ${fname}\\n\\n* **Platform:** ${fname}\\n* **Manuals Available:** ${firearmData.manuals ? firearmData.manuals.length : 0}\\n* **Schematics Available:** ${firearmData.schematics ? firearmData.schematics.length : 0}\\n* **Curated Bench Videos:** ${firearmData.videos ? firearmData.videos.length : 0}\\n\\nSelect any document, schematic plate, or video from the left library panel to inspect directly on your bench.`;
+}
+'''
+app_js += client_expert_fn
+(docs_dir / "app.js").write_text(app_js, encoding="utf-8")
+
+print("GitHub Pages docs/ directory built successfully!")

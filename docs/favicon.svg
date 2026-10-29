@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18202c"/>
+      <stop offset="100%" stop-color="#0a0d12"/>
+    </linearGradient>
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffd166"/>
+      <stop offset="40%" stop-color="#ffaa00"/>
+      <stop offset="100%" stop-color="#c98200"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0e6ed"/>
+      <stop offset="50%" stop-color="#9aa5b5"/>
+      <stop offset="100%" stop-color="#606c7d"/>
+    </linearGradient>
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b07246"/>
+      <stop offset="100%" stop-color="#73411e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Shield / Coin -->
+  <rect x="4" y="4" width="120" height="120" rx="26" fill="url(#bgGrad)" stroke="#ffaa00" stroke-width="3"/>
+  <circle cx="64" cy="64" r="54" fill="none" stroke="#2a3649" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- Lewis Gun Silhouette & Mechanical Features -->
+  <g id="lewis-gun">
+    <!-- Muzzle Blast Venturi Cowl (Forward Blast Cone) -->
+    <path d="M 12 60 L 19 56 L 21 57 L 21 69 L 19 70 L 12 66 Z" fill="url(#metalGrad)" stroke="#131821" stroke-width="0.75"/>
+    <path d="M 10 61.5 L 12 60 L 12 66 L 10 64.5 Z" fill="#ffd166"/>
+
+    <!-- Tubular Aluminum Cooling Radiator & Steel Casing -->
+    <rect x="21" y="57" width="46" height="12" rx="1.5" fill="url(#metalGrad)" stroke="#131821" stroke-width="0.75"/>
+    <!-- Radiator Flutes / Cooling Fins -->
+    <line x1="26" y1="58" x2="26" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="31" y1="58" x2="31" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="36" y1="58" x2="36" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="41" y1="58" x2="41" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="46" y1="58" x2="46" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="51" y1="58" x2="51" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="56" y1="58" x2="56" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+    <line x1="61" y1="58" x2="61" y2="68" stroke="#131821" stroke-width="1" opacity="0.6"/>
+
+    <!-- Front Sight Post -->
+    <path d="M 23 57 L 24 53 L 26 53 L 27 57 Z" fill="url(#metalGrad)"/>
+
+    <!-- Bipod Joint & Folded Legs (Angled back beneath casing) -->
+    <circle cx="28" cy="70" r="2.5" fill="#ffd166" stroke="#131821" stroke-width="0.5"/>
+    <path d="M 28 71 L 52 82 L 50 83 L 27 72 Z" fill="#c98200" stroke="#131821" stroke-width="0.5"/>
+
+    <!-- Gas Cylinder Tube Under Barrel -->
+    <rect x="34" y="69" width="33" height="4" rx="1" fill="#c98200" stroke="#131821" stroke-width="0.5"/>
+
+    <!-- Main Receiver Body -->
+    <path d="M 67 55 L 89 55 L 89 71 L 67 71 Z" fill="url(#metalGrad)" stroke="#131821" stroke-width="0.75"/>
+    <rect x="71" y="61" width="12" height="3" rx="0.5" fill="#131821"/> <!-- Cocking Slot -->
+
+    <!-- Iconic Circular Pinion / Clock Spring Casing Beneath Receiver -->
+    <circle cx="74" cy="74" r="7.5" fill="url(#metalGrad)" stroke="#131821" stroke-width="0.8"/>
+    <circle cx="74" cy="74" r="4.5" fill="#18202c" stroke="#ffaa00" stroke-width="0.8"/>
+    <circle cx="74" cy="74" r="1.5" fill="#ffd166"/>
+
+    <!-- Iconic Top Pan Drum Magazine ("Pie Pan") -->
+    <!-- Lower Pan Lip -->
+    <ellipse cx="78" cy="49" rx="17" ry="5.5" fill="#b37400" stroke="#131821" stroke-width="0.75"/>
+    <!-- Pan Body Shell -->
+    <path d="M 61 49 C 61 44, 95 44, 95 49 L 95 46 C 95 41, 61 41, 61 46 Z" fill="url(#metalGrad)" stroke="#131821" stroke-width="0.75"/>
+    <!-- Top Pan Rim & Rotor Boss -->
+    <ellipse cx="78" cy="45" rx="17" ry="5" fill="#ffd166" stroke="#131821" stroke-width="0.75"/>
+    <ellipse cx="78" cy="45" rx="11" ry="3.2" fill="#c98200"/>
+    <circle cx="78" cy="45" r="2.5" fill="#131821"/>
+    <!-- Radial Bullet Flutes / Indentations on Pan -->
+    <line x1="68" y1="46.5" x2="74" y2="45.5" stroke="#131821" stroke-width="0.8"/>
+    <line x1="82" y1="45.5" x2="88" y2="46.5" stroke="#131821" stroke-width="0.8"/>
+    <line x1="78" y1="47.5" x2="78" y2="49.5" stroke="#131821" stroke-width="0.8"/>
+
+    <!-- Rear Sight Leaf & Post -->
+    <path d="M 85 55 L 87 50 L 89 50 L 89 55 Z" fill="#ffd166" stroke="#131821" stroke-width="0.5"/>
+
+    <!-- Trigger Guard & Trigger -->
+    <path d="M 80 71 Q 80 80, 86 80 L 88 72" fill="none" stroke="#131821" stroke-width="1.8"/>
+    <path d="M 83 73 Q 84 76, 82 77" fill="none" stroke="#ffaa00" stroke-width="1.2"/>
+
+    <!-- Pistol Grip Handle -->
+    <path d="M 87 72 L 94 92 C 94 93, 89 95, 87 94 L 81 76 Z" fill="url(#woodGrad)" stroke="#131821" stroke-width="0.75"/>
+
+    <!-- Wooden Buttstock (Steep downward armorer profile) -->
+    <path d="M 89 57 
+             L 115 64 
+             C 117 65, 118 68, 117 73 
+             L 115 82 
+             C 113 84, 110 83, 108 81 
+             L 89 69 Z" 
+          fill="url(#woodGrad)" stroke="#131821" stroke-width="0.8"/>
+    <!-- Steel Buttplate -->
+    <path d="M 115 64 C 117 65, 118 68, 117 73 L 115 82" fill="none" stroke="url(#metalGrad)" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Technical Caliber Crosshairs Watermark Accent -->
+  <path d="M 64 8 L 64 16 M 64 112 L 64 120 M 8 64 L 16 64 M 112 64 L 120 64" stroke="#ffaa00" stroke-width="1.5" opacity="0.7"/>
+</svg>

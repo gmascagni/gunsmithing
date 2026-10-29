@@ -134,6 +134,13 @@ async def serve_index():
         raise HTTPException(status_code=404, detail="index.html not found")
     return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    fav = STATIC_DIR / "favicon.ico"
+    if fav.exists():
+        return FileResponse(str(fav), media_type="image/x-icon")
+    raise HTTPException(status_code=404)
+
 @app.get("/api/firearms")
 async def list_firearms():
     # Discover available firearms in directory
