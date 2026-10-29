@@ -547,6 +547,52 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
 
     return {"results": results}
 
+@app.get("/api/network-info")
+async def get_network_info():
+    import socket
+    hostname = socket.gethostname()
+    try:
+        ips = socket.gethostbyname_ex(hostname)[2]
+        lan_ips = [ip for ip in ips if not ip.startswith("127.") and not ip.startswith("169.")]
+    except Exception:
+        lan_ips = []
+    
+    primary_ip = lan_ips[0] if lan_ips else "127.0.0.1"
+    port = 8055
+    return {
+        "hostname": hostname,
+        "local_url": f"http://127.0.0.1:{port}",
+        "network_url": f"http://{primary_ip}:{port}",
+        "lan_ips": lan_ips,
+        "port": port
+    }
+
+@app.get("/api/network-qr")
+async def get_network_qr():
+    import socket
+    import io
+    import qrcode
+    from fastapi.responses import Response
+
+    hostname = socket.gethostname()
+    try:
+        ips = socket.gethostbyname_ex(hostname)[2]
+        lan_ips = [ip for ip in ips if not ip.startswith("127.") and not ip.startswith("169.")]
+    except Exception:
+        lan_ips = []
+    
+    primary_ip = lan_ips[0] if lan_ips else "127.0.0.1"
+    target_url = f"http://{primary_ip}:8055"
+
+    qr = qrcode.QRCode(box_size=6, border=2)
+    qr.add_data(target_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return Response(content=buf.getvalue(), media_type="image/png")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8055, reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=8055, reload=True)

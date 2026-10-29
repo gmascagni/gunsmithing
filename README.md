@@ -2,6 +2,7 @@
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Local LLM](https://img.shields.io/badge/Local%20LLM-Ollama%20%7C%20LM%20Studio-blue.svg?style=flat)](https://ollama.com/)
+[![Mobile Responsive](https://img.shields.io/badge/Mobile-iPhone%20%26%20Android%20Ready-brightgreen.svg?style=flat)]()
 [![Firearms Data](https://img.shields.io/badge/Firearms%20Data-Lewis%20LMG%20Complete-gold.svg?style=flat)]()
 [![License](https://img.shields.io/badge/License-Public%20Domain%20%2F%20Open-green.svg?style=flat)]()
 
@@ -20,6 +21,11 @@ A comprehensive technical repository and interactive AI-assisted workbench desig
   - Direct bridge to local LLMs via **Ollama** (`http://127.0.0.1:11434`) or **LM Studio** (`http://127.0.0.1:1234/v1`).
   - Context-injected technical data (spring tensions, striker protrusions, headspace, gas porting).
   - Built-in fallback expert knowledge engine when offline.
+- **Mobile & Tablet Optimized:**
+  - Responsive layout for smartphones (iPhone/Android) and tablets (iPad).
+  - Bottom navigation bar: View Switcher between Library, Workbench Viewer, and AI Assistant.
+  - Multi-touch pinch-to-zoom and drag on exploded schematics.
+  - **Instant QR Code & Wi-Fi Linking:** Access directly from your workbench phone without cables.
 - **Real-Time Global Search:** Instant cross-category search across manuals, video timestamps, specs, and stoppage symptoms.
 - **Extensible Architecture:** Standardized folder structure designed to scale to hundreds of firearms.
 
@@ -29,21 +35,21 @@ A comprehensive technical repository and interactive AI-assisted workbench desig
 
 ### 1. Requirements
 - Python 3.10+
-- `fastapi`, `uvicorn`, `httpx`, `pymupdf` (PyMuPDF)
+- `fastapi`, `uvicorn`, `httpx`, `pymupdf`, `qrcode`, `requests`
 
 ```bash
-pip install fastapi uvicorn httpx pymupdf requests
+pip install fastapi uvicorn httpx pymupdf qrcode requests
 ```
 
 ### 2. Launch the Workbench
 Double-click `run_workbench.bat` or run from terminal:
 
 ```bash
-python -m uvicorn web_app.server:app --host 127.0.0.1 --port 8055
+python -m uvicorn web_app.server:app --host 0.0.0.0 --port 8055
 ```
 
-Open your browser and navigate to:  
-👉 **`http://127.0.0.1:8055`**
+- **Desktop Browser:** 👉 `http://127.0.0.1:8055`
+- **Mobile / Tablet (Same Wi-Fi):** Open `http://<your-lan-ip>:8055` (or click **Mobile Link** in the top header and scan the QR code with your phone camera!).
 
 ---
 

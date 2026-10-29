@@ -1,4 +1,4 @@
-// Armorer's Workbench — Frontend Logic
+// Armorer's Workbench — Frontend Logic & Mobile Controller
 
 let currentFirearm = "Lewis_Automatic_Machine_Gun";
 let firearmData = null;
@@ -6,6 +6,7 @@ let currentSchematicZoom = 1.0;
 let activeLLMBackend = "auto";
 let activeLLMModel = "auto";
 let availableBackends = [];
+let currentMobileView = "library"; // "library", "preview", "assistant"
 
 // DOM Elements
 const pdfFrame = document.getElementById("pdfFrame");
@@ -23,6 +24,10 @@ const pdfStage = document.getElementById("pdfStage");
 const schematicStage = document.getElementById("schematicStage");
 const videoStage = document.getElementById("videoStage");
 const dossierStage = document.getElementById("dossierStage");
+
+const panelLibrary = document.getElementById("panelLibrary");
+const panelPreview = document.getElementById("panelPreview");
+const panelAssistant = document.getElementById("panelAssistant");
 
 const manualsListView = document.getElementById("manualsListView");
 const schematicsGridView = document.getElementById("schematicsGridView");
@@ -48,10 +53,23 @@ const llmModelSelect = document.getElementById("llmModelSelect");
 const testConnBtn = document.getElementById("testConnBtn");
 const connTestResult = document.getElementById("connTestResult");
 
+// Mobile Elements
+const mobileConnectBtn = document.getElementById("mobileConnectBtn");
+const mobileDialog = document.getElementById("mobileDialog");
+const closeMobileDialogBtn = document.getElementById("closeMobileDialogBtn");
+const closeMobileDialogBtn2 = document.getElementById("closeMobileDialogBtn2");
+const networkUrlInput = document.getElementById("networkUrlInput");
+const copyUrlBtn = document.getElementById("copyUrlBtn");
+const qrCanvas = document.getElementById("qrCanvas");
+const btnPdfFullscreen = document.getElementById("btnPdfFullscreen");
+const pdfMobileDocName = document.getElementById("pdfMobileDocName");
+
 // Initialize Application
 document.addEventListener("DOMContentLoaded", async () => {
   setupEventListeners();
+  initMobileView();
   await checkLLMBackends();
+  await loadNetworkInfo();
   await loadFirearm(currentFirearm);
 });
 
@@ -65,6 +83,11 @@ function setupEventListeners() {
   // Library Navigation Tabs (left panel)
   document.querySelectorAll(".lib-tab").forEach(tab => {
     tab.addEventListener("click", () => switchLibraryTab(tab.dataset.tab));
+  });
+
+  // Mobile Bottom Navigation Bar View Switcher
+  document.querySelectorAll(".mobile-nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => setMobileView(btn.dataset.view));
   });
 
   // Filter inside active tab
@@ -102,6 +125,9 @@ function setupEventListeners() {
     }
   }, { passive: false });
 
+  // Touch Support for Schematic Canvas (Pinch-to-zoom & single-finger pan)
+  setupTouchSchematic();
+
   // Chat Form Submit
   chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -135,7 +161,7 @@ function setupEventListeners() {
     });
   });
 
-  // Settings Dialog (Native Popover/Dialog)
+  // Settings Dialog (Native Accessible <dialog>)
   llmStatusPill.addEventListener("click", () => {
     settingsDialog.showModal();
   });
@@ -166,6 +192,111 @@ function setupEventListeners() {
   });
 
   testConnBtn.addEventListener("click", testLLMConnection);
+
+  // Mobile Connect Modal
+  mobileConnectBtn.addEventListener("click", () => {
+    mobileDialog.showModal();
+    renderQRCode();
+  });
+
+  closeMobileDialogBtn.addEventListener("click", () => mobileDialog.close());
+  closeMobileDialogBtn2.addEventListener("click", () => mobileDialog.close());
+
+  copyUrlBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(networkUrlInput.value);
+    const origText = copyUrlBtn.textContent;
+    copyUrlBtn.textContent = "Copied!";
+    setTimeout(() => { copyUrlBtn.textContent = origText; }, 2000);
+  });
+}
+
+// Mobile View Controller
+function initMobileView() {
+  if (window.innerWidth <= 900) {
+    setMobileView("library");
+  } else {
+    panelLibrary.classList.remove("mobile-active");
+    panelPreview.classList.remove("mobile-active");
+    panelAssistant.classList.remove("mobile-active");
+  }
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth <= 900) {
+      setMobileView(currentMobileView);
+    } else {
+      panelLibrary.classList.remove("mobile-active");
+      panelPreview.classList.remove("mobile-active");
+      panelAssistant.classList.remove("mobile-active");
+    }
+  });
+}
+
+function setMobileView(viewName) {
+  currentMobileView = viewName;
+  document.querySelectorAll(".mobile-nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === viewName);
+  });
+
+  panelLibrary.classList.toggle("mobile-active", viewName === "library");
+  panelPreview.classList.toggle("mobile-active", viewName === "preview");
+  panelAssistant.classList.toggle("mobile-active", viewName === "assistant");
+}
+
+// Touch Gestures for Schematics
+function setupTouchSchematic() {
+  let touchStartDist = 0;
+  let initialZoom = 1.0;
+
+  schematicCanvas.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      touchStartDist = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      initialZoom = currentSchematicZoom;
+    }
+  }, { passive: true });
+
+  schematicCanvas.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && touchStartDist > 0) {
+      const currentDist = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      const factor = currentDist / touchStartDist;
+      currentSchematicZoom = Math.max(0.4, Math.min(4.0, initialZoom * factor));
+      schematicImg.style.transform = `scale(${currentSchematicZoom})`;
+      zoomLevelText.textContent = `${Math.round(currentSchematicZoom * 100)}%`;
+    }
+  }, { passive: true });
+
+  schematicCanvas.addEventListener("touchend", () => {
+    touchStartDist = 0;
+  });
+}
+
+// Network Info & QR Code
+async function loadNetworkInfo() {
+  try {
+    const res = await fetch("/api/network-info");
+    if (!res.ok) return;
+    const info = await res.json();
+    if (info.network_url) {
+      networkUrlInput.value = info.network_url;
+    }
+  } catch (err) {
+    console.error("Network info error:", err);
+  }
+}
+
+function renderQRCode() {
+  const qrImg = new Image();
+  qrImg.src = "/api/network-qr?t=" + Date.now();
+  qrImg.onload = () => {
+    const ctx = qrCanvas.getContext("2d");
+    ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+    ctx.drawImage(qrImg, 0, 0, qrCanvas.width, qrCanvas.height);
+  };
 }
 
 // Load Firearm Data
@@ -187,7 +318,7 @@ async function loadFirearm(firearmId) {
     // Default: select the primary Savage manual
     if (firearmData.manuals.length > 0) {
       const primary = firearmData.manuals.find(m => m.filename.includes("Savage")) || firearmData.manuals[0];
-      selectManual(primary.filename, primary.title);
+      selectManual(primary.filename, primary.title, false);
     }
   } catch (err) {
     console.error("Error loading firearm:", err);
@@ -221,12 +352,12 @@ function renderManualsList(manuals) {
       </div>
     `;
 
-    card.addEventListener("click", () => selectManual(m.filename, m.title));
+    card.addEventListener("click", () => selectManual(m.filename, m.title, true));
     manualsListView.appendChild(card);
   });
 }
 
-function selectManual(filename, title) {
+function selectManual(filename, title, switchToPreview = true) {
   document.querySelectorAll("#manualsListView .doc-card").forEach(c => {
     c.classList.toggle("active", c.dataset.id === filename);
   });
@@ -235,7 +366,13 @@ function selectManual(filename, title) {
   pdfFrame.src = pdfUrl;
   previewTitle.textContent = title;
   btnExternalLink.href = pdfUrl;
+  btnPdfFullscreen.href = pdfUrl;
+  pdfMobileDocName.textContent = title;
   switchPreviewMode("pdf");
+
+  if (switchToPreview && window.innerWidth <= 900) {
+    setMobileView("preview");
+  }
 }
 
 // Render Schematics
@@ -252,17 +389,21 @@ function renderSchematicsGrid(schematics) {
       <div class="schematic-card-title">${escapeHtml(s.title)}</div>
     `;
 
-    card.addEventListener("click", () => selectSchematic(s.url, s.title));
+    card.addEventListener("click", () => selectSchematic(s.url, s.title, true));
     schematicsGridView.appendChild(card);
   });
 }
 
-function selectSchematic(url, title) {
+function selectSchematic(url, title, switchToPreview = true) {
   schematicImg.src = url;
   previewTitle.textContent = "Schematic: " + title;
   btnExternalLink.href = url;
   resetZoom();
   switchPreviewMode("schematic");
+
+  if (switchToPreview && window.innerWidth <= 900) {
+    setMobileView("preview");
+  }
 }
 
 // Render Videos
@@ -285,12 +426,12 @@ function renderVideosList(videos) {
       </div>
     `;
 
-    card.addEventListener("click", () => selectVideo(v));
+    card.addEventListener("click", () => selectVideo(v, true));
     videosListView.appendChild(card);
   });
 }
 
-function selectVideo(video) {
+function selectVideo(video, switchToPreview = true) {
   document.querySelectorAll("#videosListView .doc-card").forEach(c => {
     c.classList.toggle("active", c.dataset.id === video.id);
   });
@@ -302,6 +443,10 @@ function selectVideo(video) {
   previewTitle.textContent = "Video: " + video.title;
   btnExternalLink.href = video.url;
   switchPreviewMode("video");
+
+  if (switchToPreview && window.innerWidth <= 900) {
+    setMobileView("preview");
+  }
 }
 
 // Render Stoppages
@@ -323,6 +468,7 @@ function renderStoppagesList(stoppages) {
       card.classList.add("active");
       previewTitle.textContent = s.position;
       switchPreviewMode("dossier");
+      if (window.innerWidth <= 900) setMobileView("preview");
     });
 
     stoppagesListView.appendChild(card);
@@ -428,13 +574,14 @@ async function executeGlobalSearch(q) {
         
         if (r.action === "open_manual") {
           switchLibraryTab("manuals");
-          selectManual(r.target, r.title);
+          selectManual(r.target, r.title, true);
         } else if (r.action === "open_video") {
           switchLibraryTab("videos");
           const v = firearmData.videos.find(item => item.id === r.target);
-          if (v) selectVideo(v);
+          if (v) selectVideo(v, true);
         } else if (r.action === "open_stoppage" || r.action === "open_spec") {
           switchPreviewMode("dossier");
+          if (window.innerWidth <= 900) setMobileView("preview");
         }
       });
 

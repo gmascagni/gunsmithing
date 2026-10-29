@@ -1196,3 +1196,351 @@ body {
 .hidden {
   display: none !important;
 }
+
+/* Mobile Connect Button & Modals */
+.mobile-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--brass-accent);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-connect-btn:hover {
+  border-color: var(--brass-accent);
+  background-color: var(--bg-card);
+}
+
+.mobile-connect-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.url-copy-box {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.url-copy-box input {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--brass-accent);
+  outline: none;
+}
+
+.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.qr-container canvas {
+  background-color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 8px;
+}
+
+/* PDF Mobile Banner */
+.pdf-mobile-banner {
+  display: none;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px 14px;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pdf-open-btn {
+  background-color: var(--brass-accent);
+  color: #000;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.touch-hint {
+  font-size: 10px;
+  color: var(--text-dim);
+  display: none;
+}
+
+/* Mobile Bottom Navigation Bar (Hidden on desktop) */
+.mobile-nav-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  z-index: 999;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mobile-nav-btn {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color 0.15s ease;
+}
+
+.mobile-nav-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+.mobile-nav-btn.active {
+  color: var(--brass-accent);
+}
+
+.mobile-nav-btn.active svg {
+  stroke: var(--brass-accent);
+  filter: drop-shadow(0 0 6px var(--brass-glow));
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN: TABLETS & MOBILE (<= 900px)
+   ========================================================= */
+@media (max-width: 900px) {
+  body {
+    overflow: hidden;
+  }
+
+  /* Header adjustments */
+  .app-header {
+    height: 54px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .brand-text h1 {
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .brand-sub {
+    display: none;
+  }
+
+  .brand-badge {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .header-search {
+    max-width: 220px;
+  }
+
+  .header-search input {
+    height: 34px;
+    font-size: 16px; /* Prevents iOS auto-zoom */
+    padding: 0 10px 0 32px;
+  }
+
+  .search-icon {
+    left: 10px;
+    width: 14px;
+    height: 14px;
+  }
+
+  .firearm-picker label {
+    display: none;
+  }
+
+  .firearm-picker {
+    padding: 2px 6px;
+  }
+
+  .firearm-picker select {
+    font-size: 11px;
+    max-width: 110px;
+  }
+
+  .mobile-connect-btn .btn-text {
+    display: none;
+  }
+
+  .mobile-connect-btn {
+    padding: 0 8px;
+  }
+
+  .llm-pill {
+    padding: 0 8px;
+  }
+
+  #llmStatusText {
+    display: none;
+  }
+
+  /* Workbench Mobile View Switcher */
+  .workbench-layout {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 54px - 56px);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Mobile panel views: Only active view is displayed */
+  .panel-library,
+  .panel-preview,
+  .panel-assistant {
+    display: none;
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1;
+    overflow-y: auto;
+    border-right: none;
+    border-left: none;
+  }
+
+  .panel-library.mobile-active,
+  .panel-preview.mobile-active,
+  .panel-assistant.mobile-active {
+    display: flex !important;
+  }
+
+  /* Show mobile bottom nav bar */
+  .mobile-nav-bar {
+    display: flex;
+  }
+
+  /* Show mobile PDF banner with full-bleed open button */
+  .pdf-mobile-banner {
+    display: flex;
+  }
+
+  .touch-hint {
+    display: inline;
+  }
+
+  /* Touch-friendly inputs */
+  .tab-filter-box input,
+  .chat-input-area textarea {
+    font-size: 16px !important; /* Prevents auto zoom */
+  }
+
+  .preview-toolbar {
+    height: auto;
+    min-height: 44px;
+    padding: 6px 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .preview-status {
+    order: 3;
+    width: 100%;
+    font-size: 11.5px;
+  }
+
+  .preview-mode-buttons {
+    flex: 1;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .mode-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .dossier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Chat Panel on Mobile */
+  .chat-input-area {
+    padding: 8px 10px;
+  }
+
+  .chat-history {
+    padding: 10px;
+  }
+
+  .quick-prompts {
+    padding: 6px 10px;
+  }
+
+  .prompt-chip {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-brand {
+    gap: 8px;
+  }
+
+  .header-search {
+    flex: 1;
+    max-width: none;
+  }
+
+  .header-controls {
+    gap: 6px;
+  }
+
+  .firearm-picker {
+    display: none;
+  }
+
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
