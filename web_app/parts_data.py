@@ -673,8 +673,21 @@ def resolve_anatomical_firearm_part(firearm_id: str, norm_x: float, norm_y: floa
                 "maintenance": "Flush bore and gas port with boiling soapy water if shooting corrosive surplus; scrape carbon off gas piston cup with brass scrapers (never steel wire wheel); inspect throat with leade gauge.",
                 "norm_x": norm_x, "norm_y": norm_y
             }
-        # Lower Middle: Trigger & Fire Control Group / Pistol Grip
-        elif 0.28 < norm_x <= 0.58 and norm_y >= 0.48:
+        # Top-Mounted Magazine / Pan Drum (Lewis, Bren, Madsen, DP-27)
+        elif norm_y <= 0.40 and 0.35 <= norm_x <= 0.65:
+            return {
+                "id": f"{firearm_id}_top_magazine_drum",
+                "name": "Pan Drum Magazine & Top Feed Mechanism",
+                "callout_num": "Magazine / Feed Assembly",
+                "oem_number": "Feedway Group",
+                "assembly": "Magazine & Feed Mechanism",
+                "tolerances": "Feed pawl clearance: 0.012\" to 0.018\"; drum latch engagement: 0.025\" full bite. Center boss clearance: 0.005\" to 0.008\".",
+                "malfunctions": "Position 1 Stoppage (pan drum fails to rotate or feed cartridge); feed pawl binding or chipped pawl spring.",
+                "maintenance": "Clean internal feed tracks completely dry; lubricate feed pawl pivots with light synthetic oil; never force drum rotation counter-clockwise.",
+                "norm_x": norm_x, "norm_y": norm_y
+            }
+        # Lower Middle Rear: Trigger Mechanism, Sear & Pistol Grip
+        elif 0.28 < norm_x <= 0.44 and norm_y >= 0.48:
             return {
                 "id": f"{firearm_id}_trigger_sear_group",
                 "name": "Trigger, Sear, Disconnector & Pistol Grip / Guard Group",
@@ -686,16 +699,16 @@ def resolve_anatomical_firearm_part(firearm_id: str, norm_x: float, norm_y: floa
                 "maintenance": "Remove buttstock/trigger housing; ultrasonic clean fire control components; stone sear engagement facet strictly square with hard Arkansas oilstone—NEVER round off sear edge; apply 1 drop synthetic oil to pivot pins.",
                 "norm_x": norm_x, "norm_y": norm_y
             }
-        # Top or Bottom Magazine & Feedway
-        elif (norm_y <= 0.35 and 0.35 <= norm_x <= 0.60) or (norm_y >= 0.55 and 0.38 <= norm_x <= 0.58):
+        # Lower Middle Forward: Bottom Box Magazine / Tubular Feed Device
+        elif 0.44 < norm_x <= 0.58 and norm_y >= 0.50:
             return {
                 "id": f"{firearm_id}_magazine_feed_system",
-                "name": "Magazine & Cartridge Feed Mechanism (Pan / Drum / Box / Tube)",
+                "name": "Magazine & Cartridge Feed Mechanism (Box / Tube / Well)",
                 "callout_num": "Magazine Assembly",
                 "oem_number": "Feedway Group",
                 "assembly": "Magazine & Feed Mechanism",
                 "tolerances": "Feed lip width: parallel within ±0.003\". Magazine catch lockup depth: 0.020\" to 0.035\" full engagement. Follower travels freely from top to bottom with zero binding.",
-                "malfunctions": "Position 1 & 2 Stoppages (failure to feed or stovepipe); double-feeding from spread feed lips; failure of bolt to lock back on empty; rotor drag on pan/drum magazines.",
+                "malfunctions": "Position 1 & 2 Stoppages (failure to feed or stovepipe); double-feeding from spread feed lips; failure of bolt to lock back on empty.",
                 "maintenance": "Disassemble and clean magazine body interior completely DRY with solvent and dry patch. NEVER oil internal magazine tracks or follower (wet oil attracts powder residue and seizes follower); check feed lips with Go/No-Go lip gauge.",
                 "norm_x": norm_x, "norm_y": norm_y
             }
@@ -730,13 +743,14 @@ def find_part_by_coordinates(firearm_id: str, norm_x: float, norm_y: float, norm
         for p in parts_list:
             px = p.get("norm_x", 0.5)
             py = p.get("norm_y", 0.5)
+            allowed_r = p.get("norm_r", 0.10)
             dist = ((norm_x - px) ** 2 + (norm_y - py) ** 2) ** 0.5
-            if dist < min_dist:
+            if dist <= allowed_r and dist < min_dist:
                 min_dist = dist
                 best_match = p
 
-        # If the nearest specific part is close to the circled reticle (within tight proximity)
-        if best_match and min_dist <= 0.12:
+        # If a registered part was directly targeted within its component boundary
+        if best_match:
             return {
                 "primary": best_match,
                 "distance": round(min_dist, 4),

@@ -119,6 +119,37 @@ const btnPdfFullscreen = document.getElementById("btnPdfFullscreen");
 const btnPdfDownload = document.getElementById("btnPdfDownload");
 const pdfMobileDocName = document.getElementById("pdfMobileDocName");
 
+// Mozilla PDF.js Canvas Viewer DOM Elements
+const pdfPageNum = document.getElementById("pdfPageNum");
+const pdfTotalPages = document.getElementById("pdfTotalPages");
+const pdfPrevPageBtn = document.getElementById("pdfPrevPageBtn");
+const pdfNextPageBtn = document.getElementById("pdfNextPageBtn");
+const pdfZoomOutBtn = document.getElementById("pdfZoomOutBtn");
+const pdfZoomInBtn = document.getElementById("pdfZoomInBtn");
+const pdfZoomLevel = document.getElementById("pdfZoomLevel");
+const pdfFitWidthBtn = document.getElementById("pdfFitWidthBtn");
+const pdfToggleViewerBtn = document.getElementById("pdfToggleViewerBtn");
+const pdfLoadingSpinner = document.getElementById("pdfLoadingSpinner");
+const pdfLoadingText = document.getElementById("pdfLoadingText");
+const pdfCanvasContainer = document.getElementById("pdfCanvasContainer");
+const pdfViewerCanvas = document.getElementById("pdfViewerCanvas");
+
+// PDF Engine State
+let currentPdfDoc = null;
+let currentPdfPage = 1;
+let currentPdfScale = 1.25;
+let isPdfRendering = false;
+let pendingPdfPage = null;
+let activePdfRenderTask = null;
+let currentPdfUrl = null;
+let pdfViewerMode = "canvas"; // "canvas" or "native"
+
+// Video Stage Fallback Elements
+const videoPlaceholderBanner = document.getElementById("videoPlaceholderBanner");
+const videoBannerTitle = document.getElementById("videoBannerTitle");
+const videoBannerDesc = document.getElementById("videoBannerDesc");
+const btnBannerWatch = document.getElementById("btnBannerWatch");
+
 const chatHistory = document.getElementById("chatHistory");
 const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
@@ -153,6 +184,8 @@ const qrCanvas = document.getElementById("qrCanvas");
 
 // Initialize Application
 document.addEventListener("DOMContentLoaded", async () => {
+  initPdfJs();
+  setupPdfControls();
   setupEventListeners();
   initMobileView();
   loadSavedSettings();
@@ -1298,7 +1331,281 @@ function renderManualsList(manuals) {
   });
 }
 
-function selectManual(filename, title, switchToPreview = true) {
+// ==========================================================================
+// MOZILLA PDF.JS CANVAS VIEWER & DOCUMENT CONTROLLER
+// ==========================================================================
+
+function initPdfJs() {
+  if (window.pdfjsLib) {
+    const isStatic = window.location.hostname.includes("github.io");
+    if (window.location.protocol === "file:") {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+    } else if (isStatic) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdf.worker.min.js";
+    } else {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = "/static/vendor/pdf.worker.min.js";
+    }
+  }
+}
+
+async function loadPdfDocument(url, targetPage = 1) {
+  currentPdfUrl = url;
+  const pageToLoad = Math.max(1, parseInt(targetPage) || 1);
+
+  if (pdfViewerMode === "native") {
+    switchToNativeViewer(url, pageToLoad);
+    return;
+  }
+
+  if (!window.pdfjsLib) {
+    console.warn("PDF.js library not detected; falling back to native iframe viewer.");
+    switchToNativeViewer(url, pageToLoad);
+    return;
+  }
+
+  if (pdfLoadingSpinner) {
+    pdfLoadingSpinner.classList.remove("hidden");
+    if (pdfLoadingText) pdfLoadingText.textContent = "Loading technical manual...";
+  }
+
+  if (activePdfRenderTask) {
+    try { activePdfRenderTask.cancel(); } catch (e) {}
+    activePdfRenderTask = null;
+  }
+
+  let safeUrl = url;
+  if (safeUrl.includes("github.com/") && safeUrl.includes("/raw/")) {
+    safeUrl = safeUrl.replace("github.com/", "raw.githubusercontent.com/").replace("/raw/", "/");
+  }
+
+  try {
+    const loadingTask = window.pdfjsLib.getDocument({
+      url: safeUrl,
+      cMapUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/",
+      cMapPacked: true,
+      standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
+    });
+
+    const pdfDoc = await loadingTask.promise;
+    currentPdfDoc = pdfDoc;
+    currentPdfPage = Math.min(pageToLoad, pdfDoc.numPages);
+
+    if (pdfTotalPages) pdfTotalPages.textContent = pdfDoc.numPages;
+    if (pdfPageNum) {
+      pdfPageNum.max = pdfDoc.numPages;
+      pdfPageNum.value = currentPdfPage;
+    }
+
+    if (pdfCanvasContainer) pdfCanvasContainer.classList.remove("hidden");
+    if (pdfFrame) pdfFrame.classList.add("hidden");
+
+    await renderPdfPage(currentPdfPage);
+  } catch (err) {
+    console.warn("PDF.js direct rendering failed (CORS or format); falling back to native iframe viewer:", err);
+    switchToNativeViewer(url, pageToLoad);
+  } finally {
+    if (pdfLoadingSpinner) pdfLoadingSpinner.classList.add("hidden");
+  }
+}
+
+async function renderPdfPage(num) {
+  if (!currentPdfDoc || !pdfViewerCanvas) return;
+  if (isPdfRendering) {
+    pendingPdfPage = num;
+    return;
+  }
+
+  isPdfRendering = true;
+  if (pdfLoadingSpinner) {
+    pdfLoadingSpinner.classList.remove("hidden");
+    if (pdfLoadingText) pdfLoadingText.textContent = `Rendering page ${num} of ${currentPdfDoc.numPages}...`;
+  }
+
+  try {
+    const page = await currentPdfDoc.getPage(num);
+    const ctx = pdfViewerCanvas.getContext("2d");
+
+    const dpr = window.devicePixelRatio || 1;
+    const viewport = page.getViewport({ scale: currentPdfScale });
+
+    pdfViewerCanvas.width = Math.floor(viewport.width * dpr);
+    pdfViewerCanvas.height = Math.floor(viewport.height * dpr);
+    pdfViewerCanvas.style.width = Math.floor(viewport.width) + "px";
+    pdfViewerCanvas.style.height = Math.floor(viewport.height) + "px";
+
+    const transform = dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null;
+
+    const renderContext = {
+      canvasContext: ctx,
+      transform: transform,
+      viewport: viewport
+    };
+
+    if (activePdfRenderTask) {
+      try { activePdfRenderTask.cancel(); } catch (e) {}
+    }
+
+    activePdfRenderTask = page.render(renderContext);
+    await activePdfRenderTask.promise;
+    activePdfRenderTask = null;
+
+    currentPdfPage = num;
+    if (pdfPageNum) pdfPageNum.value = num;
+    if (pdfZoomLevel) pdfZoomLevel.textContent = `${Math.round(currentPdfScale * 100)}%`;
+  } catch (err) {
+    if (err && err.name !== "RenderingCancelledException") {
+      console.error("PDF page render error:", err);
+    }
+  } finally {
+    isPdfRendering = false;
+    if (pdfLoadingSpinner) pdfLoadingSpinner.classList.add("hidden");
+    if (pendingPdfPage !== null) {
+      const next = pendingPdfPage;
+      pendingPdfPage = null;
+      renderPdfPage(next);
+    }
+  }
+}
+
+function queueRenderPdfPage(num) {
+  if (!currentPdfDoc) return;
+  const target = Math.max(1, Math.min(num, currentPdfDoc.numPages));
+  if (isPdfRendering) {
+    pendingPdfPage = target;
+  } else {
+    renderPdfPage(target);
+  }
+}
+
+function switchToNativeViewer(url, targetPage = 1) {
+  pdfViewerMode = "native";
+  if (pdfCanvasContainer) pdfCanvasContainer.classList.add("hidden");
+  if (pdfFrame) {
+    pdfFrame.classList.remove("hidden");
+    const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+    if (isStatic) {
+      pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    } else {
+      pdfFrame.src = `${url}#page=${targetPage}`;
+    }
+  }
+  if (pdfToggleViewerBtn) {
+    pdfToggleViewerBtn.textContent = "🎨 Canvas";
+    pdfToggleViewerBtn.title = "Switch to High-Resolution Canvas Viewer";
+  }
+}
+
+function switchToCanvasViewer() {
+  pdfViewerMode = "canvas";
+  if (pdfFrame) pdfFrame.classList.add("hidden");
+  if (pdfCanvasContainer) pdfCanvasContainer.classList.remove("hidden");
+  if (pdfToggleViewerBtn) {
+    pdfToggleViewerBtn.textContent = "👁️ Native";
+    pdfToggleViewerBtn.title = "Switch to Native Browser / Iframe PDF Viewer";
+  }
+  if (currentPdfUrl) {
+    loadPdfDocument(currentPdfUrl, currentPdfPage || 1);
+  }
+}
+
+function fitPdfToWidth() {
+  if (!currentPdfDoc || !pdfCanvasContainer) return;
+  const containerWidth = pdfCanvasContainer.clientWidth - 40;
+  if (containerWidth <= 120) return;
+  currentPdfDoc.getPage(currentPdfPage).then(page => {
+    const defaultViewport = page.getViewport({ scale: 1.0 });
+    currentPdfScale = Math.max(0.5, Math.min(3.0, containerWidth / defaultViewport.width));
+    renderPdfPage(currentPdfPage);
+  });
+}
+
+function setupPdfControls() {
+  if (pdfPrevPageBtn) {
+    pdfPrevPageBtn.addEventListener("click", () => {
+      if (currentPdfDoc && currentPdfPage > 1) {
+        queueRenderPdfPage(currentPdfPage - 1);
+      }
+    });
+  }
+
+  if (pdfNextPageBtn) {
+    pdfNextPageBtn.addEventListener("click", () => {
+      if (currentPdfDoc && currentPdfPage < currentPdfDoc.numPages) {
+        queueRenderPdfPage(currentPdfPage + 1);
+      }
+    });
+  }
+
+  if (pdfPageNum) {
+    pdfPageNum.addEventListener("change", (e) => {
+      const n = parseInt(e.target.value);
+      if (currentPdfDoc && n >= 1 && n <= currentPdfDoc.numPages) {
+        queueRenderPdfPage(n);
+      } else if (currentPdfDoc) {
+        e.target.value = currentPdfPage;
+      }
+    });
+  }
+
+  if (pdfZoomInBtn) {
+    pdfZoomInBtn.addEventListener("click", () => {
+      currentPdfScale = Math.min(3.0, Math.round((currentPdfScale + 0.25) * 100) / 100);
+      renderPdfPage(currentPdfPage);
+    });
+  }
+
+  if (pdfZoomOutBtn) {
+    pdfZoomOutBtn.addEventListener("click", () => {
+      currentPdfScale = Math.max(0.5, Math.round((currentPdfScale - 0.25) * 100) / 100);
+      renderPdfPage(currentPdfPage);
+    });
+  }
+
+  if (pdfFitWidthBtn) {
+    pdfFitWidthBtn.addEventListener("click", () => {
+      fitPdfToWidth();
+    });
+  }
+
+  if (pdfToggleViewerBtn) {
+    pdfToggleViewerBtn.addEventListener("click", () => {
+      if (pdfViewerMode === "canvas") {
+        switchToNativeViewer(currentPdfUrl, currentPdfPage);
+      } else {
+        switchToCanvasViewer();
+      }
+    });
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (!pdfStage || pdfStage.classList.contains("hidden")) return;
+    if (["input", "textarea", "select"].includes(document.activeElement?.tagName?.toLowerCase())) return;
+
+    if (e.key === "ArrowLeft" || e.key === "PageUp") {
+      if (currentPdfDoc && currentPdfPage > 1) {
+        e.preventDefault();
+        queueRenderPdfPage(currentPdfPage - 1);
+      }
+    } else if (e.key === "ArrowRight" || e.key === "PageDown") {
+      if (currentPdfDoc && currentPdfPage < currentPdfDoc.numPages) {
+        e.preventDefault();
+        queueRenderPdfPage(currentPdfPage + 1);
+      }
+    } else if (e.key === "+" || e.key === "=") {
+      if (e.ctrlKey || e.metaKey) return;
+      e.preventDefault();
+      currentPdfScale = Math.min(3.0, Math.round((currentPdfScale + 0.25) * 100) / 100);
+      renderPdfPage(currentPdfPage);
+    } else if (e.key === "-") {
+      if (e.ctrlKey || e.metaKey) return;
+      e.preventDefault();
+      currentPdfScale = Math.max(0.5, Math.round((currentPdfScale - 0.25) * 100) / 100);
+      renderPdfPage(currentPdfPage);
+    }
+  });
+}
+
+function selectManual(filename, title, switchToPreview = true, page = 1) {
   document.querySelectorAll("#manualsListView .doc-card").forEach(c => {
     c.classList.toggle("active", c.dataset.id === filename);
   });
@@ -1310,23 +1617,16 @@ function selectManual(filename, title, switchToPreview = true) {
     pdfUrl = manualObj.url;
   }
 
-  if (isStatic && manualObj) {
-    // On GitHub Pages: use Google Docs viewer or direct link
-    pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(manualObj.url)}&embedded=true`;
-    if (btnPdfFullscreen) btnPdfFullscreen.href = manualObj.github_url || manualObj.url;
-    if (btnExternalLink) btnExternalLink.href = manualObj.github_url || manualObj.url;
-    if (btnPdfDownload) btnPdfDownload.href = manualObj.raw_url || manualObj.url;
-  } else {
-    pdfFrame.src = pdfUrl;
-    if (btnPdfFullscreen) btnPdfFullscreen.href = pdfUrl;
-    if (btnExternalLink) btnExternalLink.href = pdfUrl;
-    if (btnPdfDownload) btnPdfDownload.href = pdfUrl;
-  }
+  if (btnPdfFullscreen) btnPdfFullscreen.href = (isStatic && manualObj) ? (manualObj.github_url || manualObj.url) : pdfUrl;
+  if (btnExternalLink) btnExternalLink.href = (isStatic && manualObj) ? (manualObj.github_url || manualObj.url) : pdfUrl;
+  if (btnPdfDownload) btnPdfDownload.href = (isStatic && manualObj) ? (manualObj.raw_url || manualObj.url) : pdfUrl;
 
   previewTitle.textContent = title;
   if (pdfDocName) pdfDocName.textContent = title;
   if (pdfMobileDocName) pdfMobileDocName.textContent = title;
   switchPreviewMode("pdf");
+
+  loadPdfDocument(pdfUrl, page);
 
   if (switchToPreview && window.innerWidth <= 900) {
     setMobileView("preview");
@@ -1401,20 +1701,8 @@ function selectVideo(video, switchToPreview = true) {
   });
 
   const gunName = firearmData ? firearmData.name : currentFirearm.replace(/_/g, " ");
-  const isPlaceholder = video.id && (video.id.includes("x9") || video.id.includes("x2w") || video.id.length > 20);
-
-  // If valid real video, load embed; if placeholder, fallback gracefully
-  if (video.embed_url && !isPlaceholder) {
-    videoFrame.src = video.embed_url;
-  } else {
-    // If placeholder, provide a clean search embed or direct link
-    videoFrame.src = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(gunName + " " + video.title)}`;
-  }
-
-  videoMetaTitle.textContent = video.title;
-  videoMetaCreator.textContent = `${video.creator} • ${video.category}`;
-  videoMetaSummary.textContent = video.summary;
-  previewTitle.textContent = "Video: " + video.title;
+  const isPlaceholder = !video.id || video.id.includes("x9") || video.id.includes("x2w") || video.id.length > 20 || video.id.includes("search");
+  const hasValidEmbed = Boolean(video.embed_url && !video.embed_url.includes("search") && !isPlaceholder);
 
   const directUrl = (!isPlaceholder && video.url) 
     ? video.url 
@@ -1422,10 +1710,38 @@ function selectVideo(video, switchToPreview = true) {
 
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " gunsmithing teardown repair")}`;
 
+  if (hasValidEmbed) {
+    videoFrame.src = video.embed_url;
+    videoFrame.classList.remove("hidden");
+    if (videoPlaceholderBanner) videoPlaceholderBanner.classList.add("hidden");
+  } else if (video.id && video.id.length === 11 && !video.id.includes(" ")) {
+    videoFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}`;
+    videoFrame.classList.remove("hidden");
+    if (videoPlaceholderBanner) videoPlaceholderBanner.classList.add("hidden");
+  } else {
+    // Avoid loading deprecated listType=search which causes YouTube playback errors
+    videoFrame.src = "about:blank";
+    videoFrame.classList.add("hidden");
+    if (videoPlaceholderBanner) {
+      videoPlaceholderBanner.classList.remove("hidden");
+      if (videoBannerTitle) videoBannerTitle.textContent = video.title;
+      if (videoBannerDesc) videoBannerDesc.textContent = `${video.summary} (Curated by ${video.creator || "Armorer Hub"})`;
+      if (btnBannerWatch) btnBannerWatch.href = directUrl;
+    }
+  }
+
+  videoMetaTitle.textContent = video.title;
+  videoMetaCreator.textContent = `${video.creator} • ${video.category}`;
+  videoMetaSummary.textContent = video.summary;
+  previewTitle.textContent = "Video: " + video.title;
+
   btnExternalLink.href = directUrl;
 
   const btnWatch = document.getElementById("btnWatchOnYouTube");
-  if (btnWatch) btnWatch.href = directUrl;
+  if (btnWatch) {
+    btnWatch.href = directUrl;
+    btnWatch.textContent = hasValidEmbed ? "Watch Directly on YouTube ↗" : `Watch "${video.title}" on YouTube ↗`;
+  }
 
   const btnSearchAlt = document.getElementById("btnSearchYouTubeAlternative");
   if (btnSearchAlt) btnSearchAlt.href = searchUrl;
@@ -1535,6 +1851,9 @@ function filterCurrentTab() {
 
 // Switch Center Preview Mode
 function switchPreviewMode(mode) {
+  if (mode === "manual") mode = "pdf";
+  if (mode === "specs" || mode === "stoppages" || mode === "stoppage") mode = "dossier";
+
   document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
@@ -1813,7 +2132,18 @@ function resolveClientFirearmAnatomy(cat, normX, normY) {
         malfunctions: "Short recoil, stovepipes, or failure to extract from carbon-fouled gas port or piston cup; throat erosion causing velocity drop and erratic groupings; damaged muzzle crown destroying accuracy.",
         maintenance: "Flush bore and gas port with boiling soapy water if shooting corrosive surplus; scrape carbon off gas piston cup with brass scrapers; inspect throat with leade gauge."
       };
-    } else if (0.28 < normX && normX <= 0.58 && normY >= 0.48) {
+    } else if (normY <= 0.40 && 0.35 <= normX && normX <= 0.65) {
+      return {
+        id: "longgun_top_drum_feed",
+        name: "Pan Drum Magazine & Top Feed Mechanism",
+        callout_num: "Magazine / Feed Assembly",
+        oem_number: "Feedway Group",
+        assembly: "Magazine & Feed Mechanism",
+        tolerances: "Feed pawl clearance: 0.012\" to 0.018\"; drum latch engagement: 0.025\" full bite. Center boss clearance: 0.005\" to 0.008\".",
+        malfunctions: "Position 1 Stoppage (pan drum fails to rotate or feed cartridge); feed pawl binding or chipped pawl spring.",
+        maintenance: "Clean internal feed tracks completely dry; lubricate feed pawl pivots with light synthetic oil; never force drum rotation counter-clockwise."
+      };
+    } else if (0.28 < normX && normX <= 0.44 && normY >= 0.48) {
       return {
         id: "longgun_trigger_sear_group",
         name: "Trigger, Sear, Disconnector & Pistol Grip / Guard Group",
@@ -1824,15 +2154,15 @@ function resolveClientFirearmAnatomy(cat, normX, normY) {
         malfunctions: "Runaway gun / uncontrolled burst fire if sear nose is rounded, chipped, or trigger guard loose; trigger fails to reset if disconnector spring weak or trigger housing packed with carbon fouling.",
         maintenance: "Remove buttstock/trigger housing; ultrasonic clean fire control components; stone sear engagement facet strictly square with hard Arkansas oilstone—NEVER round off sear edge; apply 1 drop synthetic oil to pivot pins."
       };
-    } else if ((normY <= 0.35 && 0.35 <= normX && normX <= 0.60) || (normY >= 0.55 && 0.38 <= normX && normX <= 0.58)) {
+    } else if (0.44 < normX && normX <= 0.58 && normY >= 0.50) {
       return {
         id: "longgun_magazine_feed_system",
-        name: "Magazine & Cartridge Feed Mechanism (Pan / Drum / Box / Tube)",
+        name: "Magazine & Cartridge Feed Mechanism (Box / Tube / Well)",
         callout_num: "Magazine Assembly",
         oem_number: "Feedway Group",
         assembly: "Magazine & Feed Mechanism",
         tolerances: "Feed lip width: parallel within ±0.003\". Magazine catch lockup depth: 0.020\" to 0.035\" full engagement. Follower travels freely from top to bottom with zero binding.",
-        malfunctions: "Position 1 & 2 Stoppages (failure to feed or stovepipe); double-feeding from spread feed lips; failure of bolt to lock back on empty; rotor drag on pan/drum magazines.",
+        malfunctions: "Position 1 & 2 Stoppages (failure to feed or stovepipe); double-feeding from spread feed lips; failure of bolt to lock back on empty.",
         maintenance: "Disassemble and clean magazine body interior completely DRY with solvent and dry patch. NEVER oil internal magazine tracks or follower; check feed lips with Go/No-Go lip gauge."
       };
     } else {
@@ -1862,16 +2192,17 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
     partsList.forEach(p => {
       const px = p.norm_x !== undefined ? p.norm_x : 0.5;
       const py = p.norm_y !== undefined ? p.norm_y : 0.5;
+      const allowedRadius = p.norm_r || 0.10;
       const dist = Math.hypot(normX - px, normY - py);
-      if (dist < minDistance) {
+      if (dist <= allowedRadius && dist < minDistance) {
         minDistance = dist;
         bestMatch = Object.assign({}, p);
       }
     });
   }
 
-  // If no registered part within 0.12 distance, use Universal Firearm Anatomy Engine
-  if (!bestMatch || minDistance > 0.12) {
+  // If no registered part within allowed radius, use Universal Firearm Anatomy Engine
+  if (!bestMatch) {
     const cat = (firearmData && firearmData.category) ? firearmData.category : "Rifles & Carbines";
     bestMatch = resolveClientFirearmAnatomy(cat, normX, normY);
     minDistance = 0.0;
@@ -2124,12 +2455,8 @@ async function executeIdentifyPart() {
       const jumpBtn = document.getElementById("btnJumpToManualPage");
       if (jumpBtn) {
         jumpBtn.addEventListener("click", () => {
-          selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true);
-          if (pdfFrame && part.manual_citation.page) {
-            const rawUrl = pdfFrame.src.split("#")[0];
-            pdfFrame.src = `${rawUrl}#page=${part.manual_citation.page}`;
-          }
-          switchPreviewMode("manual");
+          selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true, part.manual_citation.page);
+          switchPreviewMode("pdf");
         });
       }
     } else {
@@ -2481,12 +2808,8 @@ function setupSchematicInspector() {
       const part = currentIdentifiedPart;
 
       if (part.manual_citation && part.manual_citation.manual_filename) {
-        selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true);
-        if (pdfFrame && part.manual_citation.page) {
-          const rawUrl = pdfFrame.src.split("#")[0];
-          pdfFrame.src = `${rawUrl}#page=${part.manual_citation.page}`;
-        }
-        switchPreviewMode("manual");
+        selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true, part.manual_citation.page);
+        switchPreviewMode("pdf");
         return;
       }
 
@@ -2497,7 +2820,7 @@ function setupSchematicInspector() {
         tabFilterInput.value = part.name.split(" ")[0];
         filterActiveTabList(tabFilterInput.value);
       }
-      switchPreviewMode("manual");
+      switchPreviewMode("pdf");
     });
   }
 }
@@ -2882,6 +3205,14 @@ function generateClientSideExpertReply(query, firearmData) {
       return "### Beretta 92FS / M9 Dead Trigger Remedy\n\n* **Root Cause:** Forward leg of trigger bar spring unseated from underside groove (common after removing right grip panel).\n* **Remedy:** Reseat spring leg into slot and verify grip bushing does not pinch spring.";
     } else if (q.includes("locking block") || q.includes("block")) {
       return "### Beretta 92 Locking Block Tolerances\n\n* Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds with Gen 3 radiused kit. Replace recoil spring every 3,000–5,000 rounds.";
+    }
+  } else if (fid.includes("sears") || fid.includes("roebuck") || q.includes("sears") || q.includes("1922") || q.includes("side by side")) {
+    if (q.includes("chamber") || q.includes("length") || q.includes("2-3/4") || q.includes("safety")) {
+      return "### ⚠️ 1922 Sears 12G Double Chamber Safety Warning\n\n* **Pre-1927 Short Chamber Warning:** Many early doubles used **2-5/8\" or 2-1/2\" chambers** for roll-crimp paper shells. Firing modern star-crimped 2-3/4\" shells opens petals into the forcing cone, causing catastrophic pressure spikes (15,000+ psi).\n* **Action Required:** Measure with a 12G chamber gauge or Cerrosafe cast before firing modern ammunition.";
+    } else if (q.includes("maker") || q.includes("manufacturer") || q.includes("code") || q.includes("who made")) {
+      return "### Sears Shotgun Manufacturer Cross-Reference\n\nSears never manufactured firearms; they used 3-digit store codes:\n* **101.xxxx:** J. Stevens Arms Co. (Stevens 311 / 5100 / Springfield 5100)\n* **105.xxxx:** Crescent Fire Arms Co. (Empire Ejector / Triumph)\n* **103.xxxx:** Marlin Firearms Co.\n* **Meriden Fire Arms:** Owned directly by Sears (1905–1918; A.J. Aubrey doubles).";
+    } else if (q.includes("headspace") || q.includes("loose") || q.includes("off-face") || q.includes("play")) {
+      return "### 1922 Sears 12G Lockup & Headspace Tolerances\n\n* **12G Rim Headspace:** 0.054\" GO / 0.064\" NO-GO; maximum FIELD limit is 0.070\".\n* **Hinge Pin:** 0.375\" nominal hardened pin. If barrels rattle (off-face), fit oversize +0.005\" pin and stone hook bearing to 80%+ contact.\n* **Top Lever:** Must rest at 4:30 to 5:00 o'clock when shut. If at 6:00 o'clock center, underbolt is worn.";
     }
   } else if (fid.includes("general") || fid.includes("smithing")) {
     if (q.includes("headspace") || q.includes("gauge") || q.includes("go")) {

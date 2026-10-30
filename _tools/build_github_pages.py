@@ -15,12 +15,16 @@ docs_dir.mkdir(exist_ok=True)
 # 1. Create .nojekyll
 (docs_dir / ".nojekyll").write_text("", encoding="utf-8")
 
-# 2. Copy favicon assets and app.css
+# 2. Copy favicon assets, app.css, and vendor
 static_dir = root / "web_app" / "static"
 for f in ["app.css", "favicon.svg", "favicon.ico", "favicon-32x32.png", "favicon-16x16.png", "apple-touch-icon.png"]:
     src = static_dir / f
     if src.exists():
         shutil.copy2(src, docs_dir / f)
+
+vendor_dir = static_dir / "vendor"
+if vendor_dir.exists():
+    shutil.copytree(vendor_dir, docs_dir / "vendor", dirs_exist_ok=True)
 
 # 3. Generate data.js containing all platforms, manuals, schematics, specs, and videos
 base_repo_raw = "https://raw.githubusercontent.com/gmascagni/gunsmithing/main"
@@ -40,9 +44,9 @@ for fid, meta in FIREARMS_METADATA.items():
                 "title": mf.stem.replace("_", " "),
                 "filename": mf.name,
                 "size_mb": size_mb,
-                "raw_url": f"{base_blob}/{fid}/manuals/{mf.name}",
+                "raw_url": f"{base_repo_raw}/{fid}/manuals/{mf.name}",
                 "github_url": f"{base_blob_view}/{fid}/manuals/{mf.name}",
-                "url": f"{base_blob}/{fid}/manuals/{mf.name}",
+                "url": f"{base_repo_raw}/{fid}/manuals/{mf.name}",
                 "local_url": f"/api/manuals/{fid}/{mf.name}"
             })
     if (fdir / "schematics").exists():
@@ -138,6 +142,14 @@ function generateClientSideExpertReply(query, firearmData) {
       return "### Beretta 92FS / M9 Dead Trigger Remedy\\n\\n* **Root Cause:** Forward leg of trigger bar spring unseated from underside groove (common after removing right grip panel).\\n* **Remedy:** Reseat spring leg into slot and verify grip bushing does not pinch spring.";
     } else if (q.includes("locking block") || q.includes("block")) {
       return "### Beretta 92 Locking Block Tolerances\\n\\n* Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds with Gen 3 radiused kit. Replace recoil spring every 3,000–5,000 rounds.";
+    }
+  } else if (fid.includes("sears") || fid.includes("roebuck") || q.includes("sears") || q.includes("1922") || q.includes("side by side")) {
+    if (q.includes("chamber") || q.includes("length") || q.includes("2-3/4") || q.includes("safety")) {
+      return "### ⚠️ 1922 Sears 12G Double Chamber Safety Warning\\n\\n* **Pre-1927 Short Chamber Warning:** Many early doubles used **2-5/8\\\" or 2-1/2\\\" chambers** for roll-crimp paper shells. Firing modern star-crimped 2-3/4\\\" shells opens petals into the forcing cone, causing catastrophic pressure spikes (15,000+ psi).\\n* **Action Required:** Measure with a 12G chamber gauge or Cerrosafe cast before firing modern ammunition.";
+    } else if (q.includes("maker") || q.includes("manufacturer") || q.includes("code") || q.includes("who made")) {
+      return "### Sears Shotgun Manufacturer Cross-Reference\\n\\nSears never manufactured firearms; they used 3-digit store codes:\\n* **101.xxxx:** J. Stevens Arms Co. (Stevens 311 / 5100 / Springfield 5100)\\n* **105.xxxx:** Crescent Fire Arms Co. (Empire Ejector / Triumph)\\n* **103.xxxx:** Marlin Firearms Co.\\n* **Meriden Fire Arms:** Owned directly by Sears (1905–1918; A.J. Aubrey doubles).";
+    } else if (q.includes("headspace") || q.includes("loose") || q.includes("off-face") || q.includes("play")) {
+      return "### 1922 Sears 12G Lockup & Headspace Tolerances\\n\\n* **12G Rim Headspace:** 0.054\\\" GO / 0.064\\\" NO-GO; maximum FIELD limit is 0.070\\\".\\n* **Hinge Pin:** 0.375\\\" nominal hardened pin. If barrels rattle (off-face), fit oversize +0.005\\\" pin and stone hook bearing to 80%+ contact.\\n* **Top Lever:** Must rest at 4:30 to 5:00 o'clock when shut. If at 6:00 o'clock center, underbolt is worn.";
     }
   } else if (fid.includes("general") || fid.includes("smithing")) {
     if (q.includes("headspace") || q.includes("gauge") || q.includes("go")) {

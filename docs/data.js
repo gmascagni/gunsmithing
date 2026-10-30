@@ -130,9 +130,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Glock Pistols",
         "filename": "Armorer_Technical_Manual_Glock_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Armorer_Technical_Manual_Glock_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Armorer_Technical_Manual_Glock_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Armorer_Technical_Manual_Glock_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Armorer_Technical_Manual_Glock_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Armorer_Technical_Manual_Glock_Pistols.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Armorer_Technical_Manual_Glock_Pistols.pdf"
       },
       {
@@ -140,9 +140,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Glock Armorers Manual Gen 1 to 5",
         "filename": "Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "size_mb": 22.48,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Armorers_Manual_Gen_1_to_5.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Glock_Armorers_Manual_Gen_1_to_5.pdf"
       },
       {
@@ -150,9 +150,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Glock Factory Armorers Manual",
         "filename": "Glock_Factory_Armorers_Manual.pdf",
         "size_mb": 6.35,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Glock_Factory_Armorers_Manual.pdf"
       }
     ],
@@ -1647,9 +1647,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Sig P365 Pistols",
         "filename": "Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
         "local_url": "/api/manuals/Sig_P365_Pistols/Armorer_Technical_Manual_Sig_P365_Pistols.pdf"
       }
     ],
@@ -1746,9 +1746,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Sig P320 M17 Pistols",
         "filename": "Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
         "local_url": "/api/manuals/Sig_P320_M17_Pistols/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf"
       }
     ],
@@ -1844,9 +1844,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Smith Wesson MP Shield",
         "filename": "Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Smith_Wesson_MP_Shield/manuals/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Smith_Wesson_MP_Shield/manuals/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Smith_Wesson_MP_Shield/manuals/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Smith_Wesson_MP_Shield/manuals/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Smith_Wesson_MP_Shield/manuals/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf",
         "local_url": "/api/manuals/Smith_Wesson_MP_Shield/Armorer_Technical_Manual_Smith_Wesson_MP_Shield.pdf"
       }
     ],
@@ -1930,9 +1930,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Springfield Hellcat XD",
         "filename": "Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_Hellcat_XD/manuals/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_Hellcat_XD/manuals/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Springfield_Hellcat_XD/manuals/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_Hellcat_XD/manuals/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_Hellcat_XD/manuals/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf",
         "local_url": "/api/manuals/Springfield_Hellcat_XD/Armorer_Technical_Manual_Springfield_Hellcat_XD.pdf"
       }
     ],
@@ -2010,9 +2010,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Walther PDP PPQ",
         "filename": "Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Walther_PDP_PPQ/manuals/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Walther_PDP_PPQ/manuals/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Walther_PDP_PPQ/manuals/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Walther_PDP_PPQ/manuals/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Walther_PDP_PPQ/manuals/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf",
         "local_url": "/api/manuals/Walther_PDP_PPQ/Armorer_Technical_Manual_Walther_PDP_PPQ.pdf"
       }
     ],
@@ -2090,9 +2090,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual CZ P10 Series",
         "filename": "Armorer_Technical_Manual_CZ_P10_Series.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/CZ_P10_Series/manuals/Armorer_Technical_Manual_CZ_P10_Series.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/CZ_P10_Series/manuals/Armorer_Technical_Manual_CZ_P10_Series.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/CZ_P10_Series/manuals/Armorer_Technical_Manual_CZ_P10_Series.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/CZ_P10_Series/manuals/Armorer_Technical_Manual_CZ_P10_Series.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/CZ_P10_Series/manuals/Armorer_Technical_Manual_CZ_P10_Series.pdf",
         "local_url": "/api/manuals/CZ_P10_Series/Armorer_Technical_Manual_CZ_P10_Series.pdf"
       }
     ],
@@ -2173,9 +2173,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual HK VP9 Pistols",
         "filename": "Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/HK_VP9_Pistols/manuals/Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/HK_VP9_Pistols/manuals/Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/HK_VP9_Pistols/manuals/Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/HK_VP9_Pistols/manuals/Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/HK_VP9_Pistols/manuals/Armorer_Technical_Manual_HK_VP9_Pistols.pdf",
         "local_url": "/api/manuals/HK_VP9_Pistols/Armorer_Technical_Manual_HK_VP9_Pistols.pdf"
       }
     ],
@@ -2256,9 +2256,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Taurus TX22 GSeries",
         "filename": "Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Taurus_TX22_GSeries/manuals/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Taurus_TX22_GSeries/manuals/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Taurus_TX22_GSeries/manuals/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Taurus_TX22_GSeries/manuals/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Taurus_TX22_GSeries/manuals/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf",
         "local_url": "/api/manuals/Taurus_TX22_GSeries/Armorer_Technical_Manual_Taurus_TX22_GSeries.pdf"
       }
     ],
@@ -2378,9 +2378,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Colt 1911 Pistols",
         "filename": "Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_1911_Pistols/manuals/Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_1911_Pistols/manuals/Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Colt_1911_Pistols/manuals/Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_1911_Pistols/manuals/Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_1911_Pistols/manuals/Armorer_Technical_Manual_Colt_1911_Pistols.pdf",
         "local_url": "/api/manuals/Colt_1911_Pistols/Armorer_Technical_Manual_Colt_1911_Pistols.pdf"
       }
     ],
@@ -2477,9 +2477,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Beretta Pistols",
         "filename": "Armorer_Technical_Manual_Beretta_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Armorer_Technical_Manual_Beretta_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/Armorer_Technical_Manual_Beretta_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_Pistols/manuals/Armorer_Technical_Manual_Beretta_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Armorer_Technical_Manual_Beretta_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/Armorer_Technical_Manual_Beretta_Pistols.pdf",
         "local_url": "/api/manuals/Beretta_Pistols/Armorer_Technical_Manual_Beretta_Pistols.pdf"
       },
       {
@@ -2487,9 +2487,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Beretta 92F 92FS 9mm Manual",
         "filename": "Beretta_92F_92FS_9mm_Manual.pdf",
         "size_mb": 3.34,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/Beretta_92F_92FS_9mm_Manual.pdf",
         "local_url": "/api/manuals/Beretta_Pistols/Beretta_92F_92FS_9mm_Manual.pdf"
       },
       {
@@ -2497,9 +2497,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "US Army TM 9 1005 317 10 M9 Pistol",
         "filename": "US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "size_mb": 0.6,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_Pistols/manuals/US_Army_TM_9_1005_317_10_M9_Pistol.pdf",
         "local_url": "/api/manuals/Beretta_Pistols/US_Army_TM_9_1005_317_10_M9_Pistol.pdf"
       }
     ],
@@ -3111,9 +3111,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Sig P226 P229 Pistols",
         "filename": "Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P226_P229_Pistols/manuals/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P226_P229_Pistols/manuals/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P226_P229_Pistols/manuals/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Sig_P226_P229_Pistols/manuals/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P226_P229_Pistols/manuals/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf",
         "local_url": "/api/manuals/Sig_P226_P229_Pistols/Armorer_Technical_Manual_Sig_P226_P229_Pistols.pdf"
       }
     ],
@@ -3202,9 +3202,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual CZ 75 Pistols",
         "filename": "Armorer_Technical_Manual_CZ_75_Pistols.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/CZ_75_Pistols/manuals/Armorer_Technical_Manual_CZ_75_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/CZ_75_Pistols/manuals/Armorer_Technical_Manual_CZ_75_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/CZ_75_Pistols/manuals/Armorer_Technical_Manual_CZ_75_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/CZ_75_Pistols/manuals/Armorer_Technical_Manual_CZ_75_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/CZ_75_Pistols/manuals/Armorer_Technical_Manual_CZ_75_Pistols.pdf",
         "local_url": "/api/manuals/CZ_75_Pistols/Armorer_Technical_Manual_CZ_75_Pistols.pdf"
       }
     ],
@@ -3283,9 +3283,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Browning Hi Power",
         "filename": "Armorer_Technical_Manual_Browning_Hi_Power.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Browning_Hi_Power/manuals/Armorer_Technical_Manual_Browning_Hi_Power.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Browning_Hi_Power/manuals/Armorer_Technical_Manual_Browning_Hi_Power.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Browning_Hi_Power/manuals/Armorer_Technical_Manual_Browning_Hi_Power.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Browning_Hi_Power/manuals/Armorer_Technical_Manual_Browning_Hi_Power.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Browning_Hi_Power/manuals/Armorer_Technical_Manual_Browning_Hi_Power.pdf",
         "local_url": "/api/manuals/Browning_Hi_Power/Armorer_Technical_Manual_Browning_Hi_Power.pdf"
       }
     ],
@@ -3367,9 +3367,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual HK USP Pistols",
         "filename": "Armorer_Technical_Manual_HK_USP_Pistols.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/HK_USP_Pistols/manuals/Armorer_Technical_Manual_HK_USP_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/HK_USP_Pistols/manuals/Armorer_Technical_Manual_HK_USP_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/HK_USP_Pistols/manuals/Armorer_Technical_Manual_HK_USP_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/HK_USP_Pistols/manuals/Armorer_Technical_Manual_HK_USP_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/HK_USP_Pistols/manuals/Armorer_Technical_Manual_HK_USP_Pistols.pdf",
         "local_url": "/api/manuals/HK_USP_Pistols/Armorer_Technical_Manual_HK_USP_Pistols.pdf"
       }
     ],
@@ -3449,9 +3449,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger Mark Series",
         "filename": "Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Mark_Series/manuals/Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/manuals/Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Mark_Series/manuals/Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Mark_Series/manuals/Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/manuals/Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
         "local_url": "/api/manuals/Ruger_Mark_Series/Armorer_Technical_Manual_Ruger_Mark_Series.pdf"
       }
     ],
@@ -3531,9 +3531,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Desert Eagle Pistols",
         "filename": "Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Desert_Eagle_Pistols/manuals/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Desert_Eagle_Pistols/manuals/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Desert_Eagle_Pistols/manuals/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Desert_Eagle_Pistols/manuals/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Desert_Eagle_Pistols/manuals/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf",
         "local_url": "/api/manuals/Desert_Eagle_Pistols/Armorer_Technical_Manual_Desert_Eagle_Pistols.pdf"
       }
     ],
@@ -3639,9 +3639,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Smith Wesson Revolvers",
         "filename": "Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Smith_Wesson_Revolvers/manuals/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Smith_Wesson_Revolvers/manuals/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Smith_Wesson_Revolvers/manuals/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Smith_Wesson_Revolvers/manuals/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Smith_Wesson_Revolvers/manuals/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf",
         "local_url": "/api/manuals/Smith_Wesson_Revolvers/Armorer_Technical_Manual_Smith_Wesson_Revolvers.pdf"
       }
     ],
@@ -3721,9 +3721,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Colt Python Revolvers",
         "filename": "Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_Python_Revolvers/manuals/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_Python_Revolvers/manuals/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Colt_Python_Revolvers/manuals/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_Python_Revolvers/manuals/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_Python_Revolvers/manuals/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf",
         "local_url": "/api/manuals/Colt_Python_Revolvers/Armorer_Technical_Manual_Colt_Python_Revolvers.pdf"
       }
     ],
@@ -3807,9 +3807,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger Revolvers GP100",
         "filename": "Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Revolvers_GP100/manuals/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/manuals/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Revolvers_GP100/manuals/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Revolvers_GP100/manuals/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/manuals/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
         "local_url": "/api/manuals/Ruger_Revolvers_GP100/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf"
       }
     ],
@@ -3890,9 +3890,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Colt Single Action Army",
         "filename": "Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_Single_Action_Army/manuals/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_Single_Action_Army/manuals/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Colt_Single_Action_Army/manuals/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Colt_Single_Action_Army/manuals/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Colt_Single_Action_Army/manuals/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf",
         "local_url": "/api/manuals/Colt_Single_Action_Army/Armorer_Technical_Manual_Colt_Single_Action_Army.pdf"
       }
     ],
@@ -3973,9 +3973,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger Blackhawk Vaquero",
         "filename": "Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Blackhawk_Vaquero/manuals/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Blackhawk_Vaquero/manuals/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Blackhawk_Vaquero/manuals/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Blackhawk_Vaquero/manuals/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Blackhawk_Vaquero/manuals/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf",
         "local_url": "/api/manuals/Ruger_Blackhawk_Vaquero/Armorer_Technical_Manual_Ruger_Blackhawk_Vaquero.pdf"
       }
     ],
@@ -4054,9 +4054,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual SW J Frame Snubnose",
         "filename": "Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/SW_J_Frame_Snubnose/manuals/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/SW_J_Frame_Snubnose/manuals/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/SW_J_Frame_Snubnose/manuals/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/SW_J_Frame_Snubnose/manuals/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/SW_J_Frame_Snubnose/manuals/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf",
         "local_url": "/api/manuals/SW_J_Frame_Snubnose/Armorer_Technical_Manual_SW_J_Frame_Snubnose.pdf"
       }
     ],
@@ -4163,9 +4163,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual AR15 M4 Platform",
         "filename": "Armorer_Technical_Manual_AR15_M4_Platform.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
         "local_url": "/api/manuals/AR15_M4_Platform/Armorer_Technical_Manual_AR15_M4_Platform.pdf"
       }
     ],
@@ -4246,9 +4246,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual AR10 SR25 Platform",
         "filename": "Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/AR10_SR25_Platform/manuals/Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR10_SR25_Platform/manuals/Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AR10_SR25_Platform/manuals/Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/AR10_SR25_Platform/manuals/Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR10_SR25_Platform/manuals/Armorer_Technical_Manual_AR10_SR25_Platform.pdf",
         "local_url": "/api/manuals/AR10_SR25_Platform/Armorer_Technical_Manual_AR10_SR25_Platform.pdf"
       }
     ],
@@ -4341,9 +4341,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual AK47 AKM Platform",
         "filename": "Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/AK47_AKM_Platform/manuals/Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AK47_AKM_Platform/manuals/Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AK47_AKM_Platform/manuals/Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/AK47_AKM_Platform/manuals/Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AK47_AKM_Platform/manuals/Armorer_Technical_Manual_AK47_AKM_Platform.pdf",
         "local_url": "/api/manuals/AK47_AKM_Platform/Armorer_Technical_Manual_AK47_AKM_Platform.pdf"
       }
     ],
@@ -4423,9 +4423,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger 1022 Carbine",
         "filename": "Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "local_url": "/api/manuals/Ruger_1022_Carbine/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf"
       }
     ],
@@ -4507,9 +4507,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger Mini14 Carbines",
         "filename": "Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Mini14_Carbines/manuals/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mini14_Carbines/manuals/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Mini14_Carbines/manuals/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_Mini14_Carbines/manuals/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mini14_Carbines/manuals/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf",
         "local_url": "/api/manuals/Ruger_Mini14_Carbines/Armorer_Technical_Manual_Ruger_Mini14_Carbines.pdf"
       }
     ],
@@ -4599,9 +4599,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual M1 Garand Rifle",
         "filename": "Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/M1_Garand_Rifle/manuals/Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/M1_Garand_Rifle/manuals/Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/M1_Garand_Rifle/manuals/Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/M1_Garand_Rifle/manuals/Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/M1_Garand_Rifle/manuals/Armorer_Technical_Manual_M1_Garand_Rifle.pdf",
         "local_url": "/api/manuals/M1_Garand_Rifle/Armorer_Technical_Manual_M1_Garand_Rifle.pdf"
       }
     ],
@@ -4677,9 +4677,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual M1 Carbine",
         "filename": "Armorer_Technical_Manual_M1_Carbine.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/M1_Carbine/manuals/Armorer_Technical_Manual_M1_Carbine.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/M1_Carbine/manuals/Armorer_Technical_Manual_M1_Carbine.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/M1_Carbine/manuals/Armorer_Technical_Manual_M1_Carbine.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/M1_Carbine/manuals/Armorer_Technical_Manual_M1_Carbine.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/M1_Carbine/manuals/Armorer_Technical_Manual_M1_Carbine.pdf",
         "local_url": "/api/manuals/M1_Carbine/Armorer_Technical_Manual_M1_Carbine.pdf"
       }
     ],
@@ -4758,9 +4758,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Springfield M1A M14",
         "filename": "Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_M1A_M14/manuals/Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_M1A_M14/manuals/Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Springfield_M1A_M14/manuals/Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_M1A_M14/manuals/Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_M1A_M14/manuals/Armorer_Technical_Manual_Springfield_M1A_M14.pdf",
         "local_url": "/api/manuals/Springfield_M1A_M14/Armorer_Technical_Manual_Springfield_M1A_M14.pdf"
       }
     ],
@@ -4836,9 +4836,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual SKS 45 Carbine",
         "filename": "Armorer_Technical_Manual_SKS_45_Carbine.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/SKS_45_Carbine/manuals/Armorer_Technical_Manual_SKS_45_Carbine.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/SKS_45_Carbine/manuals/Armorer_Technical_Manual_SKS_45_Carbine.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/SKS_45_Carbine/manuals/Armorer_Technical_Manual_SKS_45_Carbine.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/SKS_45_Carbine/manuals/Armorer_Technical_Manual_SKS_45_Carbine.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/SKS_45_Carbine/manuals/Armorer_Technical_Manual_SKS_45_Carbine.pdf",
         "local_url": "/api/manuals/SKS_45_Carbine/Armorer_Technical_Manual_SKS_45_Carbine.pdf"
       }
     ],
@@ -4933,9 +4933,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Remington 700 Rifles",
         "filename": "Armorer_Technical_Manual_Remington_700_Rifles.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Remington_700_Rifles/manuals/Armorer_Technical_Manual_Remington_700_Rifles.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Remington_700_Rifles/manuals/Armorer_Technical_Manual_Remington_700_Rifles.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Remington_700_Rifles/manuals/Armorer_Technical_Manual_Remington_700_Rifles.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Remington_700_Rifles/manuals/Armorer_Technical_Manual_Remington_700_Rifles.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Remington_700_Rifles/manuals/Armorer_Technical_Manual_Remington_700_Rifles.pdf",
         "local_url": "/api/manuals/Remington_700_Rifles/Armorer_Technical_Manual_Remington_700_Rifles.pdf"
       }
     ],
@@ -5018,9 +5018,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Winchester Model 70",
         "filename": "Armorer_Technical_Manual_Winchester_Model_70.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Winchester_Model_70/manuals/Armorer_Technical_Manual_Winchester_Model_70.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Winchester_Model_70/manuals/Armorer_Technical_Manual_Winchester_Model_70.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Winchester_Model_70/manuals/Armorer_Technical_Manual_Winchester_Model_70.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Winchester_Model_70/manuals/Armorer_Technical_Manual_Winchester_Model_70.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Winchester_Model_70/manuals/Armorer_Technical_Manual_Winchester_Model_70.pdf",
         "local_url": "/api/manuals/Winchester_Model_70/Armorer_Technical_Manual_Winchester_Model_70.pdf"
       }
     ],
@@ -5105,9 +5105,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Tikka T3 Rifles",
         "filename": "Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Tikka_T3_Rifles/manuals/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Tikka_T3_Rifles/manuals/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Tikka_T3_Rifles/manuals/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Tikka_T3_Rifles/manuals/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Tikka_T3_Rifles/manuals/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf",
         "local_url": "/api/manuals/Tikka_T3_Rifles/Armorer_Technical_Manual_Tikka_T3_Rifles.pdf"
       }
     ],
@@ -5192,9 +5192,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Savage 110 Axis",
         "filename": "Armorer_Technical_Manual_Savage_110_Axis.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Savage_110_Axis/manuals/Armorer_Technical_Manual_Savage_110_Axis.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Savage_110_Axis/manuals/Armorer_Technical_Manual_Savage_110_Axis.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Savage_110_Axis/manuals/Armorer_Technical_Manual_Savage_110_Axis.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Savage_110_Axis/manuals/Armorer_Technical_Manual_Savage_110_Axis.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Savage_110_Axis/manuals/Armorer_Technical_Manual_Savage_110_Axis.pdf",
         "local_url": "/api/manuals/Savage_110_Axis/Armorer_Technical_Manual_Savage_110_Axis.pdf"
       }
     ],
@@ -5279,9 +5279,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Ruger American Rifles",
         "filename": "Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_American_Rifles/manuals/Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_American_Rifles/manuals/Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_American_Rifles/manuals/Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Ruger_American_Rifles/manuals/Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_American_Rifles/manuals/Armorer_Technical_Manual_Ruger_American_Rifles.pdf",
         "local_url": "/api/manuals/Ruger_American_Rifles/Armorer_Technical_Manual_Ruger_American_Rifles.pdf"
       }
     ],
@@ -5363,9 +5363,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Winchester Model 1894",
         "filename": "Armorer_Technical_Manual_Winchester_Model_1894.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Winchester_Model_1894/manuals/Armorer_Technical_Manual_Winchester_Model_1894.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Winchester_Model_1894/manuals/Armorer_Technical_Manual_Winchester_Model_1894.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Winchester_Model_1894/manuals/Armorer_Technical_Manual_Winchester_Model_1894.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Winchester_Model_1894/manuals/Armorer_Technical_Manual_Winchester_Model_1894.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Winchester_Model_1894/manuals/Armorer_Technical_Manual_Winchester_Model_1894.pdf",
         "local_url": "/api/manuals/Winchester_Model_1894/Armorer_Technical_Manual_Winchester_Model_1894.pdf"
       }
     ],
@@ -5447,9 +5447,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Marlin 336 1895",
         "filename": "Armorer_Technical_Manual_Marlin_336_1895.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Marlin_336_1895/manuals/Armorer_Technical_Manual_Marlin_336_1895.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Marlin_336_1895/manuals/Armorer_Technical_Manual_Marlin_336_1895.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Marlin_336_1895/manuals/Armorer_Technical_Manual_Marlin_336_1895.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Marlin_336_1895/manuals/Armorer_Technical_Manual_Marlin_336_1895.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Marlin_336_1895/manuals/Armorer_Technical_Manual_Marlin_336_1895.pdf",
         "local_url": "/api/manuals/Marlin_336_1895/Armorer_Technical_Manual_Marlin_336_1895.pdf"
       }
     ],
@@ -5534,9 +5534,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Henry Lever Action",
         "filename": "Armorer_Technical_Manual_Henry_Lever_Action.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Henry_Lever_Action/manuals/Armorer_Technical_Manual_Henry_Lever_Action.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Henry_Lever_Action/manuals/Armorer_Technical_Manual_Henry_Lever_Action.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Henry_Lever_Action/manuals/Armorer_Technical_Manual_Henry_Lever_Action.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Henry_Lever_Action/manuals/Armorer_Technical_Manual_Henry_Lever_Action.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Henry_Lever_Action/manuals/Armorer_Technical_Manual_Henry_Lever_Action.pdf",
         "local_url": "/api/manuals/Henry_Lever_Action/Armorer_Technical_Manual_Henry_Lever_Action.pdf"
       }
     ],
@@ -5625,9 +5625,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Remington 870 Shotgun",
         "filename": "Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Remington_870_Shotgun/manuals/Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Remington_870_Shotgun/manuals/Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Remington_870_Shotgun/manuals/Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Remington_870_Shotgun/manuals/Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Remington_870_Shotgun/manuals/Armorer_Technical_Manual_Remington_870_Shotgun.pdf",
         "local_url": "/api/manuals/Remington_870_Shotgun/Armorer_Technical_Manual_Remington_870_Shotgun.pdf"
       }
     ],
@@ -5707,9 +5707,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Mossberg 500 590 Shotgun",
         "filename": "Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
         "local_url": "/api/manuals/Mossberg_500_590_Shotgun/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf"
       }
     ],
@@ -5785,9 +5785,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Benelli M4 Shotgun",
         "filename": "Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
         "local_url": "/api/manuals/Benelli_M4_Shotgun/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf"
       }
     ],
@@ -5862,9 +5862,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Beretta A300 1301 Shotgun",
         "filename": "Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_A300_1301_Shotgun/manuals/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_A300_1301_Shotgun/manuals/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Beretta_A300_1301_Shotgun/manuals/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Beretta_A300_1301_Shotgun/manuals/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Beretta_A300_1301_Shotgun/manuals/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf",
         "local_url": "/api/manuals/Beretta_A300_1301_Shotgun/Armorer_Technical_Manual_Beretta_A300_1301_Shotgun.pdf"
       }
     ],
@@ -5947,10 +5947,125 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Browning Citori OverUnder",
         "filename": "Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Browning_Citori_OverUnder/manuals/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Browning_Citori_OverUnder/manuals/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Browning_Citori_OverUnder/manuals/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Browning_Citori_OverUnder/manuals/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Browning_Citori_OverUnder/manuals/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf",
         "local_url": "/api/manuals/Browning_Citori_OverUnder/Armorer_Technical_Manual_Browning_Citori_OverUnder.pdf"
+      }
+    ],
+    "schematics": []
+  },
+  "Sears_Roebuck_12G_Side_By_Side": {
+    "id": "Sears_Roebuck_12G_Side_By_Side",
+    "name": "Sears, Roebuck & Co. 12-Gauge Side-by-Side Shotgun (1922)",
+    "subtitle": "Vintage Double-Barrel Field Shotgun (Ranger Model 101 / Stevens 311 / Crescent / Meriden)",
+    "manufacturer": "Sears, Roebuck & Co. / J. Stevens Arms / Crescent Fire Arms",
+    "category": "Shotguns",
+    "action_type": "Break-Action Side-by-Side (SxS) Dual Trigger Double-Barrel Shotgun",
+    "operating_actions": [
+      "Break-Open Boxlock",
+      "Dual Triggers",
+      "Automatic Tang Safety",
+      "Mechanical Extractor"
+    ],
+    "types": [
+      "Shotguns",
+      "Historic & Military",
+      "Hunting & Law Enforcement"
+    ],
+    "caliber_categories": [
+      "12 Gauge"
+    ],
+    "era": "Golden Age of American Field Doubles (1900-1950)",
+    "models": [
+      "1922 Sears Ranger Hammerless Double (Model 101.1 / Stevens 5100/311)",
+      "1922 Sears Ranger Model 105 (Crescent Fire Arms Co.)",
+      "Sears A.J. Aubrey / Meriden Hammerless Double (Pre-1918)",
+      "Eastern Arms Co. 12G Double (Sears Brand)",
+      "J.C. Higgins Model 101.1 Side-by-Side"
+    ],
+    "calibers": [
+      "12 Gauge (2-3/4\" Chamber & 2-5/8\" Vintage Early Hulls)"
+    ],
+    "key_tasks": [
+      "Chamber Length & Forcing Cone Gauging (Pre-1927 Short Chamber Verification)",
+      "Barrel Hook & Hinge Pin Bearing Fit (Fixing Off-Face Action Play)",
+      "Top Snap Lever Reserve & Underbolt Engagement Inspection",
+      "Double Trigger & Sear Overlap Tuning (Preventing Doubling)",
+      "Firing Pin Protrusion & Hemispherical Nose Polishing",
+      "Extractor Guide Rod Alignment & Chamber Polishing"
+    ],
+    "specs": {
+      "headspace_rim_recess": "0.054\" GO / 0.064\" NO-GO standard 12G rim recess depth. Maximum allowable FIELD limit: 0.070\".",
+      "firing_pin_protrusion": "0.055\" to 0.065\" protrusion through breech face. Tips must be hemispherical and mirror-polished with zero burrs.",
+      "hinge_pin_bearing": "0.375\" nominal diameter hardened hinge pin. Barrel lump hook must maintain minimum 80% full bluing contact with zero off-face clearance.",
+      "top_lever_reserve": "When barrels are snapped locked shut, top snap lever must rest at 4:30 to 5:00 o'clock (past center right). If lever reaches or passes 6:00 o'clock center, the locking underbolt and barrel lugs are worn.",
+      "trigger_pull_weights": "Front Trigger (Right Barrel): 4.0 to 4.5 lbs. Rear Trigger (Left Barrel): 4.5 to 5.0 lbs.",
+      "pre_1927_chamber_warning": "CRITICAL ARMORER SAFETY: Many double shotguns manufactured prior to 1927 had 2-5/8\" or 2-1/2\" chambers designed for roll-crimp paper hulls. Firing modern star-crimped 2-3/4\" high-pressure shells causes crimp petals to open into the forcing cone, causing catastrophic chamber pressure spikes (15,000+ psi). Always measure chamber length with a brass chamber gauge or Cerrosafe cast."
+    },
+    "stoppages": [
+      {
+        "position": "Stoppage 1: Action Rattles or Has Fore-and-Aft Play When Closed (Off-Face Condition)",
+        "short_desc": "Barrels shake laterally or axially against receiver face when forend is latched shut; gap visible between breech and barrel breech face",
+        "causes": [
+          "Worn barrel lump hook bearing surface from decades of shooting without lubrication.",
+          "Indented or worn frame hinge pin.",
+          "Stretched frame or battered locking underbolt."
+        ],
+        "action": "Immediate Action: DO NOT FIRE. An off-face shotgun can fracture the hinge pin or blow out under pressure. Gunsmith Action: 1) Measure gap with feeler gauge (any gap > 0.002\" is unsafe). 2) Turn or replace frame hinge pin with precision oversize pin (+0.005\" to +0.010\"). 3) TIG weld or shim the barrel hook and hand-fit using Prussian blue to achieve 85%+ uniform bearing contact."
+      },
+      {
+        "position": "Stoppage 2: Doubling (Both Barrels Fire Simultaneously on Front Trigger Pull)",
+        "short_desc": "Pulling the right barrel trigger causes heavy recoil and simultaneously trips the left barrel hammer",
+        "causes": [
+          "Worn or chipped sear notches on hammers.",
+          "Sear engagement depth less than 0.030\".",
+          "Heavy recoil dislodges left sear due to weakened sear spring or accumulated hardened oil."
+        ],
+        "action": "Immediate Action: Unload weapon and cease firing immediately. Gunsmith Action: Remove buttstock tang bolt. Detail strip locks. Stone sear and hammer notch strictly square with hard Arkansas stone at factory 90\u00b0 angle\u2014NEVER undercut sear. Replace weakened sear springs and test by dropping cocked receiver on rubber mallet from 6 inches."
+      },
+      {
+        "position": "Stoppage 3: Failure to Fire / Light Primer Indentation on One Barrel",
+        "short_desc": "Hammer drops with audible click, but cartridge does not ignite; shallow primer strike",
+        "causes": [
+          "Weakened or cracked mainspring (coil spring on Stevens 311 / flat V-spring on Crescent).",
+          "Chipped or shortened firing pin tip (protrusion < 0.050\").",
+          "Hardened dried grease inside firing pin tunnel dampening striker blow."
+        ],
+        "action": "Immediate Action: Wait 30 seconds with muzzle downrange before opening action (hangfire precaution). Gunsmith Action: Flush firing pin channel with brake cleaner. Measure firing pin protrusion (spec: 0.055\"-0.065\"). If short, machine replacement water-hardening W1 drill rod firing pin, harden to 50 HRC and polish spherical tip. Replace mainspring."
+      },
+      {
+        "position": "Stoppage 4: Sticky Extraction / Fired Shell Hull Lodged in Chamber",
+        "short_desc": "Barrels hinge open, but fired paper or plastic hull remains jammed in chamber; extractor slips over rim",
+        "causes": [
+          "Pitted, rusty, or rough chamber walls expanding under firing pressure.",
+          "Bent extractor guide rod or worn extractor bevel.",
+          "Modern high-pressure ammunition fired in vintage tight chamber."
+        ],
+        "action": "Immediate Action: Use wooden dowel through muzzle to push hull out. Gunsmith Action: Hone chamber with 400-grit flex-hone and light cutting oil to remove rust pits and mirror polish. Check extractor plate bevel and ensure extractor guide rod moves freely without binding."
+      }
+    ],
+    "videos": [
+      {
+        "id": "vintage_sxs_gunsmithing",
+        "title": "Vintage Side-by-Side Shotgun Repair & Action Tightening",
+        "creator": "Larry Potterfield / MidwayUSA",
+        "category": "Gunsmithing & Repair",
+        "url": "https://www.youtube.com/results?search_query=vintage+side+by+side+shotgun+repair+action+tightening+off+face+gunsmithing",
+        "embed_url": "",
+        "summary": "Master gunsmithing teardown and servicing of vintage American boxlock side-by-side shotguns (Stevens 311 / Crescent / Fox). Demonstrates hinge pin fitting, removing off-face action play, stone sear tuning to prevent doubling, and chamber polishing."
+      }
+    ],
+    "manuals": [
+      {
+        "id": "1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf",
+        "title": "1922 Sears Roebuck 12G Double Barrel Field Manual",
+        "filename": "1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf",
+        "size_mb": 0.02,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sears_Roebuck_12G_Side_By_Side/manuals/1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sears_Roebuck_12G_Side_By_Side/manuals/1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sears_Roebuck_12G_Side_By_Side/manuals/1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf",
+        "local_url": "/api/manuals/Sears_Roebuck_12G_Side_By_Side/1922_Sears_Roebuck_12G_Double_Barrel_Field_Manual.pdf"
       }
     ],
     "schematics": []
@@ -6028,9 +6143,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual FN FAL L1A1",
         "filename": "Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/FN_FAL_L1A1/manuals/Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/FN_FAL_L1A1/manuals/Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/FN_FAL_L1A1/manuals/Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/FN_FAL_L1A1/manuals/Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/FN_FAL_L1A1/manuals/Armorer_Technical_Manual_FN_FAL_L1A1.pdf",
         "local_url": "/api/manuals/FN_FAL_L1A1/Armorer_Technical_Manual_FN_FAL_L1A1.pdf"
       }
     ],
@@ -6157,9 +6272,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 American Machinist Manufacture of the Lewis Machine Gun",
         "filename": "1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "size_mb": 9.5,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_American_Machinist_Manufacture_of_the_Lewis_Machine_Gun.pdf"
       },
       {
@@ -6167,9 +6282,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 British Instruction on the Lewis Automatic Machine Gun",
         "filename": "1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "size_mb": 4.58,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_British_Instruction_on_the_Lewis_Automatic_Machine_Gun.pdf"
       },
       {
@@ -6177,9 +6292,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1917 Savage Arms Lewis Machine Gun Handbook",
         "filename": "1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "size_mb": 3.09,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf"
       },
       {
@@ -6187,9 +6302,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1918 RAF Instructional Notes on the Lewis Gun",
         "filename": "1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "size_mb": 2.98,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1918_RAF_Instructional_Notes_on_the_Lewis_Gun.pdf"
       },
       {
@@ -6197,9 +6312,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1940 UK Armourers Handbook Part III Light Machine Guns",
         "filename": "1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "size_mb": 53.29,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1940_UK_Armourers_Handbook_Part_III_Light_Machine_Guns.pdf"
       },
       {
@@ -6207,9 +6322,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1940 UK Guns for the Home Guard Lewis",
         "filename": "1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "size_mb": 20.7,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1940_UK_Guns_for_the_Home_Guard_Lewis.pdf"
       },
       {
@@ -6217,9 +6332,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1942 Manual of Modern Automatic Guns",
         "filename": "1942_Manual_of_Modern_Automatic_Guns.pdf",
         "size_mb": 3.81,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1942_Manual_of_Modern_Automatic_Guns.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1942_Manual_of_Modern_Automatic_Guns.pdf"
       },
       {
@@ -6227,9 +6342,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "1942 UK How to Remedy and Prevent Stoppages",
         "filename": "1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "size_mb": 15.83,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/1942_UK_How_to_Remedy_and_Prevent_Stoppages.pdf"
       },
       {
@@ -6237,9 +6352,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Lewis Automatic Machine Gun",
         "filename": "Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lewis_Automatic_Machine_Gun/manuals/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lewis_Automatic_Machine_Gun/manuals/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lewis_Automatic_Machine_Gun/manuals/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf",
         "local_url": "/api/manuals/Lewis_Automatic_Machine_Gun/Armorer_Technical_Manual_Lewis_Automatic_Machine_Gun.pdf"
       }
     ],
@@ -6731,9 +6846,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Mauser Karabiner 98k",
         "filename": "Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Mauser_Karabiner_98k/manuals/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mauser_Karabiner_98k/manuals/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Mauser_Karabiner_98k/manuals/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Mauser_Karabiner_98k/manuals/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mauser_Karabiner_98k/manuals/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf",
         "local_url": "/api/manuals/Mauser_Karabiner_98k/Armorer_Technical_Manual_Mauser_Karabiner_98k.pdf"
       }
     ],
@@ -6819,9 +6934,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Mosin Nagant 9130",
         "filename": "Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
         "size_mb": 0.01,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Mosin_Nagant_9130/manuals/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mosin_Nagant_9130/manuals/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Mosin_Nagant_9130/manuals/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Mosin_Nagant_9130/manuals/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mosin_Nagant_9130/manuals/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf",
         "local_url": "/api/manuals/Mosin_Nagant_9130/Armorer_Technical_Manual_Mosin_Nagant_9130.pdf"
       }
     ],
@@ -6898,9 +7013,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Lee Enfield No4",
         "filename": "Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Lee_Enfield_No4/manuals/Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lee_Enfield_No4/manuals/Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Lee_Enfield_No4/manuals/Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Lee_Enfield_No4/manuals/Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Lee_Enfield_No4/manuals/Armorer_Technical_Manual_Lee_Enfield_No4.pdf",
         "local_url": "/api/manuals/Lee_Enfield_No4/Armorer_Technical_Manual_Lee_Enfield_No4.pdf"
       }
     ],
@@ -6975,9 +7090,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual Springfield M1903",
         "filename": "Armorer_Technical_Manual_Springfield_M1903.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_M1903/manuals/Armorer_Technical_Manual_Springfield_M1903.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_M1903/manuals/Armorer_Technical_Manual_Springfield_M1903.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Springfield_M1903/manuals/Armorer_Technical_Manual_Springfield_M1903.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/Springfield_M1903/manuals/Armorer_Technical_Manual_Springfield_M1903.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Springfield_M1903/manuals/Armorer_Technical_Manual_Springfield_M1903.pdf",
         "local_url": "/api/manuals/Springfield_M1903/Armorer_Technical_Manual_Springfield_M1903.pdf"
       }
     ],
@@ -7064,9 +7179,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Armorer Technical Manual General Gunsmithing",
         "filename": "Armorer_Technical_Manual_General_Gunsmithing.pdf",
         "size_mb": 0.0,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Armorer_Technical_Manual_General_Gunsmithing.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/Armorer_Technical_Manual_General_Gunsmithing.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/General_Gunsmithing/manuals/Armorer_Technical_Manual_General_Gunsmithing.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Armorer_Technical_Manual_General_Gunsmithing.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/Armorer_Technical_Manual_General_Gunsmithing.pdf",
         "local_url": "/api/manuals/General_Gunsmithing/Armorer_Technical_Manual_General_Gunsmithing.pdf"
       },
       {
@@ -7074,9 +7189,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Practical Gunsmithing American Gunsmith",
         "filename": "Practical_Gunsmithing_American_Gunsmith.pdf",
         "size_mb": 44.42,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/Practical_Gunsmithing_American_Gunsmith.pdf",
         "local_url": "/api/manuals/General_Gunsmithing/Practical_Gunsmithing_American_Gunsmith.pdf"
       },
       {
@@ -7084,9 +7199,9 @@ window.STATIC_FIREARMS_DATA = {
         "title": "The Gunsmiths Manual Practical Guide",
         "filename": "The_Gunsmiths_Manual_Practical_Guide.pdf",
         "size_mb": 21.27,
-        "raw_url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
-        "url": "https://github.com/gmascagni/gunsmithing/raw/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/General_Gunsmithing/manuals/The_Gunsmiths_Manual_Practical_Guide.pdf",
         "local_url": "/api/manuals/General_Gunsmithing/The_Gunsmiths_Manual_Practical_Guide.pdf"
       }
     ],
