@@ -16,9 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 try:
-    from web_app.firearms_data import FIREARMS_METADATA
+    from web_app.firearms_data import FIREARMS_METADATA, PARTS_CATALOG
 except ImportError:
-    from firearms_data import FIREARMS_METADATA
+    from firearms_data import FIREARMS_METADATA, PARTS_CATALOG
 
 app = FastAPI(title="Armorer's Workbench", version="1.0.0")
 

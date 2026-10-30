@@ -4,8 +4,8 @@ import shutil
 from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parent.parent / "web_app"))
-from firearms_data import FIREARMS_METADATA
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from web_app.firearms_data import FIREARMS_METADATA
 
 root = Path(__file__).resolve().parent.parent
 docs_dir = root / "docs"

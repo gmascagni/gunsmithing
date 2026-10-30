@@ -248,12 +248,25 @@
 
       <!-- Preview Stages -->
       <div class="preview-stage-container">
-        <!-- 1. PDF Stage -->
+        <!-- 1. PDF Stage with Direct Mozilla PDF.js Canvas Reader (Zero Size Limits) -->
         <div id="pdfStage" class="stage active">
           <div class="pdf-viewer-bar">
             <div class="pdf-viewer-info">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               <span id="pdfDocName">Viewing Technical Manual</span>
+            </div>
+            <div class="pdf-controls" id="pdfControls">
+              <button id="pdfPrevPageBtn" class="pdf-ctrl-btn" title="Previous Page">◀</button>
+              <span class="pdf-page-display">
+                Page <input type="number" id="pdfPageNum" min="1" value="1" class="pdf-page-input"> / <span id="pdfTotalPages">1</span>
+              </span>
+              <button id="pdfNextPageBtn" class="pdf-ctrl-btn" title="Next Page">▶</button>
+              <span class="pdf-separator">|</span>
+              <button id="pdfZoomOutBtn" class="pdf-ctrl-btn" title="Zoom Out">−</button>
+              <span id="pdfZoomLevel" class="pdf-zoom-text">100%</span>
+              <button id="pdfZoomInBtn" class="pdf-ctrl-btn" title="Zoom In">＋</button>
+              <button id="pdfFitWidthBtn" class="pdf-ctrl-btn" title="Fit to Width">↔ Fit</button>
+              <button id="pdfToggleViewerBtn" class="pdf-ctrl-btn" title="Switch between High-Res Canvas & Browser Native Reader">👁️ Native</button>
             </div>
             <div class="pdf-viewer-actions">
               <a id="btnPdfFullscreen" href="#" target="_blank" class="pdf-action-pill" title="Open PDF in Full Screen Tab">
@@ -266,20 +279,127 @@
               </a>
             </div>
           </div>
-          <iframe id="pdfFrame" src="about:blank"></iframe>
+          <div class="pdf-viewport" id="pdfViewport">
+            <div id="pdfLoadingSpinner" class="pdf-loading-overlay hidden">
+              <div class="spinner"></div>
+              <span id="pdfLoadingText">Loading manual pages...</span>
+            </div>
+            <div id="pdfCanvasContainer" class="pdf-canvas-container">
+              <canvas id="pdfViewerCanvas"></canvas>
+            </div>
+            <iframe id="pdfFrame" class="hidden" src="about:blank"></iframe>
+          </div>
         </div>
 
-        <!-- 2. Schematic Inspector Stage -->
+        <!-- 2. Schematic Inspector Stage with Circle-to-Search -->
         <div id="schematicStage" class="stage hidden">
           <div class="schematic-controls">
-            <button id="zoomInBtn" title="Zoom In">+</button>
-            <button id="zoomOutBtn" title="Zoom Out">-</button>
-            <button id="zoomResetBtn" title="Reset Zoom">Reset</button>
-            <span id="zoomLevel">100%</span>
-            <span class="touch-hint">(Touch to drag / pinch to zoom)</span>
+            <!-- Tool Mode Toggle -->
+            <div class="schematic-tool-group">
+              <button id="schematicPanModeBtn" class="schematic-tool-btn active" title="Pan & Inspect Mode">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v6"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+                <span>✋ Pan</span>
+              </button>
+              <button id="schematicCircleModeBtn" class="schematic-tool-btn circle-mode-btn" title="Circle any part on the schematic to identify OEM #, tolerances & specs">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+                <span>⭕ Circle to Search</span>
+              </button>
+            </div>
+
+            <!-- Zoom Controls -->
+            <div class="schematic-zoom-group">
+              <button id="zoomOutBtn" title="Zoom Out">−</button>
+              <span id="zoomLevel">100%</span>
+              <button id="zoomInBtn" title="Zoom In">＋</button>
+              <button id="zoomResetBtn" title="Reset Zoom">Fit / Reset</button>
+            </div>
+
+            <div class="schematic-plate-selector-box">
+              <label for="schematicPlateSelect">PLATE:</label>
+              <select id="schematicPlateSelect" class="schematic-plate-select"></select>
+            </div>
           </div>
+
           <div class="schematic-canvas" id="schematicCanvas">
-            <img id="schematicImg" src="" alt="Schematic Plate">
+            <div class="schematic-viewport" id="schematicViewport">
+              <img id="schematicImg" src="" alt="Schematic Plate">
+              <canvas id="selectionOverlayCanvas" class="selection-overlay-canvas"></canvas>
+            </div>
+
+            <!-- Floating Action Pill after circling -->
+            <div id="circleActionPill" class="circle-action-pill hidden">
+              <button id="btnIdentifyCircledPart" class="circle-action-btn">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                <span>Identify Part &amp; Tolerances</span>
+              </button>
+              <button id="btnClearCircle" class="circle-cancel-btn" title="Cancel selection">✕</button>
+            </div>
+          </div>
+
+          <!-- Slide-Up Part Inspector Drawer -->
+          <div id="partInspectorDrawer" class="part-inspector-drawer hidden">
+            <div class="inspector-header">
+              <div class="inspector-badge-row">
+                <span class="inspector-tag">🔍 VISUAL PART IDENTIFIER</span>
+                <span class="inspector-platform-badge" id="inspectorPlatformBadge">GLOCK SAFE ACTION</span>
+              </div>
+              <button id="btnClosePartInspector" class="inspector-close-btn" title="Close Drawer">✕</button>
+            </div>
+            <div class="inspector-body">
+              <div class="inspector-crop-container">
+                <div class="inspector-crop-preview">
+                  <img id="inspectorCropImg" src="" alt="Target Component Crop">
+                </div>
+                <span class="crop-caption">Target Component</span>
+              </div>
+              <div class="inspector-details">
+                <div class="inspector-title-row">
+                  <h3 id="inspectorPartName">Cruciform Trigger Bar &amp; Striker Lug</h3>
+                  <span class="inspector-oem" id="inspectorPartOem">OEM SP 00357</span>
+                </div>
+                <div class="inspector-assembly" id="inspectorPartAssembly">Assembly: Trigger Mechanism Housing</div>
+
+                <!-- Critical Tolerances & Specs -->
+                <div class="inspector-section">
+                  <div class="section-title">📐 CRITICAL GUNSMITH TOLERANCES:</div>
+                  <div class="inspector-spec-box" id="inspectorPartTolerances">
+                    66% MINIMUM CRUCIFORM ENGAGEMENT: Sear plate must overlap striker lug by at least 2/3.
+                  </div>
+                </div>
+
+                <!-- Malfunctions & Warnings -->
+                <div class="inspector-section">
+                  <div class="section-title">⚠️ MALFUNCTIONS &amp; INSPECTION:</div>
+                  <p class="inspector-malfunctions" id="inspectorPartMalfunctions">
+                    Double-firing or trigger fail-to-reset if under 66% engagement.
+                  </p>
+                </div>
+
+                <!-- Armorer Maintenance -->
+                <div class="inspector-section">
+                  <div class="section-title">🔧 SHOP SERVICING &amp; MAINTENANCE:</div>
+                  <p class="inspector-maintenance" id="inspectorPartMaintenance">
+                    Clean channel completely dry; never polish off factory tinned plating.
+                  </p>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="inspector-actions">
+                  <button id="btnAskAiAboutPart" class="inspector-action-btn primary" title="Open AI Assistant for diagnosis">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Ask Gunsmith AI</span>
+                  </button>
+                  <button id="btnFindPartVideos" class="inspector-action-btn" title="Watch servicing & disassembly video">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Watch Servicing Video</span>
+                  </button>
+                  <button id="btnSearchPartManual" class="inspector-action-btn" title="Open manual to relevant section">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <span>Search Manual</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -551,10 +671,25 @@
             <div class="catalog-filter-chips" id="mfgFilterChips">
               <button class="chip active" data-mfg="all">All Brands</button>
               <button class="chip" data-mfg="Glock">Glock</button>
+              <button class="chip" data-mfg="SIG Sauer">SIG Sauer</button>
+              <button class="chip" data-mfg="Smith &amp; Wesson">S&amp;W</button>
+              <button class="chip" data-mfg="Colt">Colt</button>
               <button class="chip" data-mfg="Ruger">Ruger</button>
               <button class="chip" data-mfg="Beretta">Beretta</button>
-              <button class="chip" data-mfg="Savage Arms / BSA">Savage / BSA</button>
-              <button class="chip" data-mfg="General Workshop">General Workshop</button>
+              <button class="chip" data-mfg="Remington">Remington</button>
+              <button class="chip" data-mfg="Mossberg">Mossberg</button>
+              <button class="chip" data-mfg="Winchester">Winchester</button>
+              <button class="chip" data-mfg="Marlin">Marlin</button>
+              <button class="chip" data-mfg="CZ">CZ</button>
+              <button class="chip" data-mfg="Heckler &amp; Koch">H&amp;K</button>
+              <button class="chip" data-mfg="Browning">Browning</button>
+              <button class="chip" data-mfg="Savage">Savage</button>
+              <button class="chip" data-mfg="Springfield">Springfield</button>
+              <button class="chip" data-mfg="Tikka">Tikka</button>
+              <button class="chip" data-mfg="Benelli">Benelli</button>
+              <button class="chip" data-mfg="Henry">Henry</button>
+              <button class="chip" data-mfg="Kalashnikov">Kalashnikov</button>
+              <button class="chip" data-mfg="General Workshop">Shop Standards</button>
             </div>
           </div>
 
@@ -565,6 +700,7 @@
               <button class="chip" data-cat="Pistols">Pistols</button>
               <button class="chip" data-cat="Rifles">Rifles &amp; Carbines</button>
               <button class="chip" data-cat="Revolvers">Revolvers</button>
+              <button class="chip" data-cat="Shotguns">Shotguns</button>
               <button class="chip" data-cat="Machine Guns">Machine Guns</button>
               <button class="chip" data-cat="Workshop Disciplines">Shop Disciplines</button>
             </div>
@@ -575,10 +711,15 @@
             <div class="catalog-filter-chips" id="caliberFilterChips">
               <button class="chip active" data-cal="all">All Calibers</button>
               <button class="chip" data-cal="9x19mm">9x19mm Luger</button>
-              <button class="chip" data-cal=".22 LR">.22 LR Rimfire</button>
-              <button class="chip" data-cal=".357 Magnum">.357 Mag / .38 Spl</button>
-              <button class="chip" data-cal=".303 British">.303 Brit / .30-06</button>
-              <button class="chip" data-cal="all_calibers">Universal / Multi</button>
+              <button class="chip" data-cal=".45 ACP">.45 ACP</button>
+              <button class="chip" data-cal="5.56">5.56 / .223</button>
+              <button class="chip" data-cal="7.62x39">7.62x39mm</button>
+              <button class="chip" data-cal=".308">.308 / 7.62 NATO</button>
+              <button class="chip" data-cal=".30-06">.30-06</button>
+              <button class="chip" data-cal=".22 LR">.22 LR</button>
+              <button class="chip" data-cal=".357 Magnum">.357 Mag / .38</button>
+              <button class="chip" data-cal=".44 Magnum">.44 Magnum</button>
+              <button class="chip" data-cal="12 Gauge">12 Gauge</button>
             </div>
           </div>
 
@@ -626,6 +767,7 @@
     </div>
   </dialog>
 
+  <script src="/static/vendor/pdf.min.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
