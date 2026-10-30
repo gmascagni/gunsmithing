@@ -10,6 +10,12 @@ let activeLLMApiKey = "";
 let availableBackends = [];
 let currentMobileView = "library"; // "library", "preview", "assistant"
 
+// Armory & Catalog State
+let availableFirearmsList = [];
+let activeGunsmithTask = "all";
+let catalogSelectedMfg = "all";
+let catalogSelectedCat = "all";
+
 // DOM Elements
 const pdfFrame = document.getElementById("pdfFrame");
 const schematicImg = document.getElementById("schematicImg");
@@ -40,6 +46,31 @@ const globalSearchInput = document.getElementById("globalSearchInput");
 const searchResultsPopup = document.getElementById("searchResultsPopup");
 const tabFilterInput = document.getElementById("tabFilterInput");
 const firearmSelect = document.getElementById("firearmSelect");
+
+// Armory & Bench Switcher Elements
+const openGunCatalogBtn = document.getElementById("openGunCatalogBtn");
+const sidebarSwitchGunBtn = document.getElementById("sidebarSwitchGunBtn");
+const gunCatalogModal = document.getElementById("gunCatalogModal");
+const closeCatalogBtn = document.getElementById("closeCatalogBtn");
+const catalogSearchInput = document.getElementById("catalogSearchInput");
+const clearCatalogSearchBtn = document.getElementById("clearCatalogSearchBtn");
+const mfgFilterChips = document.getElementById("mfgFilterChips");
+const catFilterChips = document.getElementById("catFilterChips");
+const catalogGrid = document.getElementById("catalogGrid");
+
+const headerGunTitle = document.getElementById("headerGunTitle");
+const headerGunMfg = document.getElementById("headerGunMfg");
+const benchCardMfg = document.getElementById("benchCardMfg");
+const benchCardCategory = document.getElementById("benchCardCategory");
+const benchCardTitle = document.getElementById("benchCardTitle");
+const benchCardSub = document.getElementById("benchCardSub");
+const benchCardCalibers = document.getElementById("benchCardCalibers");
+
+const activeTaskLabel = document.getElementById("activeTaskLabel");
+const pdfDocName = document.getElementById("pdfDocName");
+const btnPdfFullscreen = document.getElementById("btnPdfFullscreen");
+const btnPdfDownload = document.getElementById("btnPdfDownload");
+const pdfMobileDocName = document.getElementById("pdfMobileDocName");
 
 const chatHistory = document.getElementById("chatHistory");
 const chatForm = document.getElementById("chatForm");
@@ -72,8 +103,6 @@ const closeMobileDialogBtn2 = document.getElementById("closeMobileDialogBtn2");
 const networkUrlInput = document.getElementById("networkUrlInput");
 const copyUrlBtn = document.getElementById("copyUrlBtn");
 const qrCanvas = document.getElementById("qrCanvas");
-const btnPdfFullscreen = document.getElementById("btnPdfFullscreen");
-const pdfMobileDocName = document.getElementById("pdfMobileDocName");
 
 // Initialize Application
 document.addEventListener("DOMContentLoaded", async () => {
@@ -81,14 +110,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   initMobileView();
   loadSavedSettings();
   
-  // 1. ALWAYS load active firearm platform FIRST so UI renders immediately
+  // 1. Load Armory Catalog metadata for instant switching and filtering
+  try {
+    await loadAllFirearmsList();
+  } catch (err) {
+    console.warn("Could not load firearms catalog list:", err);
+  }
+
+  // 2. ALWAYS load active firearm platform FIRST so UI renders immediately
   try {
     await loadFirearm(currentFirearm);
   } catch (err) {
     console.error("Failed to load initial firearm:", err);
   }
 
-  // 2. Probe local backend / LLM endpoints if running with Python backend
+  // 3. Probe local backend / LLM endpoints if running with Python backend
   const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
   if (!isStatic) {
     try {
@@ -109,11 +145,85 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // Setup UI Events
 function setupEventListeners() {
-  // Firearm Platform Selector
+  // Firearm Catalog & Bench Switcher Modal Controls
+  if (openGunCatalogBtn) {
+    openGunCatalogBtn.addEventListener("click", openCatalogModal);
+  }
+  if (sidebarSwitchGunBtn) {
+    sidebarSwitchGunBtn.addEventListener("click", openCatalogModal);
+  }
+  if (closeCatalogBtn) {
+    closeCatalogBtn.addEventListener("click", closeCatalogModal);
+  }
+  if (gunCatalogModal) {
+    gunCatalogModal.addEventListener("click", (e) => {
+      if (e.target === gunCatalogModal) closeCatalogModal();
+    });
+  }
+
+  // Catalog Instant Search & Clear Button
+  if (catalogSearchInput) {
+    catalogSearchInput.addEventListener("input", (e) => {
+      const val = e.target.value;
+      if (clearCatalogSearchBtn) {
+        clearCatalogSearchBtn.classList.toggle("hidden", val.length === 0);
+      }
+      renderCatalogGrid(val, catalogSelectedMfg, catalogSelectedCat);
+    });
+  }
+  if (clearCatalogSearchBtn) {
+    clearCatalogSearchBtn.addEventListener("click", () => {
+      catalogSearchInput.value = "";
+      clearCatalogSearchBtn.classList.add("hidden");
+      renderCatalogGrid("", catalogSelectedMfg, catalogSelectedCat);
+      catalogSearchInput.focus();
+    });
+  }
+
+  // Manufacturer Category Chips in Modal
+  document.querySelectorAll("#mfgFilterChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#mfgFilterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      catalogSelectedMfg = chip.dataset.mfg || "all";
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+    });
+  });
+
+  // Weapon Type Category Chips in Modal
+  document.querySelectorAll("#catFilterChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#catFilterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      catalogSelectedCat = chip.dataset.cat || "all";
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+    });
+  });
+
+  // Gunsmith Operation / Task Quick Filter Pills
+  document.querySelectorAll(".task-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      applyTaskFilter(pill.dataset.task);
+    });
+  });
+
+  // Firearm Platform Selector (hidden fallback)
   if (firearmSelect) {
     firearmSelect.addEventListener("change", async (e) => {
       const selected = e.target.value;
       if (selected && selected !== currentFirearm) {
+        currentFirearm = selected;
+        await loadFirearm(currentFirearm);
+        if (firearmData) {
+          addMessage(
+            "assistant",
+            `Switched active platform to **${escapeHtml(firearmData.name)}** (${escapeHtml(firearmData.subtitle)}).\n\nLoaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench video guides**. How can I assist you on the bench?`,
+            "Platform Switched"
+          );
+        }
+      }
+    });
+  }
         currentFirearm = selected;
         await loadFirearm(currentFirearm);
         if (firearmData) {
@@ -537,11 +647,31 @@ function renderQRCode() {
 // Load Firearm Data
 async function loadFirearm(firearmId) {
   try {
-    const res = await fetch(`/api/firearms/${firearmId}`);
-    if (!res.ok) throw new Error("Failed to load firearm data");
-    firearmData = await res.json();
+    if (window.STATIC_FIREARMS_DATA && window.STATIC_FIREARMS_DATA[firearmId]) {
+      firearmData = window.STATIC_FIREARMS_DATA[firearmId];
+    } else {
+      const res = await fetch(`/api/firearms/${firearmId}`);
+      if (!res.ok) throw new Error("Failed to load firearm data");
+      firearmData = await res.json();
+    }
+
     currentFirearm = firearmId;
     if (firearmSelect) firearmSelect.value = firearmId;
+
+    // Update Header Displays
+    if (headerGunTitle) headerGunTitle.textContent = firearmData.name;
+    if (headerGunMfg) headerGunMfg.textContent = firearmData.manufacturer || "Workshop";
+
+    // Update Sidebar Active Bench Card
+    if (benchCardMfg) benchCardMfg.textContent = firearmData.manufacturer || "Workshop";
+    if (benchCardCategory) benchCardCategory.textContent = firearmData.category || "Firearms";
+    if (benchCardTitle) benchCardTitle.textContent = firearmData.name;
+    if (benchCardSub) benchCardSub.textContent = firearmData.subtitle || "";
+    if (benchCardCalibers) {
+      benchCardCalibers.textContent = (firearmData.calibers && firearmData.calibers.length > 0)
+        ? "Calibers: " + firearmData.calibers.join(" • ")
+        : (firearmData.models && firearmData.models.length > 0 ? "Models: " + firearmData.models.slice(0, 4).join(" • ") : "");
+    }
 
     document.getElementById("manualsCount").textContent = firearmData.manuals.length;
     document.getElementById("schematicsCount").textContent = firearmData.schematics.length;
@@ -566,9 +696,246 @@ async function loadFirearm(firearmId) {
       schematicImg.src = firearmData.schematics[0].url;
       btnExternalLink.href = firearmData.schematics[0].url;
     }
+
+    // Refresh catalog grid if open to show active state
+    renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
   } catch (err) {
     console.error("Error loading firearm:", err);
   }
+}
+
+// Armory & Firearm Catalog Controller
+async function loadAllFirearmsList() {
+  if (window.STATIC_FIREARMS_DATA) {
+    availableFirearmsList = Object.values(window.STATIC_FIREARMS_DATA).map(f => ({
+      id: f.id,
+      name: f.name,
+      subtitle: f.subtitle,
+      manufacturer: f.manufacturer || "General Workshop",
+      category: f.category || "Firearms",
+      models: f.models || [],
+      calibers: f.calibers || [],
+      key_tasks: f.key_tasks || [],
+      manuals_count: (f.manuals || []).length,
+      schematics_count: (f.schematics || []).length,
+      videos_count: (f.videos || []).length,
+      stoppages_count: (f.stoppages || []).length
+    }));
+    return;
+  }
+  try {
+    const res = await fetch("/api/firearms");
+    if (res.ok) {
+      const data = await res.json();
+      availableFirearmsList = data.firearms || [];
+    }
+  } catch (err) {
+    console.warn("Could not load firearms from API:", err);
+  }
+}
+
+function openCatalogModal() {
+  if (!gunCatalogModal) return;
+  gunCatalogModal.showModal();
+  renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+  if (catalogSearchInput) {
+    setTimeout(() => catalogSearchInput.focus(), 100);
+  }
+}
+
+function closeCatalogModal() {
+  if (!gunCatalogModal) return;
+  gunCatalogModal.close();
+}
+
+function resetCatalogFilters() {
+  catalogSelectedMfg = "all";
+  catalogSelectedCat = "all";
+  if (catalogSearchInput) catalogSearchInput.value = "";
+  if (clearCatalogSearchBtn) clearCatalogSearchBtn.classList.add("hidden");
+  document.querySelectorAll("#mfgFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mfg === "all"));
+  document.querySelectorAll("#catFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.cat === "all"));
+  renderCatalogGrid("", "all", "all");
+}
+
+function selectFirearmFromCatalog(firearmId) {
+  if (firearmId !== currentFirearm) {
+    currentFirearm = firearmId;
+    loadFirearm(currentFirearm);
+    if (firearmData) {
+      addMessage(
+        "assistant",
+        `Switched active platform to **${escapeHtml(firearmData.name)}** (${escapeHtml(firearmData.subtitle)}).\n\nLoaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench video guides**. Ready for bench work!`,
+        "Platform Switched"
+      );
+    }
+  }
+  closeCatalogModal();
+}
+
+function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
+  if (!catalogGrid) return;
+  catalogGrid.innerHTML = "";
+  const q = (query || "").toLowerCase().trim();
+
+  // If list not populated yet, build comprehensive fallback list
+  if (availableFirearmsList.length === 0) {
+    availableFirearmsList = [
+      {
+        id: "Lewis_Automatic_Machine_Gun",
+        name: "Lewis Automatic Machine Gun",
+        subtitle: "Model 1914 / 1917 / 1918 (.303 British & .30-06 Springfield)",
+        manufacturer: "Savage Arms / BSA",
+        category: "Machine Guns",
+        models: ["Model 1914", "Model 1917", "Model 1918 Aircraft"],
+        calibers: [".303 British", ".30-06 Springfield"],
+        key_tasks: ["Spring Tension (12-14 lbs)", "Striker Protrusion", "Gas Regulator (S/L)", "Field Strip", "Pan Feed Clearing"],
+        manuals_count: 8,
+        schematics_count: 59,
+        videos_count: 9
+      },
+      {
+        id: "Glock_Pistols",
+        name: "Glock Safe-Action Pistols",
+        subtitle: "Generations 1–5 (9x19mm, .40 S&W, .45 ACP, 10mm Auto)",
+        manufacturer: "Glock",
+        category: "Pistols",
+        models: ["Glock 17", "Glock 19", "Glock 21", "Glock 22", "Glock 26", "Glock 34", "Glock 43"],
+        calibers: ["9x19mm", ".40 S&W", ".45 ACP", "10mm Auto"],
+        key_tasks: ["Cruciform Sear Check (66%)", "5-Drop Lube Protocol", "25¢ Trigger Polish", "30274 Ejector Bar Upgrade", "Detail Strip"],
+        manuals_count: 4,
+        schematics_count: 197,
+        videos_count: 8
+      },
+      {
+        id: "Ruger_Firearms",
+        name: "Ruger Firearms Technical Collection",
+        subtitle: "10/22 Carbine, Mark I–IV Target Pistols & GP100 Revolvers",
+        manufacturer: "Ruger",
+        category: "Rifles / Pistols / Revolvers",
+        models: ["10/22 Carbine", "Mark I", "Mark II", "Mark III", "Mark IV", "GP100 Revolver"],
+        calibers: [".22 LR", ".357 Magnum", ".38 Special"],
+        key_tasks: ["10/22 V-Block Torque (25-30 in-lbs)", "Rotary Mag Tension (1-1/4 turns)", "Mark Series Hammer Strut Alignment", "GP100 Cylinder Gap (0.004\"-0.007\")", "Trigger Shimming"],
+        manuals_count: 5,
+        schematics_count: 51,
+        videos_count: 9
+      },
+      {
+        id: "Beretta_Pistols",
+        name: "Beretta 92 / M9 Series Pistols",
+        subtitle: "92FS, M9, 96, Brigadier & Inox (9x19mm NATO & .40 S&W)",
+        manufacturer: "Beretta",
+        category: "Pistols",
+        models: ["Beretta 92FS", "Beretta M9", "Beretta 92F", "Beretta 96", "Beretta 92D", "Beretta Brigadier", "Beretta Inox"],
+        calibers: ["9x19mm NATO", ".40 S&W"],
+        key_tasks: ["Dead Trigger Spring Fix", "Locking Block Inspection (15k rds)", "Factory 92D Hammer Spring (8 lbs)", "Slide Detail Strip", "Extractor Carbon Cleaning"],
+        manuals_count: 3,
+        schematics_count: 75,
+        videos_count: 8
+      },
+      {
+        id: "General_Gunsmithing",
+        name: "General Gunsmithing & Workshop Disciplines",
+        subtitle: "Headspace, Chamber Casting, Machining, Bluing & Diagnostics",
+        manufacturer: "General Workshop",
+        category: "Workshop Disciplines",
+        models: ["All Firearms", "Bolt Actions", "Lever Actions", "Semi-Autos", "Revolvers"],
+        calibers: ["Rimmed", "Rimless", "Belted Magnums", "Straight Wall"],
+        key_tasks: ["Headspace (Go / No-Go / Field)", "Cerrosafe Chamber Casting", "Slow Rust & Hot Caustic Bluing", "11° Target Crowning", "Glass Bedding", "Sear Stoning"],
+        manuals_count: 5,
+        schematics_count: 267,
+        videos_count: 8
+      }
+    ];
+  }
+
+  const filtered = availableFirearmsList.filter(f => {
+    if (filterMfg !== "all") {
+      const mfgLower = (f.manufacturer || "").toLowerCase();
+      if (!mfgLower.includes(filterMfg.toLowerCase())) return false;
+    }
+    if (filterCat !== "all") {
+      const catLower = (f.category || "").toLowerCase();
+      if (!catLower.includes(filterCat.toLowerCase())) return false;
+    }
+    if (q) {
+      const blob = [
+        f.name,
+        f.subtitle,
+        f.manufacturer,
+        f.category,
+        ...(f.models || []),
+        ...(f.calibers || []),
+        ...(f.key_tasks || [])
+      ].join(" ").toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    catalogGrid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-dim);">
+        <p style="font-size: 15px; margin-bottom: 8px;">No firearms or shop platforms match your filter.</p>
+        <button class="btn-secondary" onclick="resetCatalogFilters()" style="margin-top: 10px;">Reset Filters</button>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.forEach(f => {
+    const isActive = f.id === currentFirearm;
+    const card = document.createElement("div");
+    card.className = `catalog-card ${isActive ? "active-on-bench" : ""}`;
+    card.dataset.id = f.id;
+
+    const modelsHtml = (f.models || []).slice(0, 6).map(m => `<span class="model-tag">${escapeHtml(m)}</span>`).join("");
+    const tasksHtml = (f.key_tasks || []).slice(0, 4).map(t => `<span class="task-tag">${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <div class="catalog-card-header">
+        <div class="catalog-card-header-left">
+          <div class="catalog-card-badges">
+            <span class="badge-mfg">${escapeHtml(f.manufacturer || "WORKSHOP")}</span>
+            <span class="badge-cat">${escapeHtml(f.category || "FIREARMS")}</span>
+          </div>
+          <h3 class="catalog-card-title">${escapeHtml(f.name)}</h3>
+          <p class="catalog-card-subtitle">${escapeHtml(f.subtitle || "")}</p>
+        </div>
+        ${isActive ? '<span class="bench-status-badge">ON BENCH</span>' : ''}
+      </div>
+
+      ${f.models && f.models.length > 0 ? `
+        <div class="catalog-models-box">
+          <span class="catalog-models-label">MODELS &amp; CALIBERS:</span>
+          <div class="catalog-models-tags">${modelsHtml}</div>
+        </div>
+      ` : ''}
+
+      ${f.key_tasks && f.key_tasks.length > 0 ? `
+        <div class="catalog-tasks-box">${tasksHtml}</div>
+      ` : ''}
+
+      <div class="catalog-card-footer">
+        <div class="catalog-card-stats">
+          <span><strong>${f.manuals_count || 0}</strong> Manuals</span>
+          <span>•</span>
+          <span><strong>${f.schematics_count || 0}</strong> Schematics</span>
+          <span>•</span>
+          <span><strong>${f.videos_count || 0}</strong> Guides</span>
+        </div>
+        <button class="btn-put-on-bench">
+          ${isActive ? '✓ Active on Bench' : '🔧 Put on Bench'}
+        </button>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      selectFirearmFromCatalog(f.id);
+    });
+
+    catalogGrid.appendChild(card);
+  });
 }
 
 // Render Dynamic Dossier Specifications
@@ -674,12 +1041,29 @@ function selectManual(filename, title, switchToPreview = true) {
     c.classList.toggle("active", c.dataset.id === filename);
   });
 
-  const pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
-  pdfFrame.src = pdfUrl;
+  const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+  let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
+  if (isStatic && manualObj && manualObj.url) {
+    pdfUrl = manualObj.url;
+  }
+
+  if (isStatic && manualObj) {
+    // On GitHub Pages: use Google Docs viewer or direct link
+    pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(manualObj.url)}&embedded=true`;
+    if (btnPdfFullscreen) btnPdfFullscreen.href = manualObj.github_url || manualObj.url;
+    if (btnExternalLink) btnExternalLink.href = manualObj.github_url || manualObj.url;
+    if (btnPdfDownload) btnPdfDownload.href = manualObj.raw_url || manualObj.url;
+  } else {
+    pdfFrame.src = pdfUrl;
+    if (btnPdfFullscreen) btnPdfFullscreen.href = pdfUrl;
+    if (btnExternalLink) btnExternalLink.href = pdfUrl;
+    if (btnPdfDownload) btnPdfDownload.href = pdfUrl;
+  }
+
   previewTitle.textContent = title;
-  btnExternalLink.href = pdfUrl;
-  btnPdfFullscreen.href = pdfUrl;
-  pdfMobileDocName.textContent = title;
+  if (pdfDocName) pdfDocName.textContent = title;
+  if (pdfMobileDocName) pdfMobileDocName.textContent = title;
   switchPreviewMode("pdf");
 
   if (switchToPreview && window.innerWidth <= 900) {
@@ -807,16 +1191,53 @@ function switchLibraryTab(tabName) {
   filterCurrentTab();
 }
 
+// Gunsmith Operation / Task Quick Filters
+function applyTaskFilter(task) {
+  activeGunsmithTask = task;
+  if (activeTaskLabel) activeTaskLabel.textContent = task.toUpperCase();
+
+  // Highlight active pill
+  document.querySelectorAll(".task-pill").forEach(p => {
+    p.classList.toggle("active", p.dataset.task === task);
+  });
+
+  if (task === "stoppage") {
+    switchLibraryTab("stoppages");
+    switchPreviewMode("dossier");
+    return;
+  }
+  if (task === "specs") {
+    switchPreviewMode("dossier");
+    return;
+  }
+
+  // Filter current tab items
+  filterCurrentTab();
+}
+
 // Filter Cards Inside Active Tab
 function filterCurrentTab() {
-  const query = tabFilterInput.value.toLowerCase().trim();
+  const query = (tabFilterInput ? tabFilterInput.value : "").toLowerCase().trim();
   const activeContainer = document.querySelector(".library-content-area > :not(.hidden)");
   if (!activeContainer) return;
 
+  const taskKeywords = {
+    all: [],
+    strip: ["strip", "disassembly", "assembly", "takedown", "field", "detail", "pinion", "bolt", "slide", "frame", "stock", "barrel", "trigger", "action", "strut"],
+    clean: ["lube", "oil", "clean", "fouling", "maintenance", "solvent", "lubricat", "grease", "carbon", "drops", "rust"],
+    stoppage: ["stoppage", "jam", "malfunction", "misfire", "feed", "extract", "eject", "remedy", "spring"],
+    modify: ["polish", "trigger", "upgrade", "tune", "stoning", "bedding", "remedy", "spring", "mod", "custom", "machin", "chamber", "crown", "shim"],
+    specs: ["torque", "headspace", "spec", "clearance", "gap", "tension", "tolerance", "gauge", "lbs", "in-lbs", "inch"]
+  };
+
+  const activeWords = taskKeywords[activeGunsmithTask] || [];
+
   const cards = activeContainer.children;
   for (let card of cards) {
-    const text = card.dataset.search || "";
-    card.style.display = text.includes(query) ? "" : "none";
+    const text = (card.dataset.search || card.textContent || "").toLowerCase();
+    const matchesQuery = !query || text.includes(query);
+    const matchesTask = activeGunsmithTask === "all" || activeWords.some(w => text.includes(w));
+    card.style.display = (matchesQuery && matchesTask) ? "" : "none";
   }
 }
 
@@ -854,37 +1275,79 @@ function resetZoom() {
   zoomLevelText.textContent = "100%";
 }
 
-// Global Live Search
+// Global Live Search with Cross-Platform & Cross-Manufacturer Matching
 async function executeGlobalSearch(q) {
+  const query = q.trim();
+  if (query.length < 2) {
+    searchResultsPopup.classList.add("hidden");
+    return;
+  }
+
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&firearm_id=${currentFirearm}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    const results = data.results;
+    let results = [];
+    const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+
+    if (!isStatic) {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&firearm_id=${currentFirearm}`);
+        if (res.ok) {
+          const data = await res.json();
+          results = data.results || [];
+        }
+      } catch (e) {}
+    }
+
+    // Client-side search if on GitHub Pages or if API returned no platform matches
+    if (results.length === 0 || isStatic) {
+      const clientResults = executeClientSideSearch(query);
+      // Merge or prioritize platform switcher items
+      const existingTargets = new Set(results.map(r => r.target));
+      clientResults.forEach(cr => {
+        if (!existingTargets.has(cr.target)) {
+          if (cr.action === "switch_firearm") {
+            results.unshift(cr);
+          } else {
+            results.push(cr);
+          }
+          existingTargets.add(cr.target);
+        }
+      });
+    }
 
     if (results.length === 0) {
-      searchResultsPopup.innerHTML = `<div style="padding: 12px; color: var(--text-dim); text-align: center;">No matches found for "${escapeHtml(q)}".</div>`;
+      searchResultsPopup.innerHTML = `<div style="padding: 12px; color: var(--text-dim); text-align: center;">No matches found for "${escapeHtml(query)}".</div>`;
       searchResultsPopup.classList.remove("hidden");
       return;
     }
 
     searchResultsPopup.innerHTML = "";
-    results.slice(0, 8).forEach(r => {
+    results.slice(0, 10).forEach(r => {
       const row = document.createElement("div");
-      row.className = "search-result-item";
+      const isSwitch = r.action === "switch_firearm";
+      row.className = `search-result-item ${isSwitch ? "firearm-switch-item" : ""}`;
       row.innerHTML = `
         <div>
           <div class="item-title">${escapeHtml(r.title)}</div>
           <div class="item-sub">${escapeHtml(r.subtitle)}</div>
         </div>
-        <span class="item-tag">${r.type}</span>
+        <span class="item-tag">${isSwitch ? "BENCH" : r.type}</span>
       `;
 
       row.addEventListener("click", () => {
         searchResultsPopup.classList.add("hidden");
         globalSearchInput.value = "";
         
-        if (r.action === "open_manual") {
+        if (r.action === "switch_firearm") {
+          currentFirearm = r.target;
+          loadFirearm(r.target);
+          if (firearmData) {
+            addMessage(
+              "assistant",
+              `Switched active platform to **${escapeHtml(firearmData.name)}** from global search. Ready on the bench!`,
+              "Platform Switched"
+            );
+          }
+        } else if (r.action === "open_manual") {
           switchLibraryTab("manuals");
           selectManual(r.target, r.title, true);
         } else if (r.action === "open_video") {
@@ -904,6 +1367,82 @@ async function executeGlobalSearch(q) {
   } catch (err) {
     console.error("Search error:", err);
   }
+}
+
+// Client-side search engine for offline & GitHub Pages support
+function executeClientSideSearch(q) {
+  const query = q.toLowerCase();
+  const results = [];
+
+  // 1. Search all platforms / manufacturers / models
+  (availableFirearmsList || []).forEach(f => {
+    const blob = [
+      f.name,
+      f.subtitle,
+      f.manufacturer,
+      f.category,
+      ...(f.models || []),
+      ...(f.calibers || []),
+      ...(f.key_tasks || [])
+    ].join(" ").toLowerCase();
+
+    if (blob.includes(query)) {
+      results.push({
+        type: "platform",
+        title: `🔫 Put on Bench: ${f.name}`,
+        subtitle: `${f.manufacturer} • ${f.category}`,
+        action: "switch_firearm",
+        target: f.id
+      });
+    }
+  });
+
+  // 2. Search active firearm technical manuals
+  if (firearmData && firearmData.manuals) {
+    firearmData.manuals.forEach(m => {
+      if ((m.title + " " + m.filename).toLowerCase().includes(query)) {
+        results.push({
+          type: "manual",
+          title: m.title,
+          subtitle: `${m.size_mb} MB • Technical Manual`,
+          action: "open_manual",
+          target: m.filename
+        });
+      }
+    });
+  }
+
+  // 3. Search active firearm videos
+  if (firearmData && firearmData.videos) {
+    firearmData.videos.forEach(v => {
+      if ((v.title + " " + (v.summary || "")).toLowerCase().includes(query)) {
+        results.push({
+          type: "video",
+          title: v.title,
+          subtitle: `${v.creator} • ${v.category}`,
+          action: "open_video",
+          target: v.id
+        });
+      }
+    });
+  }
+
+  // 4. Search active firearm stoppages
+  if (firearmData && firearmData.stoppages) {
+    firearmData.stoppages.forEach(s => {
+      if ((s.position + " " + (s.causes || []).join(" ") + " " + s.action).toLowerCase().includes(query)) {
+        results.push({
+          type: "stoppage",
+          title: s.position,
+          subtitle: s.short_desc || "Malfunction Diagnostics",
+          action: "open_stoppage",
+          target: s.position
+        });
+      }
+    });
+  }
+
+  return results;
 }
 
 // AI Assistant Chat Handler

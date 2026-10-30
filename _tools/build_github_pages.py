@@ -57,6 +57,11 @@ for fid, meta in FIREARMS_METADATA.items():
         "id": fid,
         "name": meta["name"],
         "subtitle": meta["subtitle"],
+        "manufacturer": meta.get("manufacturer", "General Workshop"),
+        "category": meta.get("category", "Firearms"),
+        "models": meta.get("models", []),
+        "calibers": meta.get("calibers", []),
+        "key_tasks": meta.get("key_tasks", []),
         "specs": meta["specs"],
         "stoppages": meta["stoppages"],
         "videos": meta["videos"],
@@ -71,51 +76,11 @@ data_js_content = f"// Static firearms repository data for GitHub Pages deployme
 index_html = (static_dir / "index.html").read_text(encoding="utf-8")
 index_html = index_html.replace('href="/static/', 'href="./')
 index_html = index_html.replace('src="/static/', 'src="./')
-# Ensure pdfFrame starts empty on static pages
-index_html = index_html.replace('src="/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf"', 'src="about:blank"')
 index_html = index_html.replace('<script src="./app.js"></script>', '<script src="./data.js"></script>\n  <script src="./app.js"></script>')
 (docs_dir / "index.html").write_text(index_html, encoding="utf-8")
 
 # 5. Create docs/app.js adapted for GitHub Pages static fallback
 app_js = (static_dir / "app.js").read_text(encoding="utf-8")
-
-# Enhance loadFirearm to check window.STATIC_FIREARMS_DATA
-target_load = 'async function loadFirearm(firearmId) {'
-replacement_load = '''async function loadFirearm(firearmId) {
-  try {
-    if (window.STATIC_FIREARMS_DATA && window.STATIC_FIREARMS_DATA[firearmId]) {
-      firearmData = window.STATIC_FIREARMS_DATA[firearmId];
-    } else {
-      const res = await fetch(`/api/firearms/${firearmId}`);
-      if (!res.ok) throw new Error("Failed to load firearm data");
-      firearmData = await res.json();
-    }'''
-
-app_js = app_js.replace(target_load, replacement_load, 1)
-
-# Enhance selectManual to support GitHub raw / Google docs viewer
-target_manual = '  const pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;'
-replacement_manual = '''  const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
-  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-  let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
-  if (isStatic && manualObj && manualObj.url) {
-    pdfUrl = manualObj.url;
-  }'''
-
-app_js = app_js.replace(target_manual, replacement_manual, 1)
-
-# Enhance pdfFrame.src assignment
-target_frame = '  pdfFrame.src = pdfUrl;'
-replacement_frame = '''  if (isStatic && manualObj) {
-    // On GitHub Pages: use Google Docs viewer or direct link
-    pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(manualObj.url)}&embedded=true`;
-    btnPdfFullscreen.href = manualObj.github_url || manualObj.url;
-    btnExternalLink.href = manualObj.github_url || manualObj.url;
-  } else {
-    pdfFrame.src = pdfUrl;
-  }'''
-
-app_js = app_js.replace(target_frame, replacement_frame, 1)
 
 # Enhance chat handling for static GitHub Pages fallback
 target_chat = '    const res = await fetch("/api/chat", {'

@@ -46,16 +46,27 @@
 
     <!-- Active Firearm, Mobile Connect & Local LLM Badge -->
     <div class="header-controls">
-      <div class="firearm-picker">
-        <label for="firearmSelect">PLATFORM:</label>
-        <select id="firearmSelect">
-          <option value="Lewis_Automatic_Machine_Gun" selected>Lewis Light Machine Gun (.303 / .30-06)</option>
-          <option value="Glock_Pistols">Glock Safe-Action Pistols (Gen 1–5)</option>
-          <option value="Ruger_Firearms">Ruger Firearms (10/22, Mark I–IV, GP100)</option>
-          <option value="Beretta_Pistols">Beretta Pistols (92FS, M9 Series)</option>
-          <option value="General_Gunsmithing">General Gunsmithing &amp; Workshop Disciplines</option>
-        </select>
-      </div>
+      <button id="openGunCatalogBtn" class="bench-firearm-btn" title="Open Gunsmith Armory & Switch Active Firearm">
+        <div class="bench-firearm-icon">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div class="bench-firearm-info">
+          <div class="bench-firearm-top">
+            <span class="bench-tag">ON BENCH</span>
+            <span id="headerGunMfg" class="bench-mfg-badge">Savage Arms / BSA</span>
+          </div>
+          <div id="headerGunTitle" class="bench-gun-name">Lewis Automatic Machine Gun</div>
+        </div>
+        <span class="bench-switch-pill">▾ Switch Gun</span>
+      </button>
+
+      <select id="firearmSelect" class="sr-only" aria-hidden="true">
+        <option value="Lewis_Automatic_Machine_Gun" selected>Lewis Light Machine Gun (.303 / .30-06)</option>
+        <option value="Glock_Pistols">Glock Safe-Action Pistols (Gen 1–5)</option>
+        <option value="Ruger_Firearms">Ruger Firearms (10/22, Mark I–IV, GP100)</option>
+        <option value="Beretta_Pistols">Beretta Pistols (92FS, M9 Series)</option>
+        <option value="General_Gunsmithing">General Gunsmithing &amp; Workshop Disciplines</option>
+      </select>
 
       <button id="mobileConnectBtn" class="mobile-connect-btn" title="Connect Phone / Tablet via Wi-Fi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,7 +93,39 @@
     <!-- LEFT PANEL: Library Navigator -->
     <aside class="panel-library" id="panelLibrary">
       <div class="panel-header">
-        <h2>TECHNICAL LIBRARY</h2>
+        <h2>ARMORER WORKBENCH</h2>
+      </div>
+
+      <!-- Active Firearm Card on Workbench -->
+      <div class="bench-active-card" id="benchActiveCard">
+        <div class="bench-card-meta">
+          <span class="bench-card-mfg" id="benchCardMfg">Savage Arms / BSA</span>
+          <span class="bench-card-cat" id="benchCardCategory">Machine Guns</span>
+        </div>
+        <h3 class="bench-card-title" id="benchCardTitle">Lewis Light Machine Gun</h3>
+        <p class="bench-card-sub" id="benchCardSub">Model 1914 / 1917 / 1918 (.303 &amp; .30-06)</p>
+        <div class="bench-card-calibers" id="benchCardCalibers">Calibers: .303 British • .30-06 Springfield</div>
+        
+        <button id="sidebarSwitchGunBtn" class="bench-card-switch-btn" title="Open Catalog to Switch Firearm or Brand">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          <span>Switch Firearm / Brand</span>
+        </button>
+      </div>
+
+      <!-- Gunsmith Task Quick Filters -->
+      <div class="task-filter-container">
+        <div class="task-filter-header">
+          <span class="task-filter-label">TASK / OPERATION:</span>
+          <span id="activeTaskLabel" class="task-filter-active-name">ALL</span>
+        </div>
+        <div class="task-filter-pills" id="taskFilterPills">
+          <button class="task-pill active" data-task="all">All</button>
+          <button class="task-pill" data-task="strip" title="Field Stripping & Detail Disassembly">🔩 Strip</button>
+          <button class="task-pill" data-task="clean" title="Cleaning & Lubrication Protocol">🧹 Lube</button>
+          <button class="task-pill" data-task="stoppage" title="Immediate Action, Malfunctions & Stoppages">⚠️ Jams</button>
+          <button class="task-pill" data-task="modify" title="Custom Tuning, Stoning & Modifications">⚡ Modify</button>
+          <button class="task-pill" data-task="specs" title="Clearances, Headspace & Torque Specs">📏 Specs</button>
+        </div>
       </div>
 
       <!-- Navigation Tabs -->
@@ -163,9 +206,21 @@
       <div class="preview-stage-container">
         <!-- 1. PDF Stage -->
         <div id="pdfStage" class="stage active">
-          <div class="pdf-mobile-banner">
-            <span id="pdfMobileDocName">Viewing Manual PDF</span>
-            <a id="btnPdfFullscreen" href="#" target="_blank" class="pdf-open-btn">Open Fullscreen PDF ↗</a>
+          <div class="pdf-viewer-bar">
+            <div class="pdf-viewer-info">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="pdfDocName">Viewing Technical Manual</span>
+            </div>
+            <div class="pdf-viewer-actions">
+              <a id="btnPdfFullscreen" href="#" target="_blank" class="pdf-action-pill" title="Open PDF in Full Screen Tab">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span>Fullscreen ↗</span>
+              </a>
+              <a id="btnPdfDownload" href="#" download class="pdf-action-pill download-pill" title="Download Document">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download</span>
+              </a>
+            </div>
           </div>
           <iframe id="pdfFrame" src="about:blank"></iframe>
         </div>
@@ -418,6 +473,64 @@
 
       <div class="modal-footer">
         <button type="button" id="closeMobileDialogBtn2" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Gunsmith Firearm & Manufacturer Catalog Modal -->
+  <dialog id="gunCatalogModal" class="catalog-modal">
+    <div class="catalog-modal-content">
+      <div class="catalog-header">
+        <div class="catalog-header-title">
+          <div class="catalog-header-badge">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div>
+            <h2>ARMORY &amp; FIREARMS CATALOG</h2>
+            <p>Select a platform to place on the bench, or filter by manufacturer, gun model, or shop discipline.</p>
+          </div>
+        </div>
+        <button id="closeCatalogBtn" class="close-modal-btn" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <!-- Instant Search & Category Filters -->
+      <div class="catalog-toolbar">
+        <div class="catalog-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="catalogSearchInput" placeholder="Search gun (e.g. Glock 19, 10/22, M9, GP100) or manufacturer (Ruger, Beretta, Glock, Savage)..." autocomplete="off">
+          <button id="clearCatalogSearchBtn" class="clear-search-btn hidden">&times;</button>
+        </div>
+
+        <div class="catalog-filters-row">
+          <div class="catalog-filter-group">
+            <span class="filter-group-label">MANUFACTURER:</span>
+            <div class="catalog-filter-chips" id="mfgFilterChips">
+              <button class="chip active" data-mfg="all">All Brands</button>
+              <button class="chip" data-mfg="Glock">Glock</button>
+              <button class="chip" data-mfg="Ruger">Ruger</button>
+              <button class="chip" data-mfg="Beretta">Beretta</button>
+              <button class="chip" data-mfg="Savage Arms / BSA">Savage / BSA</button>
+              <button class="chip" data-mfg="General Workshop">General Workshop</button>
+            </div>
+          </div>
+
+          <div class="catalog-filter-group">
+            <span class="filter-group-label">CATEGORY:</span>
+            <div class="catalog-filter-chips" id="catFilterChips">
+              <button class="chip active" data-cat="all">All Categories</button>
+              <button class="chip" data-cat="Pistols">Pistols</button>
+              <button class="chip" data-cat="Rifles">Rifles &amp; Carbines</button>
+              <button class="chip" data-cat="Revolvers">Revolvers</button>
+              <button class="chip" data-cat="Machine Guns">Machine Guns</button>
+              <button class="chip" data-cat="Workshop Disciplines">Shop Disciplines</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Firearms Cards Grid -->
+      <div class="catalog-grid" id="catalogGrid">
+        <!-- Injected dynamically via app.js -->
       </div>
     </div>
   </dialog>

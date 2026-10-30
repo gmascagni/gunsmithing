@@ -120,6 +120,11 @@ def load_firearm_data(firearm_id: str) -> Dict[str, Any]:
         "id": firearm_id,
         "name": meta.get("name", firearm_id.replace("_", " ")),
         "subtitle": meta.get("subtitle", "Technical Repository"),
+        "manufacturer": meta.get("manufacturer", "General"),
+        "category": meta.get("category", "Firearms"),
+        "models": meta.get("models", []),
+        "calibers": meta.get("calibers", []),
+        "key_tasks": meta.get("key_tasks", []),
         "manuals": manuals,
         "schematics": schematics,
         "videos": meta.get("videos", []),
@@ -143,14 +148,26 @@ async def get_favicon():
 
 @app.get("/api/firearms")
 async def list_firearms():
-    # Discover available firearms in directory
+    # Discover available firearms in directory with full armory metadata
     firearms = []
-    for d in BASE_DIR.iterdir():
+    for d in sorted(BASE_DIR.iterdir(), key=lambda p: p.name):
         if d.is_dir() and not d.name.startswith(("_", ".")) and (d / "manuals").exists():
+            meta = FIREARMS_METADATA.get(d.name, {})
+            manuals_count = len(list((d / "manuals").glob("*.pdf")))
+            schematics_count = len(list((d / "schematics").glob("*.*"))) if (d / "schematics").exists() else 0
             firearms.append({
                 "id": d.name,
-                "name": d.name.replace("_", " "),
-                "has_manuals": True
+                "name": meta.get("name", d.name.replace("_", " ")),
+                "subtitle": meta.get("subtitle", ""),
+                "manufacturer": meta.get("manufacturer", "General"),
+                "category": meta.get("category", "Firearms"),
+                "models": meta.get("models", []),
+                "calibers": meta.get("calibers", []),
+                "key_tasks": meta.get("key_tasks", []),
+                "manuals_count": manuals_count,
+                "schematics_count": schematics_count,
+                "videos_count": len(meta.get("videos", [])),
+                "stoppages_count": len(meta.get("stoppages", []))
             })
     return {"firearms": firearms}
 
@@ -789,8 +806,31 @@ async def chat_handler(req: ChatRequest):
 @app.get("/api/search")
 async def search_repository(q: str = Query(..., min_length=2), firearm_id: str = "Lewis_Automatic_Machine_Gun"):
     query = q.lower()
-    data = load_firearm_data(firearm_id)
     results = []
+
+    # 1. Search Across All Firearms / Manufacturers / Models / Key Tasks
+    for fid, meta in FIREARMS_METADATA.items():
+        fname = meta.get("name", "").lower()
+        mfg = meta.get("manufacturer", "").lower()
+        sub = meta.get("subtitle", "").lower()
+        models = [m.lower() for m in meta.get("models", [])]
+        calibers = [c.lower() for c in meta.get("calibers", [])]
+        key_tasks = [t.lower() for t in meta.get("key_tasks", [])]
+        specs_blob = " ".join(str(v).lower() for v in meta.get("specs", {}).values())
+        
+        if (query in fname or query in mfg or query in sub or 
+            any(query in m for m in models) or any(query in c for c in calibers) or
+            any(query in t for t in key_tasks) or query in specs_blob):
+            results.append({
+                "type": "firearm",
+                "title": f"🔫 Switch to: {meta.get('name')}",
+                "subtitle": f"{meta.get('manufacturer')} • {meta.get('category')}",
+                "action": "switch_firearm",
+                "target": fid
+            })
+
+    # 2. Search active firearm technical data
+    data = load_firearm_data(firearm_id)
 
     # Search manuals
     for m in data["manuals"]:

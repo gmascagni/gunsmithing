@@ -9,6 +9,11 @@ FIREARMS_METADATA: Dict[str, Dict[str, Any]] = {
     "Lewis_Automatic_Machine_Gun": {
         "name": "Lewis Automatic Machine Gun",
         "subtitle": "Model 1914 / 1917 / 1918 (.303 British & .30-06 Springfield)",
+        "manufacturer": "Savage Arms / BSA",
+        "category": "Machine Guns",
+        "models": ["Model 1914", "Model 1917", "Model 1918 Aircraft"],
+        "calibers": [".303 British", ".30-06 Springfield"],
+        "key_tasks": ["Spring Tension (12-14 lbs)", "Striker Protrusion", "Gas Regulator (S/L)", "Field Strip", "Pan Feed Clearing"],
         "specs": {
             "calibers": ".303 British (Mk VII rimmed) / .30-06 Springfield (US M1917/1918 rimless)",
             "operation": "Gas-operated (cup piston), open-bolt, rotating 4-lug bolt, rack & pinion clock spring return",
@@ -154,6 +159,11 @@ FIREARMS_METADATA: Dict[str, Dict[str, Any]] = {
     "Glock_Pistols": {
         "name": "Glock Safe-Action Pistols",
         "subtitle": "Generations 1–5 (9x19mm, .40 S&W, .45 ACP, 10mm Auto)",
+        "manufacturer": "Glock",
+        "category": "Pistols",
+        "models": ["Glock 17", "Glock 19", "Glock 21", "Glock 22", "Glock 23", "Glock 26", "Glock 34", "Glock 43", "Glock 43X", "Glock 48"],
+        "calibers": ["9x19mm", ".40 S&W", ".45 ACP", "10mm Auto"],
+        "key_tasks": ["Cruciform Sear Check (66%)", "5-Drop Lube Protocol", "25¢ Trigger Polish", "30274 Ejector Bar Upgrade", "Detail Strip"],
         "specs": {
             "cruciform_sear_engagement": "≥ 66% (minimum 2/3 sear overlap) verified via orange armorer inspection cover plate (SP 02096)",
             "connector_gap": "0.005\" to 0.010\" clearance between connector top tab and trigger housing wall",
@@ -286,6 +296,11 @@ FIREARMS_METADATA: Dict[str, Dict[str, Any]] = {
     "Ruger_Firearms": {
         "name": "Ruger Firearms Technical Collection",
         "subtitle": "10/22 Carbine, Mark I–IV Target Pistols & GP100 Revolvers",
+        "manufacturer": "Ruger",
+        "category": "Rifles / Pistols / Revolvers",
+        "models": ["10/22 Carbine", "Mark I", "Mark II", "Mark III", "Mark IV", "GP100 Revolver"],
+        "calibers": [".22 LR", ".357 Magnum", ".38 Special"],
+        "key_tasks": ["10/22 V-Block Torque (25-30 in-lbs)", "Rotary Mag Tension (1-1/4 turns)", "Mark Series Hammer Strut Alignment", "GP100 Cylinder Gap (0.004\"-0.007\")", "Trigger Shimming"],
         "specs": {
             "10_22_takedown_action_screw": "15 to 20 in-lbs (wood/synthetic stock) / 25 in-lbs (pillar bedding)",
             "10_22_v_block_clamp_screws": "25 to 30 in-lbs (tighten evenly in alternation; do NOT overtighten to avoid barrel droop)",
@@ -423,6 +438,11 @@ FIREARMS_METADATA: Dict[str, Dict[str, Any]] = {
     "Beretta_Pistols": {
         "name": "Beretta 92 / M9 Series Pistols",
         "subtitle": "92FS, M9, 96, Brigadier & Inox (9x19mm NATO & .40 S&W)",
+        "manufacturer": "Beretta",
+        "category": "Pistols",
+        "models": ["Beretta 92FS", "Beretta M9", "Beretta 92F", "Beretta 96", "Beretta 92D", "Beretta Brigadier", "Beretta Inox"],
+        "calibers": ["9x19mm NATO", ".40 S&W"],
+        "key_tasks": ["Dead Trigger Spring Fix", "Locking Block Inspection (15k rds)", "Factory 92D Hammer Spring (8 lbs)", "Slide Detail Strip", "Extractor Carbon Cleaning"],
         "specs": {
             "operating_system": "Short recoil falling locking block (Walther P38 heritage) with non-tilting straight-line barrel",
             "locking_block_service_life": "Inspect every 5,000 rds; replace every 15,000–20,000 rds (Gen 3 radiused block)",
@@ -549,6 +569,11 @@ FIREARMS_METADATA: Dict[str, Dict[str, Any]] = {
     "General_Gunsmithing": {
         "name": "General Gunsmithing & Workshop Disciplines",
         "subtitle": "Headspace, Chamber Casting, Machining, Bluing & Diagnostics",
+        "manufacturer": "General Workshop",
+        "category": "Workshop Disciplines",
+        "models": ["All Firearms", "Bolt Actions", "Lever Actions", "Semi-Autos", "Revolvers"],
+        "calibers": ["Rimmed", "Rimless", "Belted Magnums", "Straight Wall"],
+        "key_tasks": ["Headspace (Go / No-Go / Field)", "Cerrosafe Chamber Casting", "Slow Rust & Hot Caustic Bluing", "11° Target Crowning", "Glass Bedding", "Sear Stoning"],
         "specs": {
             "headspace_safety_rule": "Bolt MUST close on GO gauge; bolt must NOT close on NO-GO with light finger pressure; bolt closing on FIELD is DANGEROUS/UNSAFE",
             "cerrosafe_casting_window": "Pour alloy at 160°–190°F. Measure cast at EXACTLY 1 hour after pouring for 1:1 true chamber dimension",
