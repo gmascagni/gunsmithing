@@ -33,6 +33,43 @@ const previewTitle = document.getElementById("previewTitle");
 const btnExternalLink = document.getElementById("btnExternalLink");
 const zoomLevelText = document.getElementById("zoomLevel");
 
+// Schematic Inspector & Circle-to-Search Elements
+const schematicViewport = document.getElementById("schematicViewport");
+const selectionOverlayCanvas = document.getElementById("selectionOverlayCanvas");
+const schematicPanModeBtn = document.getElementById("schematicPanModeBtn");
+const schematicCircleModeBtn = document.getElementById("schematicCircleModeBtn");
+const schematicPlateSelect = document.getElementById("schematicPlateSelect");
+const circleActionPill = document.getElementById("circleActionPill");
+const btnIdentifyCircledPart = document.getElementById("btnIdentifyCircledPart");
+const btnClearCircle = document.getElementById("btnClearCircle");
+const partInspectorDrawer = document.getElementById("partInspectorDrawer");
+const inspectorPlatformBadge = document.getElementById("inspectorPlatformBadge");
+const btnClosePartInspector = document.getElementById("btnClosePartInspector");
+const inspectorCropImg = document.getElementById("inspectorCropImg");
+const inspectorPartName = document.getElementById("inspectorPartName");
+const inspectorPartOem = document.getElementById("inspectorPartOem");
+const inspectorPartAssembly = document.getElementById("inspectorPartAssembly");
+const inspectorPartTolerances = document.getElementById("inspectorPartTolerances");
+const inspectorPartMalfunctions = document.getElementById("inspectorPartMalfunctions");
+const inspectorPartMaintenance = document.getElementById("inspectorPartMaintenance");
+const btnAskAiAboutPart = document.getElementById("btnAskAiAboutPart");
+const btnFindPartVideos = document.getElementById("btnFindPartVideos");
+const btnSearchPartManual = document.getElementById("btnSearchPartManual");
+
+// Schematic Navigation & Inspection State
+let schematicToolMode = "pan"; // "pan" or "circle"
+let panX = 0;
+let panY = 0;
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+
+let isCircling = false;
+let circleStartX = 0;
+let circleStartY = 0;
+let currentCircle = null; // { cx, cy, rx, ry, r, norm_x, norm_y, norm_r, rectW, rectH }
+let currentIdentifiedPart = null;
+
 const pdfStage = document.getElementById("pdfStage");
 const schematicStage = document.getElementById("schematicStage");
 const videoStage = document.getElementById("videoStage");
@@ -330,21 +367,8 @@ function setupEventListeners() {
     }
   });
 
-  // Schematic Zoom Controls
-  document.getElementById("zoomInBtn").addEventListener("click", () => adjustZoom(0.2));
-  document.getElementById("zoomOutBtn").addEventListener("click", () => adjustZoom(-0.2));
-  document.getElementById("zoomResetBtn").addEventListener("click", () => resetZoom());
-
-  // Mouse wheel zoom on schematic
-  schematicCanvas.addEventListener("wheel", (e) => {
-    if (schematicStage.classList.contains("active")) {
-      e.preventDefault();
-      adjustZoom(e.deltaY < 0 ? 0.15 : -0.15);
-    }
-  }, { passive: false });
-
-  // Touch Support for Schematic Canvas (Pinch-to-zoom & single-finger pan)
-  setupTouchSchematic();
+  // Setup Interactive Schematic Inspector (Pan, Zoom & Circle-to-Search)
+  setupSchematicInspector();
 
   // Chat Form Submit
   chatForm.addEventListener("submit", (e) => {
@@ -643,39 +667,6 @@ function setMobileView(viewName) {
   panelAssistant.classList.toggle("mobile-active", viewName === "assistant");
 }
 
-// Touch Gestures for Schematics
-function setupTouchSchematic() {
-  let touchStartDist = 0;
-  let initialZoom = 1.0;
-
-  schematicCanvas.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 2) {
-      touchStartDist = Math.hypot(
-        e.touches[0].pageX - e.touches[1].pageX,
-        e.touches[0].pageY - e.touches[1].pageY
-      );
-      initialZoom = currentSchematicZoom;
-    }
-  }, { passive: true });
-
-  schematicCanvas.addEventListener("touchmove", (e) => {
-    if (e.touches.length === 2 && touchStartDist > 0) {
-      const currentDist = Math.hypot(
-        e.touches[0].pageX - e.touches[1].pageX,
-        e.touches[0].pageY - e.touches[1].pageY
-      );
-      const factor = currentDist / touchStartDist;
-      currentSchematicZoom = Math.max(0.4, Math.min(4.0, initialZoom * factor));
-      schematicImg.style.transform = `scale(${currentSchematicZoom})`;
-      zoomLevelText.textContent = `${Math.round(currentSchematicZoom * 100)}%`;
-    }
-  }, { passive: true });
-
-  schematicCanvas.addEventListener("touchend", () => {
-    touchStartDist = 0;
-  });
-}
-
 // Network Info & QR Code
 async function loadNetworkInfo() {
   try {
@@ -749,8 +740,10 @@ async function loadFirearm(firearmId) {
     }
 
     if (firearmData.schematics.length > 0) {
-      schematicImg.src = firearmData.schematics[0].url;
-      btnExternalLink.href = firearmData.schematics[0].url;
+      populateSchematicPlateSelect(firearmData.schematics);
+      selectSchematic(firearmData.schematics[0].url, firearmData.schematics[0].title, false);
+    } else {
+      populateSchematicPlateSelect([]);
     }
 
     if (firearmSelect) firearmSelect.value = firearmId;
@@ -1332,6 +1325,7 @@ function selectManual(filename, title, switchToPreview = true) {
 // Render Schematics
 function renderSchematicsGrid(schematics) {
   schematicsGridView.innerHTML = "";
+  populateSchematicPlateSelect(schematics);
   schematics.forEach(s => {
     const card = document.createElement("div");
     card.className = "schematic-card";
@@ -1352,6 +1346,10 @@ function selectSchematic(url, title, switchToPreview = true) {
   schematicImg.src = url;
   previewTitle.textContent = "Schematic: " + title;
   btnExternalLink.href = url;
+  if (schematicPlateSelect) {
+    schematicPlateSelect.value = url;
+  }
+  clearSchematicSelection();
   resetZoom();
   switchPreviewMode("schematic");
 
@@ -1520,17 +1518,610 @@ function switchPreviewMode(mode) {
   }
 }
 
-// Schematic Zoom Handlers
+// ==========================================================================
+// SCHEMATIC INSPECTOR, PAN & ZOOM, AND CIRCLE-TO-SEARCH ENGINE
+// ==========================================================================
+
+function resizeOverlayCanvas() {
+  if (!selectionOverlayCanvas || !schematicImg) return;
+  const w = schematicImg.clientWidth || schematicImg.naturalWidth || 800;
+  const h = schematicImg.clientHeight || schematicImg.naturalHeight || 600;
+  if (w > 0 && h > 0) {
+    selectionOverlayCanvas.width = w;
+    selectionOverlayCanvas.height = h;
+  }
+}
+
+function setSchematicToolMode(mode) {
+  schematicToolMode = mode;
+  if (mode === "pan") {
+    if (schematicPanModeBtn) schematicPanModeBtn.classList.add("active");
+    if (schematicCircleModeBtn) schematicCircleModeBtn.classList.remove("active");
+    if (schematicCanvas) schematicCanvas.classList.add("pan-mode");
+    if (selectionOverlayCanvas) selectionOverlayCanvas.style.pointerEvents = "none";
+  } else {
+    if (schematicCircleModeBtn) schematicCircleModeBtn.classList.add("active");
+    if (schematicPanModeBtn) schematicPanModeBtn.classList.remove("active");
+    if (schematicCanvas) schematicCanvas.classList.remove("pan-mode");
+    if (selectionOverlayCanvas) selectionOverlayCanvas.style.pointerEvents = "auto";
+  }
+}
+
+function applySchematicTransform() {
+  if (schematicViewport) {
+    schematicViewport.style.transform = `translate(${panX}px, ${panY}px) scale(${currentSchematicZoom})`;
+    schematicViewport.style.transformOrigin = "center center";
+  }
+  if (zoomLevelText) {
+    zoomLevelText.textContent = `${Math.round(currentSchematicZoom * 100)}%`;
+  }
+  if (currentCircle && circleActionPill && !circleActionPill.classList.contains("hidden")) {
+    positionActionPill(currentCircle);
+  }
+}
+
 function adjustZoom(delta) {
   currentSchematicZoom = Math.max(0.4, Math.min(4.0, currentSchematicZoom + delta));
-  schematicImg.style.transform = `scale(${currentSchematicZoom})`;
-  zoomLevelText.textContent = `${Math.round(currentSchematicZoom * 100)}%`;
+  applySchematicTransform();
 }
 
 function resetZoom() {
   currentSchematicZoom = 1.0;
-  schematicImg.style.transform = "scale(1)";
-  zoomLevelText.textContent = "100%";
+  panX = 0;
+  panY = 0;
+  applySchematicTransform();
+}
+
+function clearSchematicSelection() {
+  currentCircle = null;
+  currentIdentifiedPart = null;
+  if (circleActionPill) circleActionPill.classList.add("hidden");
+  if (partInspectorDrawer) partInspectorDrawer.classList.add("hidden");
+  if (selectionOverlayCanvas) {
+    const ctx = selectionOverlayCanvas.getContext("2d");
+    ctx.clearRect(0, 0, selectionOverlayCanvas.width, selectionOverlayCanvas.height);
+  }
+}
+
+function redrawCircle(c) {
+  if (!selectionOverlayCanvas || !c) return;
+  const ctx = selectionOverlayCanvas.getContext("2d");
+  ctx.clearRect(0, 0, selectionOverlayCanvas.width, selectionOverlayCanvas.height);
+
+  const w = selectionOverlayCanvas.width;
+  const h = selectionOverlayCanvas.height;
+  const cx = c.norm_x * w;
+  const cy = c.norm_y * h;
+  const rx = (c.rx && c.rectW) ? (c.rx / c.rectW) * w : c.norm_r * Math.max(w, h);
+  const ry = (c.ry && c.rectH) ? (c.ry / c.rectH) * h : c.norm_r * Math.max(w, h);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, Math.max(6, rx), Math.max(6, ry), 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(212, 175, 55, 0.16)";
+  ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#d4af37";
+  ctx.shadowColor = "rgba(212, 175, 55, 0.85)";
+  ctx.shadowBlur = 14;
+  ctx.stroke();
+
+  // Center Crosshair
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy);
+  ctx.lineTo(cx + 10, cy);
+  ctx.moveTo(cx, cy - 10);
+  ctx.lineTo(cx, cy + 10);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
+  ctx.restore();
+}
+
+function positionActionPill(circle) {
+  if (!circle || !schematicCanvas || !selectionOverlayCanvas || !circleActionPill) return;
+  const canvasRect = selectionOverlayCanvas.getBoundingClientRect();
+  const containerRect = schematicCanvas.getBoundingClientRect();
+
+  const centerX = (canvasRect.left - containerRect.left) + (circle.norm_x * canvasRect.width);
+  const topY = (canvasRect.top - containerRect.top) + ((circle.norm_y - (circle.ry / (circle.rectH || canvasRect.height) || circle.norm_r)) * canvasRect.height);
+
+  let pillX = centerX;
+  let pillY = topY - 14;
+  if (pillY < 50) {
+    const bottomY = (canvasRect.top - containerRect.top) + ((circle.norm_y + (circle.ry / (circle.rectH || canvasRect.height) || circle.norm_r)) * canvasRect.height);
+    pillY = bottomY + 18;
+  }
+
+  circleActionPill.style.left = `${Math.round(pillX)}px`;
+  circleActionPill.style.top = `${Math.round(pillY)}px`;
+  circleActionPill.classList.remove("hidden");
+}
+
+function getCanvasNormalizedCoords(clientX, clientY) {
+  const rect = selectionOverlayCanvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+  const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+  return {
+    x,
+    y,
+    rectW: rect.width,
+    rectH: rect.height,
+    norm_x: rect.width > 0 ? x / rect.width : 0.5,
+    norm_y: rect.height > 0 ? y / rect.height : 0.5
+  };
+}
+
+function matchPartClientSide(firearmId, normX, normY, normR) {
+  const partsDb = window.STATIC_PARTS_DATABASE || {};
+  let partsList = partsDb[firearmId];
+
+  if (!partsList || partsList.length === 0) {
+    const categoryDb = window.STATIC_CATEGORY_PARTS || {};
+    let catKey = "Pistols";
+    if (firearmData && firearmData.category) {
+      if (firearmData.category.includes("Rifle") || firearmData.category.includes("Carbine")) catKey = "Rifles & Carbines";
+      else if (firearmData.category.includes("Shotgun")) catKey = "Shotguns";
+    }
+    partsList = categoryDb[catKey] || categoryDb["Pistols"] || [];
+  }
+
+  if (!partsList || partsList.length === 0) {
+    return {
+      primary: {
+        id: "generic_component",
+        name: "Receiver & Internal Mechanism Component",
+        callout_num: "Part Callout",
+        oem_number: "OEM Standard Spec",
+        assembly: "Receiver & Action Subassembly",
+        tolerances: "Verify zero burrs, true sear/slide engagement, and factory pin alignment.",
+        malfunctions: "Wear, deformation or carbon accumulation impeding cycling.",
+        maintenance: "Thorough ultrasonic clean, inspect under 10x armorer loupe, apply synthetic lubricant."
+      },
+      distance: 0,
+      alternates: []
+    };
+  }
+
+  let bestMatch = partsList[0];
+  let minDistance = 999999;
+  const scored = [];
+
+  partsList.forEach(p => {
+    const px = p.norm_x !== undefined ? p.norm_x : 0.5;
+    const py = p.norm_y !== undefined ? p.norm_y : 0.5;
+    const dist = Math.hypot(normX - px, normY - py);
+    scored.push({ part: p, dist });
+    if (dist < minDistance) {
+      minDistance = dist;
+      bestMatch = p;
+    }
+  });
+
+  scored.sort((a, b) => a.dist - b.dist);
+  const alternates = scored.slice(1, 4).map(s => s.part);
+
+  return {
+    primary: bestMatch,
+    distance: minDistance,
+    alternates: alternates
+  };
+}
+
+async function executeIdentifyPart() {
+  if (!currentCircle) return;
+  if (btnIdentifyCircledPart) {
+    btnIdentifyCircledPart.disabled = true;
+    btnIdentifyCircledPart.innerHTML = `
+      <svg class="spin-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"/></svg>
+      <span>Identifying Component...</span>
+    `;
+  }
+
+  // Generate cropped image of circled part
+  let cropDataUrl = "";
+  try {
+    const cropCanvas = document.createElement("canvas");
+    const cropSize = 200;
+    cropCanvas.width = cropSize;
+    cropCanvas.height = cropSize;
+    const cropCtx = cropCanvas.getContext("2d");
+
+    const nw = schematicImg.naturalWidth || 800;
+    const nh = schematicImg.naturalHeight || 600;
+    const imgCx = currentCircle.norm_x * nw;
+    const imgCy = currentCircle.norm_y * nh;
+    const imgRx = (currentCircle.rx / (currentCircle.rectW || 1)) * nw;
+    const imgRy = (currentCircle.ry / (currentCircle.rectH || 1)) * nh;
+    const cropRadius = Math.max(30, Math.max(imgRx, imgRy) * 1.25);
+
+    const sx = Math.max(0, imgCx - cropRadius);
+    const sy = Math.max(0, imgCy - cropRadius);
+    const sw = Math.min(nw - sx, cropRadius * 2);
+    const sh = Math.min(nh - sy, cropRadius * 2);
+
+    cropCtx.fillStyle = "#0c1017";
+    cropCtx.fillRect(0, 0, cropSize, cropSize);
+    cropCtx.drawImage(schematicImg, sx, sy, sw, sh, 0, 0, cropSize, cropSize);
+
+    cropCtx.strokeStyle = "rgba(212, 175, 55, 0.6)";
+    cropCtx.lineWidth = 2;
+    cropCtx.strokeRect(1, 1, cropSize - 2, cropSize - 2);
+
+    cropDataUrl = cropCanvas.toDataURL("image/png");
+    if (inspectorCropImg) inspectorCropImg.src = cropDataUrl;
+  } catch (err) {
+    console.warn("Schematic crop warning:", err);
+  }
+
+  let result = null;
+  const isStaticMode = window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA;
+  if (!isStaticMode) {
+    try {
+      const res = await fetch("/api/parts/identify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firearm_id: currentFirearm,
+          norm_x: currentCircle.norm_x,
+          norm_y: currentCircle.norm_y,
+          norm_r: currentCircle.norm_r,
+          image_crop: cropDataUrl
+        })
+      });
+      if (res.ok) {
+        result = await res.json();
+      }
+    } catch (e) {
+      console.warn("Backend identify unavailable:", e);
+    }
+  }
+
+  if (!result || !result.primary) {
+    result = matchPartClientSide(currentFirearm, currentCircle.norm_x, currentCircle.norm_y, currentCircle.norm_r);
+  }
+
+  const part = result.primary;
+  currentIdentifiedPart = part;
+
+  if (inspectorPlatformBadge) inspectorPlatformBadge.textContent = (firearmData ? firearmData.name : currentFirearm).toUpperCase();
+  if (inspectorPartName) inspectorPartName.textContent = part.name + (part.callout_num ? ` (${part.callout_num})` : "");
+  if (inspectorPartOem) inspectorPartOem.textContent = part.oem_number || part.part_number || "OEM Standard Spec";
+  if (inspectorPartAssembly) inspectorPartAssembly.textContent = `Assembly: ${part.assembly || "Subassembly"}`;
+  if (inspectorPartTolerances) inspectorPartTolerances.textContent = part.tolerances || "Standard armorer tolerances. Verify zero burrs and true alignment.";
+  if (inspectorPartMalfunctions) inspectorPartMalfunctions.textContent = part.malfunctions || "Inspect component for scoring, cracks, burrs, or carbon fouling.";
+  if (inspectorPartMaintenance) inspectorPartMaintenance.textContent = part.maintenance || "Clean with solvent, dry thoroughly, and lubricate according to armorer guidelines.";
+
+  if (partInspectorDrawer) partInspectorDrawer.classList.remove("hidden");
+
+  if (btnIdentifyCircledPart) {
+    btnIdentifyCircledPart.disabled = false;
+    btnIdentifyCircledPart.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+      <span>Identify Part &amp; Tolerances</span>
+    `;
+  }
+}
+
+function populateSchematicPlateSelect(schematics) {
+  if (!schematicPlateSelect) return;
+  schematicPlateSelect.innerHTML = "";
+  if (!schematics || schematics.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No plates available";
+    schematicPlateSelect.appendChild(opt);
+    return;
+  }
+  schematics.forEach((s, idx) => {
+    const opt = document.createElement("option");
+    opt.value = s.url;
+    opt.textContent = `Plate ${idx + 1}: ${s.title.substring(0, 24)}`;
+    schematicPlateSelect.appendChild(opt);
+  });
+  schematicPlateSelect.value = schematics[0].url;
+}
+
+function setupSchematicInspector() {
+  if (!schematicCanvas) return;
+
+  // Zoom Controls
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
+  const zoomResetBtn = document.getElementById("zoomResetBtn");
+  if (zoomInBtn) zoomInBtn.addEventListener("click", () => adjustZoom(0.2));
+  if (zoomOutBtn) zoomOutBtn.addEventListener("click", () => adjustZoom(-0.2));
+  if (zoomResetBtn) zoomResetBtn.addEventListener("click", () => resetZoom());
+
+  // Mouse wheel zoom
+  schematicCanvas.addEventListener("wheel", (e) => {
+    if (schematicStage.classList.contains("active")) {
+      e.preventDefault();
+      adjustZoom(e.deltaY < 0 ? 0.15 : -0.15);
+    }
+  }, { passive: false });
+
+  // Tool Mode Toggles
+  if (schematicPanModeBtn) schematicPanModeBtn.addEventListener("click", () => setSchematicToolMode("pan"));
+  if (schematicCircleModeBtn) schematicCircleModeBtn.addEventListener("click", () => setSchematicToolMode("circle"));
+
+  // Canvas / Image Resize
+  if (schematicImg) {
+    schematicImg.addEventListener("load", () => {
+      resizeOverlayCanvas();
+      if (currentCircle) redrawCircle(currentCircle);
+    });
+  }
+  window.addEventListener("resize", () => {
+    resizeOverlayCanvas();
+    if (currentCircle) {
+      redrawCircle(currentCircle);
+      positionActionPill(currentCircle);
+    }
+  });
+
+  // Plate dropdown change
+  if (schematicPlateSelect) {
+    schematicPlateSelect.addEventListener("change", (e) => {
+      const url = e.target.value;
+      const opt = e.target.options[e.target.selectedIndex];
+      if (url) {
+        selectSchematic(url, opt ? opt.textContent : "Schematic", false);
+      }
+    });
+  }
+
+  // Pan Mode Dragging
+  schematicCanvas.addEventListener("mousedown", (e) => {
+    if (schematicToolMode !== "pan") return;
+    if (e.target.closest(".circle-action-pill") || e.target.closest(".part-inspector-drawer")) return;
+    isPanning = true;
+    panStartX = e.clientX - panX;
+    panStartY = e.clientY - panY;
+    schematicCanvas.style.cursor = "grabbing";
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - panStartX;
+    panY = e.clientY - panStartY;
+    applySchematicTransform();
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isPanning) {
+      isPanning = false;
+      schematicCanvas.style.cursor = schematicToolMode === "pan" ? "grab" : "default";
+    }
+  });
+
+  // Circle to Search Dragging
+  if (selectionOverlayCanvas) {
+    selectionOverlayCanvas.addEventListener("mousedown", (e) => {
+      if (schematicToolMode !== "circle") return;
+      isCircling = true;
+      circleStartX = e.clientX;
+      circleStartY = e.clientY;
+      clearSchematicSelection();
+      isCircling = true;
+    });
+
+    selectionOverlayCanvas.addEventListener("mousemove", (e) => {
+      if (!isCircling) return;
+      const pt1 = getCanvasNormalizedCoords(circleStartX, circleStartY);
+      const pt2 = getCanvasNormalizedCoords(e.clientX, e.clientY);
+      const cx = (pt1.x + pt2.x) / 2;
+      const cy = (pt1.y + pt2.y) / 2;
+      const rx = Math.abs(pt2.x - pt1.x) / 2;
+      const ry = Math.abs(pt2.y - pt1.y) / 2;
+
+      const previewCircle = {
+        cx, cy, rx, ry,
+        r: Math.max(rx, ry),
+        rectW: pt1.rectW,
+        rectH: pt1.rectH,
+        norm_x: pt1.rectW > 0 ? cx / pt1.rectW : 0.5,
+        norm_y: pt1.rectH > 0 ? cy / pt1.rectH : 0.5,
+        norm_r: Math.max(pt1.rectW, pt1.rectH) > 0 ? Math.max(rx, ry) / Math.max(pt1.rectW, pt1.rectH) : 0.1
+      };
+      redrawCircle(previewCircle);
+    });
+
+    window.addEventListener("mouseup", (e) => {
+      if (!isCircling) return;
+      isCircling = false;
+      const pt1 = getCanvasNormalizedCoords(circleStartX, circleStartY);
+      const pt2 = getCanvasNormalizedCoords(e.clientX, e.clientY);
+      const rx = Math.abs(pt2.x - pt1.x) / 2;
+      const ry = Math.abs(pt2.y - pt1.y) / 2;
+
+      if (rx < 6 && ry < 6) {
+        clearSchematicSelection();
+        return;
+      }
+
+      const cx = (pt1.x + pt2.x) / 2;
+      const cy = (pt1.y + pt2.y) / 2;
+      currentCircle = {
+        cx, cy, rx, ry,
+        r: Math.max(rx, ry),
+        rectW: pt1.rectW,
+        rectH: pt1.rectH,
+        norm_x: pt1.rectW > 0 ? cx / pt1.rectW : 0.5,
+        norm_y: pt1.rectH > 0 ? cy / pt1.rectH : 0.5,
+        norm_r: Math.max(pt1.rectW, pt1.rectH) > 0 ? Math.max(rx, ry) / Math.max(pt1.rectW, pt1.rectH) : 0.1
+      };
+
+      redrawCircle(currentCircle);
+      positionActionPill(currentCircle);
+    });
+
+    // Touch Support for Mobile
+    let touchStartDist = 0;
+    let initialZoom = 1.0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    schematicCanvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 2) {
+        touchStartDist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialZoom = currentSchematicZoom;
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (schematicToolMode === "pan") {
+          isPanning = true;
+          panStartX = touch.clientX - panX;
+          panStartY = touch.clientY - panY;
+        } else if (schematicToolMode === "circle") {
+          isCircling = true;
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          clearSchematicSelection();
+          isCircling = true;
+        }
+      }
+    }, { passive: true });
+
+    schematicCanvas.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && touchStartDist > 0) {
+        const currentDist = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        const factor = currentDist / touchStartDist;
+        currentSchematicZoom = Math.max(0.4, Math.min(4.0, initialZoom * factor));
+        applySchematicTransform();
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (isPanning && schematicToolMode === "pan") {
+          panX = touch.clientX - panStartX;
+          panY = touch.clientY - panStartY;
+          applySchematicTransform();
+        } else if (isCircling && schematicToolMode === "circle") {
+          const pt1 = getCanvasNormalizedCoords(touchStartX, touchStartY);
+          const pt2 = getCanvasNormalizedCoords(touch.clientX, touch.clientY);
+          const cx = (pt1.x + pt2.x) / 2;
+          const cy = (pt1.y + pt2.y) / 2;
+          const rx = Math.abs(pt2.x - pt1.x) / 2;
+          const ry = Math.abs(pt2.y - pt1.y) / 2;
+
+          const previewCircle = {
+            cx, cy, rx, ry,
+            r: Math.max(rx, ry),
+            rectW: pt1.rectW,
+            rectH: pt1.rectH,
+            norm_x: pt1.rectW > 0 ? cx / pt1.rectW : 0.5,
+            norm_y: pt1.rectH > 0 ? cy / pt1.rectH : 0.5,
+            norm_r: Math.max(pt1.rectW, pt1.rectH) > 0 ? Math.max(rx, ry) / Math.max(pt1.rectW, pt1.rectH) : 0.1
+          };
+          redrawCircle(previewCircle);
+        }
+      }
+    }, { passive: true });
+
+    schematicCanvas.addEventListener("touchend", (e) => {
+      touchStartDist = 0;
+      if (isPanning) {
+        isPanning = false;
+      }
+      if (isCircling) {
+        isCircling = false;
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const touch = e.changedTouches[0];
+          const pt1 = getCanvasNormalizedCoords(touchStartX, touchStartY);
+          const pt2 = getCanvasNormalizedCoords(touch.clientX, touch.clientY);
+          const rx = Math.abs(pt2.x - pt1.x) / 2;
+          const ry = Math.abs(pt2.y - pt1.y) / 2;
+
+          if (rx >= 6 || ry >= 6) {
+            const cx = (pt1.x + pt2.x) / 2;
+            const cy = (pt1.y + pt2.y) / 2;
+            currentCircle = {
+              cx, cy, rx, ry,
+              r: Math.max(rx, ry),
+              rectW: pt1.rectW,
+              rectH: pt1.rectH,
+              norm_x: pt1.rectW > 0 ? cx / pt1.rectW : 0.5,
+              norm_y: pt1.rectH > 0 ? cy / pt1.rectH : 0.5,
+              norm_r: Math.max(pt1.rectW, pt1.rectH) > 0 ? Math.max(rx, ry) / Math.max(pt1.rectW, pt1.rectH) : 0.1
+            };
+            redrawCircle(currentCircle);
+            positionActionPill(currentCircle);
+          } else {
+            clearSchematicSelection();
+          }
+        }
+      }
+    });
+  }
+
+  // Pill Action Buttons
+  if (btnIdentifyCircledPart) btnIdentifyCircledPart.addEventListener("click", executeIdentifyPart);
+  if (btnClearCircle) btnClearCircle.addEventListener("click", clearSchematicSelection);
+
+  // Inspector Drawer Action Buttons
+  if (btnClosePartInspector) btnClosePartInspector.addEventListener("click", () => {
+    if (partInspectorDrawer) partInspectorDrawer.classList.add("hidden");
+  });
+
+  if (btnAskAiAboutPart) {
+    btnAskAiAboutPart.addEventListener("click", () => {
+      if (!currentIdentifiedPart) return;
+      const part = currentIdentifiedPart;
+      const gunName = firearmData ? firearmData.name : currentFirearm;
+      const prompt = `I am inspecting the **${part.name}** (${part.callout_num || "Component"}, OEM ${part.oem_number || "Spec"}) on the **${gunName}**.\n\n` +
+        `Critical Tolerances: ${part.tolerances || "Standard"}\n\n` +
+        `What are the step-by-step armorer disassembly and reassembly protocols, critical wear points to inspect, and diagnostics for this specific component?`;
+
+      if (partInspectorDrawer) partInspectorDrawer.classList.add("hidden");
+      if (window.innerWidth <= 900) setMobileView("assistant");
+
+      if (chatInput) {
+        chatInput.value = prompt;
+        handleChatSubmit();
+      }
+    });
+  }
+
+  if (btnFindPartVideos) {
+    btnFindPartVideos.addEventListener("click", () => {
+      if (!currentIdentifiedPart) return;
+      const part = currentIdentifiedPart;
+      const vidTab = document.querySelector('.lib-tab[data-tab="videos"]');
+      if (vidTab) vidTab.click();
+
+      if (firearmData && firearmData.videos && firearmData.videos.length > 0) {
+        const q = (part.name + " " + (part.assembly || "")).toLowerCase();
+        const match = firearmData.videos.find(v => {
+          const vText = (v.title + " " + v.summary + " " + v.category).toLowerCase();
+          const words = q.split(/\s+/).filter(w => w.length > 3);
+          return words.some(w => vText.includes(w));
+        }) || firearmData.videos[0];
+
+        if (match) {
+          selectVideo(match, true);
+        }
+      }
+    });
+  }
+
+  if (btnSearchPartManual) {
+    btnSearchPartManual.addEventListener("click", () => {
+      if (!currentIdentifiedPart) return;
+      const part = currentIdentifiedPart;
+      const manTab = document.querySelector('.lib-tab[data-tab="manuals"]');
+      if (manTab) manTab.click();
+
+      if (tabFilterInput) {
+        tabFilterInput.value = part.name.split(" ")[0];
+        filterActiveTabList(tabFilterInput.value);
+      }
+      switchPreviewMode("manual");
+    });
+  }
 }
 
 // Global Live Search with Cross-Platform & Cross-Manufacturer Matching

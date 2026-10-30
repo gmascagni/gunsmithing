@@ -6,6 +6,7 @@ import sys
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from web_app.firearms_data import FIREARMS_METADATA
+from web_app.parts_data import PARTS_DATABASE, DEFAULT_CATEGORY_PARTS
 
 root = Path(__file__).resolve().parent.parent
 docs_dir = root / "docs"
@@ -74,7 +75,12 @@ for fid, meta in FIREARMS_METADATA.items():
         "schematics": schematics
     }
 
-data_js_content = f"// Static firearms repository data for GitHub Pages deployment\nwindow.STATIC_FIREARMS_DATA = {json.dumps(all_data, indent=2)};\n"
+data_js_content = (
+    "// Static firearms repository data for GitHub Pages deployment\n"
+    f"window.STATIC_FIREARMS_DATA = {json.dumps(all_data, indent=2)};\n\n"
+    f"window.STATIC_PARTS_DATABASE = {json.dumps(PARTS_DATABASE, indent=2)};\n\n"
+    f"window.STATIC_CATEGORY_PARTS = {json.dumps(DEFAULT_CATEGORY_PARTS, indent=2)};\n"
+)
 (docs_dir / "data.js").write_text(data_js_content, encoding="utf-8")
 
 # 4. Create docs/index.html with relative paths and blank initial iframe

@@ -20,6 +20,11 @@ try:
 except ImportError:
     from firearms_data import FIREARMS_METADATA, PARTS_CATALOG
 
+try:
+    from web_app.parts_data import PARTS_DATABASE, DEFAULT_CATEGORY_PARTS, find_part_by_coordinates
+except ImportError:
+    from parts_data import PARTS_DATABASE, DEFAULT_CATEGORY_PARTS, find_part_by_coordinates
+
 app = FastAPI(title="Armorer's Workbench", version="1.0.0")
 
 app.add_middleware(
@@ -53,6 +58,13 @@ class LLMConfig(BaseModel):
     endpoint: Optional[str] = None
     api_key: Optional[str] = None
     temperature: Optional[float] = 0.3
+
+class IdentifyPartRequest(BaseModel):
+    firearm_id: str
+    norm_x: float
+    norm_y: float
+    norm_r: Optional[float] = 0.08
+    image_crop: Optional[str] = None
 
 CONFIG_FILE = BASE_DIR / "web_app" / "config.json"
 
@@ -887,6 +899,31 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
             })
 
     return {"results": results}
+
+@app.get("/api/parts/{firearm_id}")
+async def get_parts(firearm_id: str):
+    if firearm_id in PARTS_DATABASE:
+        return {"firearm_id": firearm_id, "parts": PARTS_DATABASE[firearm_id]}
+    for cat_name, parts in DEFAULT_CATEGORY_PARTS.items():
+        return {"firearm_id": firearm_id, "category": cat_name, "parts": parts}
+    return {"firearm_id": firearm_id, "parts": []}
+
+@app.post("/api/parts/identify")
+async def identify_part(req: IdentifyPartRequest):
+    result = find_part_by_coordinates(
+        firearm_id=req.firearm_id,
+        norm_x=req.norm_x,
+        norm_y=req.norm_y,
+        norm_r=req.norm_r or 0.08
+    )
+    if not result or not result.get("primary"):
+        raise HTTPException(status_code=404, detail="No matching component found")
+    return {
+        "status": "ok",
+        "primary": result["primary"],
+        "distance": result.get("distance", 0.0),
+        "alternates": result.get("alternates", [])
+    }
 
 @app.get("/api/network-info")
 async def get_network_info():

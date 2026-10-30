@@ -3218,4 +3218,15 @@ body {
   }
 }
 
+.spin-icon {
+  animation: spinCircle 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spinCircle {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 
