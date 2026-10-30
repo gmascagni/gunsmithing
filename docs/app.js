@@ -1860,16 +1860,84 @@ async function executeIdentifyPart() {
   const part = result.primary;
   currentIdentifiedPart = part;
 
-  const idMethod = part.identification_method || result.method || "Schematic Catalog Match";
+  const isFallback = result.is_fallback || part.is_fallback || (result.method && result.method.includes("Catalog Match")) || (part.identification_method && part.identification_method.includes("Catalog Match"));
+  const idMethod = part.identification_method || result.method || (isFallback ? "Schematic Coordinate Fallback (Vision Model Offline)" : "Multimodal Vision AI");
   const badgeLabel = `${(firearmData ? firearmData.name : currentFirearm).toUpperCase()} • ${idMethod.toUpperCase()}`;
 
-  if (inspectorPlatformBadge) inspectorPlatformBadge.textContent = badgeLabel;
+  if (inspectorPlatformBadge) {
+    inspectorPlatformBadge.textContent = badgeLabel;
+    inspectorPlatformBadge.classList.remove("badge-fallback", "badge-vision");
+    if (isFallback) {
+      inspectorPlatformBadge.classList.add("badge-fallback");
+    } else {
+      inspectorPlatformBadge.classList.add("badge-vision");
+    }
+  }
+
   if (inspectorPartName) inspectorPartName.textContent = part.name + (part.callout_num ? ` (${part.callout_num})` : "");
   if (inspectorPartOem) inspectorPartOem.textContent = part.oem_number || part.part_number || "OEM Standard Spec";
   if (inspectorPartAssembly) inspectorPartAssembly.textContent = `Assembly: ${part.assembly || "Subassembly"}`;
   if (inspectorPartTolerances) inspectorPartTolerances.textContent = part.tolerances || "Standard armorer tolerances. Verify zero burrs and true alignment.";
   if (inspectorPartMalfunctions) inspectorPartMalfunctions.textContent = part.malfunctions || "Inspect component for scoring, cracks, burrs, or carbon fouling.";
   if (inspectorPartMaintenance) inspectorPartMaintenance.textContent = part.maintenance || "Clean with solvent, dry thoroughly, and lubricate according to armorer guidelines.";
+
+  // Notice Container: Explain vision status transparently
+  const noticeContainer = document.getElementById("inspectorNoticeContainer");
+  if (noticeContainer) {
+    if (isFallback) {
+      noticeContainer.innerHTML = `
+        <div class="inspector-offline-notice">
+          <span class="notice-icon">⚠️</span>
+          <div class="notice-text">
+            <strong>Coordinate Estimate (Vision Model Offline):</strong> This component was matched by 2D coordinates. 
+            For true visual AI recognition across all 52 firearms, connect a Vision model:
+            <br>&bull; <strong>Local (RTX 4090 GPU):</strong> Run <code>ollama pull qwen2-vl:7b</code> and launch via <code>run_workbench.bat</code>.
+            <br>&bull; <strong>Cloud Web:</strong> Enter a free Gemini API Key in <button type="button" id="btnQuickOpenSettings" class="settings-quick-link">⚙️ Settings</button>.
+          </div>
+        </div>
+      `;
+      const quickBtn = document.getElementById("btnQuickOpenSettings");
+      if (quickBtn && settingsDialog) {
+        quickBtn.addEventListener("click", () => {
+          settingsDialog.showModal();
+          updateSettingsFields();
+        });
+      }
+    } else {
+      noticeContainer.innerHTML = "";
+    }
+  }
+
+  // Citation Container: Deep PDF Manual RAG citation
+  const citationContainer = document.getElementById("inspectorCitationContainer");
+  if (citationContainer) {
+    if (part.manual_citation) {
+      citationContainer.innerHTML = `
+        <div class="manual-citation-card">
+          <div class="citation-header">
+            <span>📖 ${part.manual_citation.manual_title} (Page ${part.manual_citation.page})</span>
+            <button type="button" class="citation-jump-btn" id="btnJumpToManualPage">
+              Jump to Page ${part.manual_citation.page} &rarr;
+            </button>
+          </div>
+          <p class="citation-snippet">"${part.manual_citation.snippet}&hellip;"</p>
+        </div>
+      `;
+      const jumpBtn = document.getElementById("btnJumpToManualPage");
+      if (jumpBtn) {
+        jumpBtn.addEventListener("click", () => {
+          selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true);
+          if (pdfFrame && part.manual_citation.page) {
+            const rawUrl = pdfFrame.src.split("#")[0];
+            pdfFrame.src = `${rawUrl}#page=${part.manual_citation.page}`;
+          }
+          switchPreviewMode("manual");
+        });
+      }
+    } else {
+      citationContainer.innerHTML = "";
+    }
+  }
 
   if (partInspectorDrawer) partInspectorDrawer.classList.remove("hidden");
 
@@ -2191,6 +2259,17 @@ function setupSchematicInspector() {
     btnSearchPartManual.addEventListener("click", () => {
       if (!currentIdentifiedPart) return;
       const part = currentIdentifiedPart;
+
+      if (part.manual_citation && part.manual_citation.manual_filename) {
+        selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true);
+        if (pdfFrame && part.manual_citation.page) {
+          const rawUrl = pdfFrame.src.split("#")[0];
+          pdfFrame.src = `${rawUrl}#page=${part.manual_citation.page}`;
+        }
+        switchPreviewMode("manual");
+        return;
+      }
+
       const manTab = document.querySelector('.lib-tab[data-tab="manuals"]');
       if (manTab) manTab.click();
 

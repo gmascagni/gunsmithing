@@ -939,6 +939,37 @@ def enrich_part_with_rag(firearm_id: str, part: Dict[str, Any]) -> Dict[str, Any
     if matching_specs:
         part["tolerances"] = part.get("tolerances", "") + " | Spec: " + "; ".join(matching_specs[:2])
 
+    # Deep RAG: Search firearm's PDF manuals for primary source citations
+    try:
+        import fitz
+        manuals_dir = BASE_DIR / firearm_id / "manuals"
+        if manuals_dir.exists():
+            keywords = [w for w in re.split(r"\W+", part.get("name", "").lower()) if len(w) > 3 and w not in ["part", "assembly", "group", "mechanism", "with", "plate"]]
+            if keywords:
+                for pdf_file in sorted(manuals_dir.glob("*.pdf")):
+                    try:
+                        doc = fitz.open(pdf_file)
+                        for page_idx in range(len(doc)):
+                            p_text = doc[page_idx].get_text()
+                            p_lower = p_text.lower()
+                            if all(kw in p_lower for kw in keywords[:2]):
+                                lines = [ln.strip() for ln in p_text.splitlines() if ln.strip()]
+                                snippet = " ".join(lines[:5])[:250]
+                                part["manual_citation"] = {
+                                    "manual_filename": pdf_file.name,
+                                    "manual_title": pdf_file.stem.replace("_", " "),
+                                    "page": page_idx + 1,
+                                    "snippet": snippet,
+                                    "url": f"/api/manuals/{firearm_id}/{pdf_file.name}#page={page_idx + 1}"
+                                }
+                                break
+                        if part.get("manual_citation"):
+                            break
+                    except Exception:
+                        continue
+    except Exception:
+        pass
+
     part["rag_grounded"] = True
     return part
 
@@ -1021,12 +1052,29 @@ async def analyze_part_with_vision(
     # 2. Try Local Ollama Vision (if Ollama has a vision model)
     ollama_ep = cfg.get("endpoint") if cfg.get("backend") == "ollama" and cfg.get("endpoint") else "http://127.0.0.1:11434"
     try:
-        async with httpx.AsyncClient(timeout=1.5) as client:
+        async with httpx.AsyncClient(timeout=2.0) as client:
             tags_res = await client.get(f"{ollama_ep.rstrip('/')}/api/tags")
             if tags_res.status_code == 200:
                 models = [m["name"] for m in tags_res.json().get("models", [])]
-                vision_models = [m for m in models if any(vm in m.lower() for vm in ["vision", "llava", "minicpm", "qwen2-vl", "bakllava"])]
+                vision_models = [m for m in models if any(vm in m.lower() for vm in ["vision", "llava", "minicpm", "qwen2-vl", "qwen2.5-vl", "bakllava"])]
                 if vision_models:
+                    def rank_vision_model(name: str) -> int:
+                        nl = name.lower()
+                        if "qwen2.5-vl" in nl:
+                            return 0
+                        if "qwen2-vl" in nl:
+                            return 1
+                        if "llama3.2-vision" in nl:
+                            return 2
+                        if "minicpm" in nl:
+                            return 3
+                        if "vision" in nl:
+                            return 4
+                        if "llava" in nl:
+                            return 5
+                        return 10
+
+                    vision_models.sort(key=rank_vision_model)
                     target_model = vision_models[0]
                     ollama_payload = {
                         "model": target_model,
@@ -1040,14 +1088,15 @@ async def analyze_part_with_vision(
                         "stream": False,
                         "format": "json"
                     }
-                    chat_res = await client.post(f"{ollama_ep.rstrip('/')}/api/chat", json=ollama_payload, timeout=12.0)
+                    chat_res = await client.post(f"{ollama_ep.rstrip('/')}/api/chat", json=ollama_payload, timeout=25.0)
                     if chat_res.status_code == 200:
                         content = chat_res.json().get("message", {}).get("content", "")
                         parsed = json.loads(content)
                         parsed["identification_method"] = f"Local Multimodal Vision AI (Ollama {target_model})"
+                        parsed["is_fallback"] = False
                         return parsed
     except Exception as e:
-        pass
+        print("Ollama Vision error:", e)
 
     return None
 
@@ -1067,10 +1116,11 @@ async def identify_part(req: IdentifyPartRequest):
                 "primary": enriched,
                 "confidence": 0.96,
                 "method": enriched.get("identification_method", "Multimodal Vision AI"),
+                "is_fallback": False,
                 "alternates": []
             }
 
-    # 2. Coordinate-based schematic catalog lookup
+    # 2. Coordinate-based schematic catalog lookup fallback
     result = find_part_by_coordinates(
         firearm_id=req.firearm_id,
         norm_x=req.norm_x,
@@ -1081,12 +1131,14 @@ async def identify_part(req: IdentifyPartRequest):
         raise HTTPException(status_code=404, detail="No matching component found")
 
     enriched = enrich_part_with_rag(req.firearm_id, result["primary"])
-    enriched["identification_method"] = "Schematic Coordinate & Catalog Match"
+    enriched["identification_method"] = "Schematic Coordinate Fallback (Vision Model Offline)"
+    enriched["is_fallback"] = True
     return {
         "status": "ok",
         "primary": enriched,
         "distance": result.get("distance", 0.0),
-        "method": "Schematic Coordinate & Catalog Match",
+        "method": "Schematic Coordinate Fallback (Vision Model Offline)",
+        "is_fallback": True,
         "alternates": result.get("alternates", [])
     }
 
