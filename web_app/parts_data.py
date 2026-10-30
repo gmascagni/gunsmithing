@@ -73,6 +73,17 @@ PARTS_DATABASE: Dict[str, List[Dict[str, Any]]] = {
             "malfunctions": "Thermal barrel droop or wandering zero if radiator shroud loose; gas port gas leakage causing erratic cyclic rate.",
             "maintenance": "Blow out longitudinal cooling fins with compressed air. Ensure front barrel gas gland threads are tight and pinned. Clean muzzle blast induction cup.",
             "norm_x": 0.22, "norm_y": 0.35, "norm_r": 0.15
+        },
+        {
+            "id": "lewis_drum_magazine",
+            "name": "47-Round Clockwork Pan Drum Magazine Assembly",
+            "callout_num": "Part #23 / Magazine Group",
+            "oem_number": "BSA-LMG-23 / Savage 115",
+            "assembly": "Magazine & Feed Mechanism",
+            "tolerances": "Internal clock spring tension: exactly 2 to 2½ complete rotations from dead-slack using tension key (BSA-LMG-84). Center boss clearance over receiver post: 0.005\" to 0.008\". Magazine catch lockup: 0.015\" to 0.025\" engagement depth. Outer diameter: 8.25\", weight loaded: 4.5 lbs.",
+            "malfunctions": "Position 1 Stoppage (pan fails to advance next cartridge into feedway); deformed interior radial ribs causing cartridge jam; stripped center rotor pinion if rotated counter-clockwise by hand.",
+            "maintenance": "NEVER FORCE DRUM ROTATION COUNTER-CLOCKWISE. Store drums with spring tension completely relaxed. Clean internal corrugated tracks with solvent wash and dry patch; apply micro-fine dry PTFE / graphite powder. NEVER apply heavy wet grease or oil inside drum tracks as powder fouling will seize the rotor.",
+            "norm_x": 0.58, "norm_y": 0.36, "norm_r": 0.14
         }
     ],
     "Glock_Pistols": [

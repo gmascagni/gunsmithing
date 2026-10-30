@@ -65,6 +65,7 @@ class IdentifyPartRequest(BaseModel):
     norm_y: float
     norm_r: Optional[float] = 0.08
     image_crop: Optional[str] = None
+    plate_id: Optional[str] = None
 
 CONFIG_FILE = BASE_DIR / "web_app" / "config.json"
 
@@ -908,8 +909,168 @@ async def get_parts(firearm_id: str):
         return {"firearm_id": firearm_id, "category": cat_name, "parts": parts}
     return {"firearm_id": firearm_id, "parts": []}
 
+def enrich_part_with_rag(firearm_id: str, part: Dict[str, Any]) -> Dict[str, Any]:
+    """Cross-references identified component with firearm technical dossier, stoppages, and armorer specs."""
+    meta = FIREARMS_METADATA.get(firearm_id, {})
+    part_text = (part.get("name", "") + " " + part.get("assembly", "")).lower()
+
+    # RAG search across platform stoppages
+    stoppages = meta.get("stoppages", [])
+    matching_stoppages = []
+    for s in stoppages:
+        combined = (s.get("position", "") + " " + s.get("short_desc", "") + " " + s.get("root_causes", "") + " " + s.get("remedy", "")).lower()
+        words = [w for w in re.split(r"\W+", part_text) if len(w) > 3]
+        if any(w in combined for w in words):
+            matching_stoppages.append(f"{s.get('position', '')}: {s.get('short_desc', '')} — {s.get('remedy', '')}")
+
+    if matching_stoppages and not part.get("malfunctions"):
+        part["malfunctions"] = " • ".join(matching_stoppages[:2])
+    elif matching_stoppages:
+        # Prepend authentic factory stoppage note
+        part["malfunctions"] = f"[{matching_stoppages[0]}] " + part["malfunctions"]
+
+    # RAG search across platform specs
+    specs = meta.get("specs", {})
+    matching_specs = []
+    for k, v in specs.items():
+        if any(w in k.lower() or w in str(v).lower() for w in re.split(r"\W+", part_text) if len(w) > 3):
+            matching_specs.append(f"{k.replace('_', ' ').title()}: {v}")
+
+    if matching_specs:
+        part["tolerances"] = part.get("tolerances", "") + " | Spec: " + "; ".join(matching_specs[:2])
+
+    part["rag_grounded"] = True
+    return part
+
+async def analyze_part_with_vision(
+    firearm_id: str,
+    image_crop_b64: str,
+    plate_id: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """Invokes Multimodal Vision AI (Gemini or Ollama Vision) on cropped schematic component."""
+    cfg = get_saved_config()
+    gemini_key = cfg.get("api_key") or os.environ.get("GEMINI_API_KEY", "")
+
+    if "," in image_crop_b64:
+        header, b64_data = image_crop_b64.split(",", 1)
+        mime = "image/png" if "png" in header else "image/jpeg"
+    else:
+        b64_data = image_crop_b64
+        mime = "image/png"
+
+    firearm_meta = FIREARMS_METADATA.get(firearm_id, {})
+    firearm_name = firearm_meta.get("name", firearm_id.replace("_", " "))
+
+    vision_prompt = (
+        f"You are a master gunsmith armorer analyzing an exploded schematic or technical diagram crop from the {firearm_name}.\n"
+        f"The gunsmith has circled a specific component or subassembly in this technical diagram.\n"
+        f"Plate Context: {plate_id or 'Technical schematic plate'}\n\n"
+        f"Task:\n"
+        f"1. Visually identify what specific firearm part, subassembly, or mechanism is circled (e.g. 47-Round Pan Magazine, Firing Pin Striker, Breech Bolt, Operating Rod, Trigger Sear, Extractor, Barrel Jacket, etc.).\n"
+        f"2. Read any callout numbers or labels if legible in the crop.\n"
+        f"3. Return accurate armorer specifications and tolerances for this component on the {firearm_name}.\n\n"
+        f"Return ONLY a valid JSON object with these keys:\n"
+        f"{{\n"
+        f'  "name": "Component Name",\n'
+        f'  "callout_num": "Part # / Callout",\n'
+        f'  "oem_number": "OEM or Military Reference #",\n'
+        f'  "assembly": "Subassembly Group",\n'
+        f'  "tolerances": "Critical gunsmith tolerances, clearances, or spring tension",\n'
+        f'  "malfunctions": "Common stoppages or wear failure modes associated with this part",\n'
+        f'  "maintenance": "Shop servicing, cleaning, stoning, and lubrication protocol"\n'
+        f"}}"
+    )
+
+    # 1. Try Google Gemini Vision
+    if gemini_key:
+        mod = cfg.get("model") if cfg.get("model") and "gemini" in cfg.get("model") else "gemini-1.5-flash"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={gemini_key}"
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": vision_prompt},
+                        {
+                            "inline_data": {
+                                "mime_type": mime,
+                                "data": b64_data
+                            }
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.1,
+                "response_mime_type": "application/json"
+            }
+        }
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                res = await client.post(url, json=payload)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        parsed = json.loads(raw_text)
+                        parsed["identification_method"] = f"Multimodal Vision AI (Gemini {mod})"
+                        return parsed
+        except Exception as e:
+            print("Gemini Vision identification error:", e)
+
+    # 2. Try Local Ollama Vision (if Ollama has a vision model)
+    ollama_ep = cfg.get("endpoint") if cfg.get("backend") == "ollama" and cfg.get("endpoint") else "http://127.0.0.1:11434"
+    try:
+        async with httpx.AsyncClient(timeout=1.5) as client:
+            tags_res = await client.get(f"{ollama_ep.rstrip('/')}/api/tags")
+            if tags_res.status_code == 200:
+                models = [m["name"] for m in tags_res.json().get("models", [])]
+                vision_models = [m for m in models if any(vm in m.lower() for vm in ["vision", "llava", "minicpm", "qwen2-vl", "bakllava"])]
+                if vision_models:
+                    target_model = vision_models[0]
+                    ollama_payload = {
+                        "model": target_model,
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": vision_prompt,
+                                "images": [b64_data]
+                            }
+                        ],
+                        "stream": False,
+                        "format": "json"
+                    }
+                    chat_res = await client.post(f"{ollama_ep.rstrip('/')}/api/chat", json=ollama_payload, timeout=12.0)
+                    if chat_res.status_code == 200:
+                        content = chat_res.json().get("message", {}).get("content", "")
+                        parsed = json.loads(content)
+                        parsed["identification_method"] = f"Local Multimodal Vision AI (Ollama {target_model})"
+                        return parsed
+    except Exception as e:
+        pass
+
+    return None
+
 @app.post("/api/parts/identify")
 async def identify_part(req: IdentifyPartRequest):
+    # 1. Attempt Multimodal Vision AI analysis if image crop is provided
+    if req.image_crop and len(req.image_crop) > 100:
+        vision_result = await analyze_part_with_vision(
+            firearm_id=req.firearm_id,
+            image_crop_b64=req.image_crop,
+            plate_id=req.plate_id
+        )
+        if vision_result and vision_result.get("name"):
+            enriched = enrich_part_with_rag(req.firearm_id, vision_result)
+            return {
+                "status": "ok",
+                "primary": enriched,
+                "confidence": 0.96,
+                "method": enriched.get("identification_method", "Multimodal Vision AI"),
+                "alternates": []
+            }
+
+    # 2. Coordinate-based schematic catalog lookup
     result = find_part_by_coordinates(
         firearm_id=req.firearm_id,
         norm_x=req.norm_x,
@@ -918,10 +1079,14 @@ async def identify_part(req: IdentifyPartRequest):
     )
     if not result or not result.get("primary"):
         raise HTTPException(status_code=404, detail="No matching component found")
+
+    enriched = enrich_part_with_rag(req.firearm_id, result["primary"])
+    enriched["identification_method"] = "Schematic Coordinate & Catalog Match"
     return {
         "status": "ok",
-        "primary": result["primary"],
+        "primary": enriched,
         "distance": result.get("distance", 0.0),
+        "method": "Schematic Coordinate & Catalog Match",
         "alternates": result.get("alternates", [])
     }
 

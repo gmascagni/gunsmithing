@@ -1619,22 +1619,21 @@ function redrawCircle(c) {
 }
 
 function positionActionPill(circle) {
-  if (!circle || !schematicCanvas || !selectionOverlayCanvas || !circleActionPill) return;
-  const canvasRect = selectionOverlayCanvas.getBoundingClientRect();
-  const containerRect = schematicCanvas.getBoundingClientRect();
+  if (!circle || !circleActionPill) return;
+  // Position directly inside schematicViewport using exact percentage coords
+  const leftPercent = circle.norm_x * 100;
+  const radPercent = (circle.norm_r || 0.08) * 100;
+  const topPercent = (circle.norm_y * 100) - radPercent;
 
-  const centerX = (canvasRect.left - containerRect.left) + (circle.norm_x * canvasRect.width);
-  const topY = (canvasRect.top - containerRect.top) + ((circle.norm_y - (circle.ry / (circle.rectH || canvasRect.height) || circle.norm_r)) * canvasRect.height);
-
-  let pillX = centerX;
-  let pillY = topY - 14;
-  if (pillY < 50) {
-    const bottomY = (canvasRect.top - containerRect.top) + ((circle.norm_y + (circle.ry / (circle.rectH || canvasRect.height) || circle.norm_r)) * canvasRect.height);
-    pillY = bottomY + 18;
+  circleActionPill.style.left = `${leftPercent}%`;
+  if (topPercent > 12) {
+    circleActionPill.style.top = `${topPercent}%`;
+    circleActionPill.style.transform = `translate(-50%, -100%) translateY(-10px)`;
+  } else {
+    const bottomPercent = (circle.norm_y * 100) + radPercent;
+    circleActionPill.style.top = `${bottomPercent}%`;
+    circleActionPill.style.transform = `translate(-50%, 0) translateY(12px)`;
   }
-
-  circleActionPill.style.left = `${Math.round(pillX)}px`;
-  circleActionPill.style.top = `${Math.round(pillY)}px`;
   circleActionPill.classList.remove("hidden");
 }
 
@@ -1683,7 +1682,7 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
     };
   }
 
-  let bestMatch = partsList[0];
+  let bestMatch = Object.assign({}, partsList[0]);
   let minDistance = 999999;
   const scored = [];
 
@@ -1694,12 +1693,29 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
     scored.push({ part: p, dist });
     if (dist < minDistance) {
       minDistance = dist;
-      bestMatch = p;
+      bestMatch = Object.assign({}, p);
     }
   });
 
   scored.sort((a, b) => a.dist - b.dist);
   const alternates = scored.slice(1, 4).map(s => s.part);
+
+  // RAG Enrichment: Cross-reference platform stoppages & armorer specs from firearmData
+  if (firearmData) {
+    const partText = (bestMatch.name + " " + (bestMatch.assembly || "")).toLowerCase();
+    const stoppages = firearmData.stoppages || [];
+    for (const s of stoppages) {
+      const combined = ((s.position || "") + " " + (s.short_desc || "") + " " + (s.root_causes || "") + " " + (s.remedy || "")).toLowerCase();
+      const words = partText.split(/\W+/).filter(w => w.length > 3);
+      if (words.some(w => combined.includes(w))) {
+        const stoppageNote = `[${s.position}: ${s.short_desc} — ${s.remedy}]`;
+        if (!bestMatch.malfunctions.includes(s.position)) {
+          bestMatch.malfunctions = stoppageNote + " " + bestMatch.malfunctions;
+        }
+        break;
+      }
+    }
+  }
 
   return {
     primary: bestMatch,
@@ -1722,7 +1738,7 @@ async function executeIdentifyPart() {
   let cropDataUrl = "";
   try {
     const cropCanvas = document.createElement("canvas");
-    const cropSize = 200;
+    const cropSize = 250;
     cropCanvas.width = cropSize;
     cropCanvas.height = cropSize;
     const cropCtx = cropCanvas.getContext("2d");
@@ -1731,21 +1747,19 @@ async function executeIdentifyPart() {
     const nh = schematicImg.naturalHeight || 600;
     const imgCx = currentCircle.norm_x * nw;
     const imgCy = currentCircle.norm_y * nh;
-    const imgRx = (currentCircle.rx / (currentCircle.rectW || 1)) * nw;
-    const imgRy = (currentCircle.ry / (currentCircle.rectH || 1)) * nh;
-    const cropRadius = Math.max(30, Math.max(imgRx, imgRy) * 1.25);
+    const imgR = Math.max(30, (currentCircle.norm_r || 0.08) * Math.max(nw, nh) * 1.15);
 
-    const sx = Math.max(0, imgCx - cropRadius);
-    const sy = Math.max(0, imgCy - cropRadius);
-    const sw = Math.min(nw - sx, cropRadius * 2);
-    const sh = Math.min(nh - sy, cropRadius * 2);
+    const sx = Math.max(0, imgCx - imgR);
+    const sy = Math.max(0, imgCy - imgR);
+    const sw = Math.min(nw - sx, imgR * 2);
+    const sh = Math.min(nh - sy, imgR * 2);
 
     cropCtx.fillStyle = "#0c1017";
     cropCtx.fillRect(0, 0, cropSize, cropSize);
     cropCtx.drawImage(schematicImg, sx, sy, sw, sh, 0, 0, cropSize, cropSize);
 
-    cropCtx.strokeStyle = "rgba(212, 175, 55, 0.6)";
-    cropCtx.lineWidth = 2;
+    cropCtx.strokeStyle = "rgba(212, 175, 55, 0.75)";
+    cropCtx.lineWidth = 2.5;
     cropCtx.strokeRect(1, 1, cropSize - 2, cropSize - 2);
 
     cropDataUrl = cropCanvas.toDataURL("image/png");
@@ -1756,6 +1770,9 @@ async function executeIdentifyPart() {
 
   let result = null;
   const isStaticMode = window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA;
+  const currentPlateName = schematicPlateSelect ? schematicPlateSelect.value : "";
+
+  // 1. Try local FastAPI backend with Vision AI & RAG if not strictly static mode
   if (!isStaticMode) {
     try {
       const res = await fetch("/api/parts/identify", {
@@ -1766,7 +1783,8 @@ async function executeIdentifyPart() {
           norm_x: currentCircle.norm_x,
           norm_y: currentCircle.norm_y,
           norm_r: currentCircle.norm_r,
-          image_crop: cropDataUrl
+          image_crop: cropDataUrl,
+          plate_id: currentPlateName
         })
       });
       if (res.ok) {
@@ -1777,6 +1795,47 @@ async function executeIdentifyPart() {
     }
   }
 
+  // 2. Client-Side Multimodal Vision AI: If on GitHub Pages and Gemini API key is configured
+  const geminiKey = activeLLMApiKey || localStorage.getItem("gunsmith_gemini_key") || "";
+  if ((!result || !result.primary) && geminiKey && cropDataUrl && cropDataUrl.length > 100) {
+    try {
+      const b64Data = cropDataUrl.includes(",") ? cropDataUrl.split(",")[1] : cropDataUrl;
+      const gunName = firearmData ? firearmData.name : currentFirearm;
+      const vUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      const vPrompt = `You are an expert armorer analyzing this schematic technical drawing crop from the ${gunName} (${currentPlateName}). Identify the circled component or subassembly, stating its exact technical name, OEM/callout # if known, assembly group, critical gunsmith tolerances, malfunctions, and armorer maintenance protocols. Return pure JSON: {"name": "...", "callout_num": "...", "oem_number": "...", "assembly": "...", "tolerances": "...", "malfunctions": "...", "maintenance": "..."}`;
+      
+      const vPayload = {
+        contents: [
+          {
+            parts: [
+              { text: vPrompt },
+              { inline_data: { mime_type: "image/png", data: b64Data } }
+            ]
+          }
+        ],
+        generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+      };
+
+      const vRes = await fetch(vUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vPayload)
+      });
+      if (vRes.ok) {
+        const vData = await vRes.json();
+        const candText = vData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (candText) {
+          const parsed = JSON.parse(candText);
+          parsed.identification_method = "Multimodal Vision AI (Gemini Flash)";
+          result = { primary: parsed, method: "Multimodal Vision AI (Gemini Flash)" };
+        }
+      }
+    } catch (ve) {
+      console.warn("Client Gemini Vision error:", ve);
+    }
+  }
+
+  // 3. Fallback to coordinate-based schematic catalog match
   if (!result || !result.primary) {
     result = matchPartClientSide(currentFirearm, currentCircle.norm_x, currentCircle.norm_y, currentCircle.norm_r);
   }
@@ -1784,7 +1843,10 @@ async function executeIdentifyPart() {
   const part = result.primary;
   currentIdentifiedPart = part;
 
-  if (inspectorPlatformBadge) inspectorPlatformBadge.textContent = (firearmData ? firearmData.name : currentFirearm).toUpperCase();
+  const idMethod = part.identification_method || result.method || "Schematic Catalog Match";
+  const badgeLabel = `${(firearmData ? firearmData.name : currentFirearm).toUpperCase()} • ${idMethod.toUpperCase()}`;
+
+  if (inspectorPlatformBadge) inspectorPlatformBadge.textContent = badgeLabel;
   if (inspectorPartName) inspectorPartName.textContent = part.name + (part.callout_num ? ` (${part.callout_num})` : "");
   if (inspectorPartOem) inspectorPartOem.textContent = part.oem_number || part.part_number || "OEM Standard Spec";
   if (inspectorPartAssembly) inspectorPartAssembly.textContent = `Assembly: ${part.assembly || "Subassembly"}`;
