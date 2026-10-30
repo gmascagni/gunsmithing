@@ -1343,6 +1343,7 @@ function renderSchematicsGrid(schematics) {
 }
 
 function selectSchematic(url, title, switchToPreview = true) {
+  schematicImg.crossOrigin = "anonymous";
   schematicImg.src = url;
   previewTitle.textContent = "Schematic: " + title;
   btnExternalLink.href = url;
@@ -1763,9 +1764,25 @@ async function executeIdentifyPart() {
     cropCtx.strokeRect(1, 1, cropSize - 2, cropSize - 2);
 
     cropDataUrl = cropCanvas.toDataURL("image/png");
-    if (inspectorCropImg) inspectorCropImg.src = cropDataUrl;
+    if (inspectorCropImg) {
+      inspectorCropImg.src = cropDataUrl;
+      inspectorCropImg.style.display = "block";
+    }
   } catch (err) {
     console.warn("Schematic crop warning:", err);
+    if (inspectorCropImg) {
+      inspectorCropImg.src = "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+          <rect width="200" height="200" fill="#0c1017"/>
+          <circle cx="100" cy="100" r="55" fill="none" stroke="#d4af37" stroke-width="2.5" stroke-dasharray="5,4"/>
+          <circle cx="100" cy="100" r="5" fill="#d4af37"/>
+          <line x1="100" y1="25" x2="100" y2="175" stroke="rgba(212,175,55,0.4)" stroke-width="1.5"/>
+          <line x1="25" y1="100" x2="175" y2="100" stroke="rgba(212,175,55,0.4)" stroke-width="1.5"/>
+          <text x="100" y="165" fill="#d4af37" font-size="11" font-family="monospace" text-anchor="middle">TARGET COMPONENT</text>
+        </svg>
+      `);
+      inspectorCropImg.style.display = "block";
+    }
   }
 
   let result = null;

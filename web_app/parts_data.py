@@ -9,15 +9,81 @@ from typing import Dict, Any, List
 PARTS_DATABASE: Dict[str, List[Dict[str, Any]]] = {
     "Lewis_Automatic_Machine_Gun": [
         {
+            "id": "lewis_trigger_grip",
+            "name": "Trigger, Trigger Guard & Pistol Grip Assembly",
+            "callout_num": "Part #20 / Savage 109",
+            "oem_number": "BSA-LMG-20 / Savage 109 / Ordnance 42",
+            "assembly": "Trigger Mechanism & Fire Control Group",
+            "tolerances": "Trigger pull weight: 6.5 to 7.5 lbs. Sear engagement overlap on operating rod rack notch: 0.045\" minimum full square contact. Sear spring free length: 0.850\".",
+            "malfunctions": "Runaway gun (burst fire / fails to cease firing when trigger is released) if sear nose chipped or rack notch rounded; trigger fails to reset if sear spring broken or trigger housing packed with grit.",
+            "maintenance": "Remove buttstock, pull trigger rearward and slide trigger guard assembly downward and rearward along receiver rails. Stone sear engagement nose square with hard Arkansas oilstone—NEVER round off sear facet. Clean sear pivot pin and apply 1 drop of light oil.",
+            "norm_x": 0.38, "norm_y": 0.58, "norm_r": 0.10
+        },
+        {
+            "id": "lewis_buttstock",
+            "name": "Walnut Buttstock Assembly with Butt Plate & Latch",
+            "callout_num": "Part #21 / Savage 110",
+            "oem_number": "BSA-LMG-21 / Savage 110",
+            "assembly": "Butt Group & Stock Attachment",
+            "tolerances": "Buttstock latch clearance: 0.002\" to 0.005\" slide fit over receiver dovetail. Latch spring retention: positive lock requiring firm upward press to release.",
+            "malfunctions": "Stock wobble / loose lockup if dovetail rails worn; cracked walnut stock behind tang if fired with loose latch pin.",
+            "maintenance": "Press stock latch upward and slide stock straight back off receiver. Inspect brass oiler brush inside butt trap. Treat walnut with boiled linseed oil.",
+            "norm_x": 0.18, "norm_y": 0.55, "norm_r": 0.12
+        },
+        {
             "id": "lewis_return_spring",
             "name": "Gear Casing & Flat Clockwork Return Spring Assembly",
-            "callout_num": "Part #18",
+            "callout_num": "Part #18 / Savage 102",
             "oem_number": "BSA-LMG-18 / Savage 102",
             "assembly": "Return Mechanism & Pinion Group",
             "tolerances": "Spring Tension: 12 to 14 lbs pull measured at cocking handle. Baseline winding: exactly 2 to 2½ complete rotations from neutral dead-slack. Gear teeth runout: < 0.003\".",
             "malfunctions": "Sluggish forward stroke; failure to strip heavy .303 rimmed cartridge from magazine drum; sheared pinion gear teeth if released without tension key holding teeth.",
             "maintenance": "NEVER release spring tension uncontrolled. Lubricate internal spiral leaves with medium petroleum grease (graphite blend). Replace mainspring if pull drops below 10 lbs after 2.5 turns.",
-            "norm_x": 0.48, "norm_y": 0.58, "norm_r": 0.12
+            "norm_x": 0.46, "norm_y": 0.50, "norm_r": 0.08
+        },
+        {
+            "id": "lewis_drum_magazine",
+            "name": "47-Round Clockwork Pan Drum Magazine Assembly",
+            "callout_num": "Part #23 / Magazine Group",
+            "oem_number": "BSA-LMG-23 / Savage 115",
+            "assembly": "Magazine & Feed Mechanism",
+            "tolerances": "Internal clock spring tension: exactly 2 to 2½ complete rotations from dead-slack using tension key (BSA-LMG-84). Center boss clearance over receiver post: 0.005\" to 0.008\". Magazine catch lockup: 0.015\" to 0.025\" engagement depth. Outer diameter: 8.25\", weight loaded: 4.5 lbs.",
+            "malfunctions": "Position 1 Stoppage (pan fails to advance next cartridge into feedway); deformed interior radial ribs causing cartridge jam; stripped center rotor pinion if rotated counter-clockwise by hand.",
+            "maintenance": "NEVER FORCE DRUM ROTATION COUNTER-CLOCKWISE. Store drums with spring tension completely relaxed. Clean internal corrugated tracks with solvent wash and dry patch; apply micro-fine dry PTFE / graphite powder. NEVER apply heavy wet grease or oil inside drum tracks as powder fouling will seize the rotor.",
+            "norm_x": 0.46, "norm_y": 0.24, "norm_r": 0.16
+        },
+        {
+            "id": "lewis_drum_magazine_side",
+            "name": "47-Round Pan Drum Magazine (Mounted Profile)",
+            "callout_num": "Part #23 / Magazine Group",
+            "oem_number": "BSA-LMG-23 / Savage 115",
+            "assembly": "Magazine & Feed Mechanism",
+            "tolerances": "Internal clock spring tension: exactly 2 to 2½ complete rotations from dead-slack using tension key (BSA-LMG-84). Center boss clearance over receiver post: 0.005\" to 0.008\". Magazine catch lockup: 0.015\" to 0.025\" engagement depth.",
+            "malfunctions": "Position 1 Stoppage (pan fails to advance next cartridge into feedway); deformed interior radial ribs causing cartridge jam; stripped center rotor pinion if rotated counter-clockwise by hand.",
+            "maintenance": "NEVER FORCE DRUM ROTATION COUNTER-CLOCKWISE. Store drums with spring tension completely relaxed. Clean internal corrugated tracks with solvent wash and dry patch; apply micro-fine dry PTFE / graphite powder.",
+            "norm_x": 0.48, "norm_y": 0.36, "norm_r": 0.12
+        },
+        {
+            "id": "lewis_bipod_assembly",
+            "name": "Folding Field Bipod & Muzzle Blast Cowl",
+            "callout_num": "Part #2 / Savage 103",
+            "oem_number": "BSA-LMG-02 / Savage 103",
+            "assembly": "Mount & Venturi Draught Cowl Group",
+            "tolerances": "Clamp collar torque: 25 to 30 in-lbs. Leg pivot friction: holds firm at 60° spread without collapsing under firing vibration.",
+            "malfunctions": "Bipod slipping or collapsing under rapid cyclic recoil; worn pivot rivet causing canted aim.",
+            "maintenance": "Inspect leg hinge rivets; tighten collar clamping screw; wipe pivot joints with light preservative oil.",
+            "norm_x": 0.55, "norm_y": 0.60, "norm_r": 0.10
+        },
+        {
+            "id": "lewis_barrel_radiator",
+            "name": "Barrel with Aluminum Radiator & Cooling Casing",
+            "callout_num": "Part #1 / Savage 101",
+            "oem_number": "BSA-LMG-01 / Savage 101",
+            "assembly": "Barrel & Forced Draught Cooling Group",
+            "tolerances": "Barrel-to-receiver torque: 75 to 85 ft-lbs with barrel clamp. Radiator fin-to-shroud clearance: 0.015\" circumferential air gap.",
+            "malfunctions": "Thermal barrel droop or wandering zero if radiator shroud loose; gas port gas leakage causing erratic cyclic rate.",
+            "maintenance": "Blow out longitudinal cooling fins with compressed air. Ensure front barrel gas gland threads are tight and pinned. Clean muzzle blast induction cup.",
+            "norm_x": 0.68, "norm_y": 0.52, "norm_r": 0.16
         },
         {
             "id": "lewis_piston_oprod",
@@ -62,28 +128,6 @@ PARTS_DATABASE: Dict[str, List[Dict[str, Any]]] = {
             "malfunctions": "Drum fails to index next round; magazine jams midway; twin feed if stop pawl spring is broken or bent.",
             "maintenance": "Inspect pawl chisel points for rounding. Clean feed arm track in receiver cover; lubricate slide track with thin oil. Check pawl spring tension.",
             "norm_x": 0.62, "norm_y": 0.28, "norm_r": 0.10
-        },
-        {
-            "id": "lewis_barrel_radiator",
-            "name": "Barrel with Aluminum Radiator & Cooling Casing",
-            "callout_num": "Part #1",
-            "oem_number": "BSA-LMG-01 / Savage 101",
-            "assembly": "Barrel & Forced Draught Cooling Group",
-            "tolerances": "Barrel-to-receiver torque: 75 to 85 ft-lbs with barrel clamp. Radiator fin-to-shroud clearance: 0.015\" circumferential air gap.",
-            "malfunctions": "Thermal barrel droop or wandering zero if radiator shroud loose; gas port gas leakage causing erratic cyclic rate.",
-            "maintenance": "Blow out longitudinal cooling fins with compressed air. Ensure front barrel gas gland threads are tight and pinned. Clean muzzle blast induction cup.",
-            "norm_x": 0.22, "norm_y": 0.35, "norm_r": 0.15
-        },
-        {
-            "id": "lewis_drum_magazine",
-            "name": "47-Round Clockwork Pan Drum Magazine Assembly",
-            "callout_num": "Part #23 / Magazine Group",
-            "oem_number": "BSA-LMG-23 / Savage 115",
-            "assembly": "Magazine & Feed Mechanism",
-            "tolerances": "Internal clock spring tension: exactly 2 to 2½ complete rotations from dead-slack using tension key (BSA-LMG-84). Center boss clearance over receiver post: 0.005\" to 0.008\". Magazine catch lockup: 0.015\" to 0.025\" engagement depth. Outer diameter: 8.25\", weight loaded: 4.5 lbs.",
-            "malfunctions": "Position 1 Stoppage (pan fails to advance next cartridge into feedway); deformed interior radial ribs causing cartridge jam; stripped center rotor pinion if rotated counter-clockwise by hand.",
-            "maintenance": "NEVER FORCE DRUM ROTATION COUNTER-CLOCKWISE. Store drums with spring tension completely relaxed. Clean internal corrugated tracks with solvent wash and dry patch; apply micro-fine dry PTFE / graphite powder. NEVER apply heavy wet grease or oil inside drum tracks as powder fouling will seize the rotor.",
-            "norm_x": 0.58, "norm_y": 0.36, "norm_r": 0.14
         }
     ],
     "Glock_Pistols": [
