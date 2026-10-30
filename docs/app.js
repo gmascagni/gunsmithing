@@ -15,6 +15,11 @@ let availableFirearmsList = [];
 let activeGunsmithTask = "all";
 let catalogSelectedMfg = "all";
 let catalogSelectedCat = "all";
+let catalogSelectedCal = "all";
+let catalogSelectedAction = "all";
+let catalogSortBy = "default";
+let sidebarSelectedMfg = "all";
+let sidebarSelectedType = "all";
 
 // DOM Elements
 const pdfFrame = document.getElementById("pdfFrame");
@@ -50,12 +55,17 @@ const firearmSelect = document.getElementById("firearmSelect");
 // Armory & Bench Switcher Elements
 const openGunCatalogBtn = document.getElementById("openGunCatalogBtn");
 const sidebarSwitchGunBtn = document.getElementById("sidebarSwitchGunBtn");
+const sidebarOpenCatalogLink = document.getElementById("sidebarOpenCatalogLink");
+const platformQuickList = document.getElementById("platformQuickList");
 const gunCatalogModal = document.getElementById("gunCatalogModal");
 const closeCatalogBtn = document.getElementById("closeCatalogBtn");
 const catalogSearchInput = document.getElementById("catalogSearchInput");
 const clearCatalogSearchBtn = document.getElementById("clearCatalogSearchBtn");
 const mfgFilterChips = document.getElementById("mfgFilterChips");
 const catFilterChips = document.getElementById("catFilterChips");
+const catalogActiveFilterTags = document.getElementById("catalogActiveFilterTags");
+const clearAllCatalogFiltersBtn = document.getElementById("clearAllCatalogFiltersBtn");
+const catalogSortSelect = document.getElementById("catalogSortSelect");
 const catalogGrid = document.getElementById("catalogGrid");
 
 const headerGunTitle = document.getElementById("headerGunTitle");
@@ -152,6 +162,9 @@ function setupEventListeners() {
   if (sidebarSwitchGunBtn) {
     sidebarSwitchGunBtn.addEventListener("click", openCatalogModal);
   }
+  if (sidebarOpenCatalogLink) {
+    sidebarOpenCatalogLink.addEventListener("click", openCatalogModal);
+  }
   if (closeCatalogBtn) {
     closeCatalogBtn.addEventListener("click", closeCatalogModal);
   }
@@ -161,6 +174,26 @@ function setupEventListeners() {
     });
   }
 
+  // Sidebar Quick Filter Pills: Manufacturer
+  document.querySelectorAll("#sidebarMfgFilter .quick-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll("#sidebarMfgFilter .quick-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      sidebarSelectedMfg = pill.dataset.mfg || "all";
+      renderSidebarQuickList();
+    });
+  });
+
+  // Sidebar Quick Filter Pills: Type
+  document.querySelectorAll("#sidebarTypeFilter .quick-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll("#sidebarTypeFilter .quick-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      sidebarSelectedType = pill.dataset.type || "all";
+      renderSidebarQuickList();
+    });
+  });
+
   // Catalog Instant Search & Clear Button
   if (catalogSearchInput) {
     catalogSearchInput.addEventListener("input", (e) => {
@@ -168,14 +201,14 @@ function setupEventListeners() {
       if (clearCatalogSearchBtn) {
         clearCatalogSearchBtn.classList.toggle("hidden", val.length === 0);
       }
-      renderCatalogGrid(val, catalogSelectedMfg, catalogSelectedCat);
+      renderCatalogGrid(val, catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
     });
   }
   if (clearCatalogSearchBtn) {
     clearCatalogSearchBtn.addEventListener("click", () => {
       catalogSearchInput.value = "";
       clearCatalogSearchBtn.classList.add("hidden");
-      renderCatalogGrid("", catalogSelectedMfg, catalogSelectedCat);
+      renderCatalogGrid("", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
       catalogSearchInput.focus();
     });
   }
@@ -186,7 +219,7 @@ function setupEventListeners() {
       document.querySelectorAll("#mfgFilterChips .chip").forEach(c => c.classList.remove("active"));
       chip.classList.add("active");
       catalogSelectedMfg = chip.dataset.mfg || "all";
-      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
     });
   });
 
@@ -196,9 +229,44 @@ function setupEventListeners() {
       document.querySelectorAll("#catFilterChips .chip").forEach(c => c.classList.remove("active"));
       chip.classList.add("active");
       catalogSelectedCat = chip.dataset.cat || "all";
-      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
     });
   });
+
+  // Caliber Filter Chips in Modal
+  document.querySelectorAll("#caliberFilterChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#caliberFilterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      catalogSelectedCal = chip.dataset.cal || "all";
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
+    });
+  });
+
+  // Operating Action Filter Chips in Modal
+  document.querySelectorAll("#actionFilterChips .chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#actionFilterChips .chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      catalogSelectedAction = chip.dataset.action || "all";
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
+    });
+  });
+
+  // Catalog Sort Selector
+  if (catalogSortSelect) {
+    catalogSortSelect.addEventListener("change", (e) => {
+      catalogSortBy = e.target.value;
+      renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
+    });
+  }
+
+  // Clear All Filters Button in Catalog Modal
+  if (clearAllCatalogFiltersBtn) {
+    clearAllCatalogFiltersBtn.addEventListener("click", () => {
+      resetCatalogFilters();
+    });
+  }
 
   // Gunsmith Operation / Task Quick Filter Pills
   document.querySelectorAll(".task-pill").forEach(pill => {
@@ -212,18 +280,6 @@ function setupEventListeners() {
     firearmSelect.addEventListener("change", async (e) => {
       const selected = e.target.value;
       if (selected && selected !== currentFirearm) {
-        currentFirearm = selected;
-        await loadFirearm(currentFirearm);
-        if (firearmData) {
-          addMessage(
-            "assistant",
-            `Switched active platform to **${escapeHtml(firearmData.name)}** (${escapeHtml(firearmData.subtitle)}).\n\nLoaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench video guides**. How can I assist you on the bench?`,
-            "Platform Switched"
-          );
-        }
-      }
-    });
-  }
         currentFirearm = selected;
         await loadFirearm(currentFirearm);
         if (firearmData) {
@@ -697,8 +753,11 @@ async function loadFirearm(firearmId) {
       btnExternalLink.href = firearmData.schematics[0].url;
     }
 
+    if (firearmSelect) firearmSelect.value = firearmId;
+    renderSidebarQuickList();
+
     // Refresh catalog grid if open to show active state
-    renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+    renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
   } catch (err) {
     console.error("Error loading firearm:", err);
   }
@@ -713,6 +772,11 @@ async function loadAllFirearmsList() {
       subtitle: f.subtitle,
       manufacturer: f.manufacturer || "General Workshop",
       category: f.category || "Firearms",
+      action_type: f.action_type || "",
+      operating_actions: f.operating_actions || [],
+      types: f.types || [],
+      caliber_categories: f.caliber_categories || [],
+      era: f.era || "",
       models: f.models || [],
       calibers: f.calibers || [],
       key_tasks: f.key_tasks || [],
@@ -721,6 +785,7 @@ async function loadAllFirearmsList() {
       videos_count: (f.videos || []).length,
       stoppages_count: (f.stoppages || []).length
     }));
+    renderSidebarQuickList();
     return;
   }
   try {
@@ -728,16 +793,90 @@ async function loadAllFirearmsList() {
     if (res.ok) {
       const data = await res.json();
       availableFirearmsList = data.firearms || [];
+      renderSidebarQuickList();
     }
   } catch (err) {
     console.warn("Could not load firearms from API:", err);
   }
 }
 
+// Render Sidebar Quick Platform Selector List
+function renderSidebarQuickList() {
+  if (!platformQuickList) return;
+  platformQuickList.innerHTML = "";
+
+  const filtered = (availableFirearmsList || []).filter(f => {
+    if (sidebarSelectedMfg !== "all") {
+      const mfgLower = (f.manufacturer || "").toLowerCase();
+      if (!mfgLower.includes(sidebarSelectedMfg.toLowerCase())) return false;
+    }
+    if (sidebarSelectedType !== "all") {
+      const catLower = (f.category || "").toLowerCase();
+      const typesLower = (f.types || []).join(" ").toLowerCase();
+      const searchCat = sidebarSelectedType.toLowerCase();
+      if (!catLower.includes(searchCat) && !typesLower.includes(searchCat)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    platformQuickList.innerHTML = `
+      <div style="font-size: 10px; color: var(--text-dim); text-align: center; padding: 10px;">
+        No platforms match filter.<br>
+        <button class="quick-pill" style="margin-top: 4px; font-size: 9px;" onclick="resetSidebarFilters()">Reset Filters</button>
+      </div>
+    `;
+    return;
+  }
+
+  filtered.forEach(f => {
+    const isActive = f.id === currentFirearm;
+    const item = document.createElement("div");
+    item.className = `platform-quick-item ${isActive ? "active" : ""}`;
+    item.dataset.id = f.id;
+
+    let iconSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+    if (f.id.includes("Glock") || f.id.includes("Beretta")) {
+      iconSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/></svg>';
+    } else if (f.id.includes("Lewis")) {
+      iconSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+    } else if (f.id.includes("Ruger")) {
+      iconSvg = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>';
+    }
+
+    item.innerHTML = `
+      <div class="quick-item-main">
+        <div class="quick-item-name">${escapeHtml(f.name)}</div>
+        <div class="quick-item-badges">
+          <span class="quick-mfg-tag">${escapeHtml(f.manufacturer || "SHOP")}</span>
+          <span class="quick-type-tag">${f.manuals_count || 0} manuals • ${f.schematics_count || 0} plates</span>
+        </div>
+      </div>
+      <div class="quick-item-status">
+        ${isActive ? '● BENCH' : iconSvg}
+      </div>
+    `;
+
+    item.addEventListener("click", () => {
+      selectFirearmFromCatalog(f.id);
+    });
+
+    platformQuickList.appendChild(item);
+  });
+}
+
+function resetSidebarFilters() {
+  sidebarSelectedMfg = "all";
+  sidebarSelectedType = "all";
+  document.querySelectorAll("#sidebarMfgFilter .quick-pill").forEach(p => p.classList.toggle("active", p.dataset.mfg === "all"));
+  document.querySelectorAll("#sidebarTypeFilter .quick-pill").forEach(p => p.classList.toggle("active", p.dataset.type === "all"));
+  renderSidebarQuickList();
+}
+
 function openCatalogModal() {
   if (!gunCatalogModal) return;
   gunCatalogModal.showModal();
-  renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat);
+  renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
   if (catalogSearchInput) {
     setTimeout(() => catalogSearchInput.focus(), 100);
   }
@@ -748,14 +887,71 @@ function closeCatalogModal() {
   gunCatalogModal.close();
 }
 
+function updateCatalogActiveFilterBar(matchCount) {
+  if (!catalogActiveFilterTags) return;
+  catalogActiveFilterTags.innerHTML = "";
+
+  const activeFilters = [];
+  if (catalogSelectedMfg !== "all") activeFilters.push({ type: "mfg", label: `Brand: ${catalogSelectedMfg}` });
+  if (catalogSelectedCat !== "all") activeFilters.push({ type: "cat", label: `Type: ${catalogSelectedCat}` });
+  if (catalogSelectedCal !== "all") activeFilters.push({ type: "cal", label: `Caliber: ${catalogSelectedCal}` });
+  if (catalogSelectedAction !== "all") activeFilters.push({ type: "action", label: `Action: ${catalogSelectedAction}` });
+  if (catalogSearchInput && catalogSearchInput.value.trim()) {
+    activeFilters.push({ type: "search", label: `Search: "${catalogSearchInput.value.trim()}"` });
+  }
+
+  if (activeFilters.length === 0) {
+    catalogActiveFilterTags.innerHTML = `<span class="filter-tag-none">Showing all ${matchCount} platforms</span>`;
+    if (clearAllCatalogFiltersBtn) clearAllCatalogFiltersBtn.classList.add("hidden");
+  } else {
+    activeFilters.forEach(f => {
+      const tag = document.createElement("span");
+      tag.className = "active-filter-pill";
+      tag.innerHTML = `${escapeHtml(f.label)} <button title="Remove filter" data-filter-type="${f.type}">&times;</button>`;
+      tag.querySelector("button").addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeCatalogFilter(f.type);
+      });
+      catalogActiveFilterTags.appendChild(tag);
+    });
+    if (clearAllCatalogFiltersBtn) clearAllCatalogFiltersBtn.classList.remove("hidden");
+  }
+}
+
+function removeCatalogFilter(type) {
+  if (type === "mfg") {
+    catalogSelectedMfg = "all";
+    document.querySelectorAll("#mfgFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mfg === "all"));
+  } else if (type === "cat") {
+    catalogSelectedCat = "all";
+    document.querySelectorAll("#catFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.cat === "all"));
+  } else if (type === "cal") {
+    catalogSelectedCal = "all";
+    document.querySelectorAll("#caliberFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.cal === "all"));
+  } else if (type === "action") {
+    catalogSelectedAction = "all";
+    document.querySelectorAll("#actionFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.action === "all"));
+  } else if (type === "search") {
+    if (catalogSearchInput) catalogSearchInput.value = "";
+    if (clearCatalogSearchBtn) clearCatalogSearchBtn.classList.add("hidden");
+  }
+  renderCatalogGrid(catalogSearchInput ? catalogSearchInput.value : "", catalogSelectedMfg, catalogSelectedCat, catalogSelectedCal, catalogSelectedAction, catalogSortBy);
+}
+
 function resetCatalogFilters() {
   catalogSelectedMfg = "all";
   catalogSelectedCat = "all";
+  catalogSelectedCal = "all";
+  catalogSelectedAction = "all";
+  catalogSortBy = "default";
+  if (catalogSortSelect) catalogSortSelect.value = "default";
   if (catalogSearchInput) catalogSearchInput.value = "";
   if (clearCatalogSearchBtn) clearCatalogSearchBtn.classList.add("hidden");
   document.querySelectorAll("#mfgFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.mfg === "all"));
   document.querySelectorAll("#catFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.cat === "all"));
-  renderCatalogGrid("", "all", "all");
+  document.querySelectorAll("#caliberFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.cal === "all"));
+  document.querySelectorAll("#actionFilterChips .chip").forEach(c => c.classList.toggle("active", c.dataset.action === "all"));
+  renderCatalogGrid("", "all", "all", "all", "all", "default");
 }
 
 function selectFirearmFromCatalog(firearmId) {
@@ -773,7 +969,7 @@ function selectFirearmFromCatalog(firearmId) {
   closeCatalogModal();
 }
 
-function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
+function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all", filterCal = "all", filterAction = "all", sortBy = "default") {
   if (!catalogGrid) return;
   catalogGrid.innerHTML = "";
   const q = (query || "").toLowerCase().trim();
@@ -787,6 +983,11 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
         subtitle: "Model 1914 / 1917 / 1918 (.303 British & .30-06 Springfield)",
         manufacturer: "Savage Arms / BSA",
         category: "Machine Guns",
+        action_type: "Gas-Operated Machine Gun (Open Bolt)",
+        operating_actions: ["Gas-Operated", "Machine Gun", "Open-Bolt", "Automatic"],
+        types: ["Machine Guns", "Automatic Weapons"],
+        caliber_categories: [".303 British", ".30-06 Springfield", "Rifle Calibers"],
+        era: "Historic Military (WWI / WWII)",
         models: ["Model 1914", "Model 1917", "Model 1918 Aircraft"],
         calibers: [".303 British", ".30-06 Springfield"],
         key_tasks: ["Spring Tension (12-14 lbs)", "Striker Protrusion", "Gas Regulator (S/L)", "Field Strip", "Pan Feed Clearing"],
@@ -800,10 +1001,15 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
         subtitle: "Generations 1–5 (9x19mm, .40 S&W, .45 ACP, 10mm Auto)",
         manufacturer: "Glock",
         category: "Pistols",
+        action_type: "Striker-Fired (Safe Action)",
+        operating_actions: ["Striker-Fired", "Short-Recoil", "Safe-Action", "Semi-Auto"],
+        types: ["Pistols", "Handguns"],
+        caliber_categories: ["9x19mm", ".40 S&W", ".45 ACP", "10mm Auto", "Pistol Calibers"],
+        era: "Modern Tactical & Duty (1982–Present)",
         models: ["Glock 17", "Glock 19", "Glock 21", "Glock 22", "Glock 26", "Glock 34", "Glock 43"],
         calibers: ["9x19mm", ".40 S&W", ".45 ACP", "10mm Auto"],
         key_tasks: ["Cruciform Sear Check (66%)", "5-Drop Lube Protocol", "25¢ Trigger Polish", "30274 Ejector Bar Upgrade", "Detail Strip"],
-        manuals_count: 4,
+        manuals_count: 2,
         schematics_count: 197,
         videos_count: 8
       },
@@ -813,10 +1019,15 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
         subtitle: "10/22 Carbine, Mark I–IV Target Pistols & GP100 Revolvers",
         manufacturer: "Ruger",
         category: "Rifles / Pistols / Revolvers",
+        action_type: "Blowback Semi-Auto & DA Revolver",
+        operating_actions: ["Blowback Semi-Auto", "Double-Action Revolver", "DA Revolver", "Rimfire Semi-Auto"],
+        types: ["Rifles", "Pistols", "Revolvers", "Carbines"],
+        caliber_categories: [".22 LR", ".357 Magnum", ".38 Special", "Rimfire", "Revolver Calibers"],
+        era: "Sporting, Target & Defense (1949–Present)",
         models: ["10/22 Carbine", "Mark I", "Mark II", "Mark III", "Mark IV", "GP100 Revolver"],
         calibers: [".22 LR", ".357 Magnum", ".38 Special"],
         key_tasks: ["10/22 V-Block Torque (25-30 in-lbs)", "Rotary Mag Tension (1-1/4 turns)", "Mark Series Hammer Strut Alignment", "GP100 Cylinder Gap (0.004\"-0.007\")", "Trigger Shimming"],
-        manuals_count: 5,
+        manuals_count: 3,
         schematics_count: 51,
         videos_count: 9
       },
@@ -826,10 +1037,15 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
         subtitle: "92FS, M9, 96, Brigadier & Inox (9x19mm NATO & .40 S&W)",
         manufacturer: "Beretta",
         category: "Pistols",
+        action_type: "DA/SA Hammer-Fired (Falling Locking Block)",
+        operating_actions: ["DA/SA Hammer", "Hammer-Fired", "Falling Block", "Semi-Auto"],
+        types: ["Pistols", "Handguns"],
+        caliber_categories: ["9x19mm", ".40 S&W", "Pistol Calibers"],
+        era: "Military & Law Enforcement (1975–Present)",
         models: ["Beretta 92FS", "Beretta M9", "Beretta 92F", "Beretta 96", "Beretta 92D", "Beretta Brigadier", "Beretta Inox"],
         calibers: ["9x19mm NATO", ".40 S&W"],
         key_tasks: ["Dead Trigger Spring Fix", "Locking Block Inspection (15k rds)", "Factory 92D Hammer Spring (8 lbs)", "Slide Detail Strip", "Extractor Carbon Cleaning"],
-        manuals_count: 3,
+        manuals_count: 2,
         schematics_count: 75,
         videos_count: 8
       },
@@ -839,10 +1055,15 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
         subtitle: "Headspace, Chamber Casting, Machining, Bluing & Diagnostics",
         manufacturer: "General Workshop",
         category: "Workshop Disciplines",
+        action_type: "Universal Bench & Tooling Disciplines",
+        operating_actions: ["All Actions", "Shop Standards", "Bench Reference", "Gunsmithing Disciplines"],
+        types: ["Workshop Disciplines", "Shop Disciplines", "Bench Reference"],
+        caliber_categories: ["All Calibers", "Rimmed", "Rimless", "Belted Magnums", "Straight Wall"],
+        era: "Universal Workshop Reference",
         models: ["All Firearms", "Bolt Actions", "Lever Actions", "Semi-Autos", "Revolvers"],
         calibers: ["Rimmed", "Rimless", "Belted Magnums", "Straight Wall"],
         key_tasks: ["Headspace (Go / No-Go / Field)", "Cerrosafe Chamber Casting", "Slow Rust & Hot Caustic Bluing", "11° Target Crowning", "Glass Bedding", "Sear Stoning"],
-        manuals_count: 5,
+        manuals_count: 2,
         schematics_count: 267,
         videos_count: 8
       }
@@ -850,20 +1071,42 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
   }
 
   const filtered = availableFirearmsList.filter(f => {
+    // 1. Manufacturer
     if (filterMfg !== "all") {
       const mfgLower = (f.manufacturer || "").toLowerCase();
       if (!mfgLower.includes(filterMfg.toLowerCase())) return false;
     }
+    // 2. Category / Type
     if (filterCat !== "all") {
       const catLower = (f.category || "").toLowerCase();
-      if (!catLower.includes(filterCat.toLowerCase())) return false;
+      const typesLower = (f.types || []).join(" ").toLowerCase();
+      const target = filterCat.toLowerCase();
+      if (!catLower.includes(target) && !typesLower.includes(target)) return false;
     }
+    // 3. Caliber
+    if (filterCal !== "all") {
+      if (filterCal === "all_calibers") {
+        if (!f.id.includes("General")) return false;
+      } else {
+        const cals = (f.calibers || []).concat(f.caliber_categories || []).join(" ").toLowerCase();
+        if (!cals.includes(filterCal.toLowerCase())) return false;
+      }
+    }
+    // 4. Action
+    if (filterAction !== "all") {
+      const act = ((f.action_type || "") + " " + (f.operating_actions || []).join(" ")).toLowerCase();
+      if (!act.includes(filterAction.toLowerCase())) return false;
+    }
+    // 5. Search Query
     if (q) {
       const blob = [
         f.name,
         f.subtitle,
         f.manufacturer,
         f.category,
+        f.action_type || "",
+        ...(f.types || []),
+        ...(f.operating_actions || []),
         ...(f.models || []),
         ...(f.calibers || []),
         ...(f.key_tasks || [])
@@ -873,11 +1116,24 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
     return true;
   });
 
+  // Sort
+  if (sortBy === "schematics") {
+    filtered.sort((a, b) => (b.schematics_count || 0) - (a.schematics_count || 0));
+  } else if (sortBy === "manuals") {
+    filtered.sort((a, b) => (b.manuals_count || 0) - (a.manuals_count || 0));
+  } else if (sortBy === "name") {
+    filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (sortBy === "manufacturer") {
+    filtered.sort((a, b) => (a.manufacturer || "").localeCompare(b.manufacturer || ""));
+  }
+
+  updateCatalogActiveFilterBar(filtered.length);
+
   if (filtered.length === 0) {
     catalogGrid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-dim);">
-        <p style="font-size: 15px; margin-bottom: 8px;">No firearms or shop platforms match your filter.</p>
-        <button class="btn-secondary" onclick="resetCatalogFilters()" style="margin-top: 10px;">Reset Filters</button>
+        <p style="font-size: 15px; margin-bottom: 8px;">No firearms or shop platforms match your selected filter criteria.</p>
+        <button class="btn-secondary" onclick="resetCatalogFilters()" style="margin-top: 10px;">Reset All Filters</button>
       </div>
     `;
     return;
@@ -898,6 +1154,8 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all") {
           <div class="catalog-card-badges">
             <span class="badge-mfg">${escapeHtml(f.manufacturer || "WORKSHOP")}</span>
             <span class="badge-cat">${escapeHtml(f.category || "FIREARMS")}</span>
+            ${f.action_type ? `<span class="badge-action">${escapeHtml(f.action_type)}</span>` : ''}
+            ${f.era ? `<span class="badge-era">${escapeHtml(f.era)}</span>` : ''}
           </div>
           <h3 class="catalog-card-title">${escapeHtml(f.name)}</h3>
           <p class="catalog-card-subtitle">${escapeHtml(f.subtitle || "")}</p>

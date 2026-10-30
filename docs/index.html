@@ -46,27 +46,32 @@
 
     <!-- Active Firearm, Mobile Connect & Local LLM Badge -->
     <div class="header-controls">
-      <button id="openGunCatalogBtn" class="bench-firearm-btn" title="Open Gunsmith Armory & Switch Active Firearm">
-        <div class="bench-firearm-icon">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        </div>
-        <div class="bench-firearm-info">
-          <div class="bench-firearm-top">
-            <span class="bench-tag">ON BENCH</span>
-            <span id="headerGunMfg" class="bench-mfg-badge">Savage Arms / BSA</span>
-          </div>
-          <div id="headerGunTitle" class="bench-gun-name">Lewis Automatic Machine Gun</div>
-        </div>
-        <span class="bench-switch-pill">▾ Switch Gun</span>
-      </button>
+      <div class="header-platform-picker" title="Quick switch active firearm platform">
+        <label for="firearmSelect" class="platform-label">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span class="platform-label-text">PLATFORM:</span>
+        </label>
+        <select id="firearmSelect" class="header-platform-select" aria-label="Select Firearm Platform">
+          <optgroup label="── PISTOLS &amp; HANDGUNS ──">
+            <option value="Glock_Pistols">Glock Safe-Action Pistols (Gen 1–5)</option>
+            <option value="Beretta_Pistols">Beretta 92 / M9 Series (9mm)</option>
+          </optgroup>
+          <optgroup label="── RIFLES, RIMFIRE &amp; REVOLVERS ──">
+            <option value="Ruger_Firearms">Ruger Collection (10/22, Mark I–IV, GP100)</option>
+          </optgroup>
+          <optgroup label="── AUTOMATIC WEAPONS ──">
+            <option value="Lewis_Automatic_Machine_Gun" selected>Lewis Light Machine Gun (.303 / .30-06)</option>
+          </optgroup>
+          <optgroup label="── BENCH &amp; SHOP DISCIPLINES ──">
+            <option value="General_Gunsmithing">General Gunsmithing &amp; Standards</option>
+          </optgroup>
+        </select>
+      </div>
 
-      <select id="firearmSelect" class="sr-only" aria-hidden="true">
-        <option value="Lewis_Automatic_Machine_Gun" selected>Lewis Light Machine Gun (.303 / .30-06)</option>
-        <option value="Glock_Pistols">Glock Safe-Action Pistols (Gen 1–5)</option>
-        <option value="Ruger_Firearms">Ruger Firearms (10/22, Mark I–IV, GP100)</option>
-        <option value="Beretta_Pistols">Beretta Pistols (92FS, M9 Series)</option>
-        <option value="General_Gunsmithing">General Gunsmithing &amp; Workshop Disciplines</option>
-      </select>
+      <button id="openGunCatalogBtn" class="bench-firearm-btn" title="Open Full Armory Catalog with Multi-Filter Search">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="bench-switch-pill">🗂️ Armory Catalog</span>
+      </button>
 
       <button id="mobileConnectBtn" class="mobile-connect-btn" title="Connect Phone / Tablet via Wi-Fi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -94,6 +99,45 @@
     <aside class="panel-library" id="panelLibrary">
       <div class="panel-header">
         <h2>ARMORER WORKBENCH</h2>
+      </div>
+
+      <!-- Quick Platform Categorizer & Switcher Bar -->
+      <div class="platform-quick-bar" id="platformQuickBar">
+        <div class="strip-header">
+          <span class="strip-label">SELECT &amp; FILTER PLATFORM:</span>
+          <button id="sidebarOpenCatalogLink" class="catalog-link-btn" title="Open Full Armory Catalog">🗂️ Catalog</button>
+        </div>
+        
+        <!-- Manufacturer Quick Pills -->
+        <div class="quick-filter-row">
+          <span class="quick-filter-axis">MFR:</span>
+          <div class="quick-filter-pills" id="sidebarMfgFilter">
+            <button class="quick-pill active" data-mfg="all">All</button>
+            <button class="quick-pill" data-mfg="Glock">Glock</button>
+            <button class="quick-pill" data-mfg="Ruger">Ruger</button>
+            <button class="quick-pill" data-mfg="Beretta">Beretta</button>
+            <button class="quick-pill" data-mfg="Savage">Savage</button>
+            <button class="quick-pill" data-mfg="General Workshop">Shop</button>
+          </div>
+        </div>
+
+        <!-- Type Quick Pills -->
+        <div class="quick-filter-row">
+          <span class="quick-filter-axis">TYPE:</span>
+          <div class="quick-filter-pills" id="sidebarTypeFilter">
+            <button class="quick-pill active" data-type="all">All</button>
+            <button class="quick-pill" data-type="Pistols">Pistols</button>
+            <button class="quick-pill" data-type="Rifles">Rifles</button>
+            <button class="quick-pill" data-type="Revolvers">Revolvers</button>
+            <button class="quick-pill" data-type="Machine Guns">Auto</button>
+            <button class="quick-pill" data-type="Workshop Disciplines">Shop</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Quick-Switch Cards List -->
+        <div class="platform-quick-list" id="platformQuickList">
+          <!-- Populated dynamically via JS: each platform has icon, name, mfg tag, specs and click-to-switch -->
+        </div>
       </div>
 
       <!-- Active Firearm Card on Workbench -->
@@ -515,7 +559,7 @@
           </div>
 
           <div class="catalog-filter-group">
-            <span class="filter-group-label">CATEGORY:</span>
+            <span class="filter-group-label">CATEGORY / TYPE:</span>
             <div class="catalog-filter-chips" id="catFilterChips">
               <button class="chip active" data-cat="all">All Categories</button>
               <button class="chip" data-cat="Pistols">Pistols</button>
@@ -524,6 +568,53 @@
               <button class="chip" data-cat="Machine Guns">Machine Guns</button>
               <button class="chip" data-cat="Workshop Disciplines">Shop Disciplines</button>
             </div>
+          </div>
+
+          <div class="catalog-filter-group">
+            <span class="filter-group-label">CALIBER:</span>
+            <div class="catalog-filter-chips" id="caliberFilterChips">
+              <button class="chip active" data-cal="all">All Calibers</button>
+              <button class="chip" data-cal="9x19mm">9x19mm Luger</button>
+              <button class="chip" data-cal=".22 LR">.22 LR Rimfire</button>
+              <button class="chip" data-cal=".357 Magnum">.357 Mag / .38 Spl</button>
+              <button class="chip" data-cal=".303 British">.303 Brit / .30-06</button>
+              <button class="chip" data-cal="all_calibers">Universal / Multi</button>
+            </div>
+          </div>
+
+          <div class="catalog-filter-group">
+            <span class="filter-group-label">OPERATING ACTION:</span>
+            <div class="catalog-filter-chips" id="actionFilterChips">
+              <button class="chip active" data-action="all">All Systems</button>
+              <button class="chip" data-action="Striker-Fired">Striker-Fired (Safe Action)</button>
+              <button class="chip" data-action="DA/SA Hammer">DA/SA Hammer</button>
+              <button class="chip" data-action="Blowback Semi-Auto">Blowback Semi-Auto</button>
+              <button class="chip" data-action="Double-Action Revolver">Double-Action Revolver</button>
+              <button class="chip" data-action="Gas-Operated">Gas-Operated Machine Gun</button>
+              <button class="chip" data-action="Shop Standards">Shop Standards</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Status & Sorting Bar -->
+        <div class="catalog-status-bar">
+          <div class="catalog-active-filters" id="catalogActiveFiltersContainer">
+            <span class="active-filters-label">ACTIVE FILTERS:</span>
+            <div id="catalogActiveFilterTags" class="active-filter-tags">
+              <span class="filter-tag-none">None (Showing all platforms)</span>
+            </div>
+            <button id="clearAllCatalogFiltersBtn" class="clear-all-filters-btn hidden">Clear All</button>
+          </div>
+          
+          <div class="catalog-sort-box">
+            <label for="catalogSortSelect">SORT BY:</label>
+            <select id="catalogSortSelect" class="catalog-sort-select">
+              <option value="default">Default</option>
+              <option value="schematics">Most Schematics</option>
+              <option value="manuals">Most Manuals</option>
+              <option value="name">Name (A–Z)</option>
+              <option value="manufacturer">Brand</option>
+            </select>
           </div>
         </div>
       </div>

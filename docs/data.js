@@ -6,6 +6,23 @@ window.STATIC_FIREARMS_DATA = {
     "subtitle": "Model 1914 / 1917 / 1918 (.303 British & .30-06 Springfield)",
     "manufacturer": "Savage Arms / BSA",
     "category": "Machine Guns",
+    "action_type": "Gas-Operated Machine Gun (Open Bolt)",
+    "operating_actions": [
+      "Gas-Operated",
+      "Machine Gun",
+      "Open-Bolt",
+      "Automatic"
+    ],
+    "types": [
+      "Machine Guns",
+      "Automatic Weapons"
+    ],
+    "caliber_categories": [
+      ".303 British",
+      ".30-06 Springfield",
+      "Rifle Calibers"
+    ],
+    "era": "Historic Military (WWI / WWII)",
     "models": [
       "Model 1914",
       "Model 1917",
@@ -666,6 +683,25 @@ window.STATIC_FIREARMS_DATA = {
     "subtitle": "Generations 1\u20135 (9x19mm, .40 S&W, .45 ACP, 10mm Auto)",
     "manufacturer": "Glock",
     "category": "Pistols",
+    "action_type": "Striker-Fired (Safe Action)",
+    "operating_actions": [
+      "Striker-Fired",
+      "Short-Recoil",
+      "Safe-Action",
+      "Semi-Auto"
+    ],
+    "types": [
+      "Pistols",
+      "Handguns"
+    ],
+    "caliber_categories": [
+      "9x19mm",
+      ".40 S&W",
+      ".45 ACP",
+      "10mm Auto",
+      "Pistol Calibers"
+    ],
+    "era": "Modern Tactical & Duty (1982\u2013Present)",
     "models": [
       "Glock 17",
       "Glock 19",
@@ -2228,6 +2264,27 @@ window.STATIC_FIREARMS_DATA = {
     "subtitle": "10/22 Carbine, Mark I\u2013IV Target Pistols & GP100 Revolvers",
     "manufacturer": "Ruger",
     "category": "Rifles / Pistols / Revolvers",
+    "action_type": "Blowback Semi-Auto & DA Revolver",
+    "operating_actions": [
+      "Blowback Semi-Auto",
+      "Double-Action Revolver",
+      "DA Revolver",
+      "Rimfire Semi-Auto"
+    ],
+    "types": [
+      "Rifles",
+      "Pistols",
+      "Revolvers",
+      "Carbines"
+    ],
+    "caliber_categories": [
+      ".22 LR",
+      ".357 Magnum",
+      ".38 Special",
+      "Rimfire",
+      "Revolver Calibers"
+    ],
+    "era": "Sporting, Target & Defense (1949\u2013Present)",
     "models": [
       "10/22 Carbine",
       "Mark I",
@@ -2778,6 +2835,23 @@ window.STATIC_FIREARMS_DATA = {
     "subtitle": "92FS, M9, 96, Brigadier & Inox (9x19mm NATO & .40 S&W)",
     "manufacturer": "Beretta",
     "category": "Pistols",
+    "action_type": "DA/SA Hammer-Fired (Falling Locking Block)",
+    "operating_actions": [
+      "DA/SA Hammer",
+      "Hammer-Fired",
+      "Falling Block",
+      "Semi-Auto"
+    ],
+    "types": [
+      "Pistols",
+      "Handguns"
+    ],
+    "caliber_categories": [
+      "9x19mm",
+      ".40 S&W",
+      "Pistol Calibers"
+    ],
+    "era": "Military & Law Enforcement (1975\u2013Present)",
     "models": [
       "Beretta 92FS",
       "Beretta M9",
@@ -3475,6 +3549,26 @@ window.STATIC_FIREARMS_DATA = {
     "subtitle": "Headspace, Chamber Casting, Machining, Bluing & Diagnostics",
     "manufacturer": "General Workshop",
     "category": "Workshop Disciplines",
+    "action_type": "Universal Bench & Tooling Disciplines",
+    "operating_actions": [
+      "All Actions",
+      "Shop Standards",
+      "Bench Reference",
+      "Gunsmithing Disciplines"
+    ],
+    "types": [
+      "Workshop Disciplines",
+      "Shop Disciplines",
+      "Bench Reference"
+    ],
+    "caliber_categories": [
+      "All Calibers",
+      "Rimmed",
+      "Rimless",
+      "Belted Magnums",
+      "Straight Wall"
+    ],
+    "era": "Universal Workshop Reference",
     "models": [
       "All Firearms",
       "Bolt Actions",

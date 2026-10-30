@@ -204,6 +204,64 @@ body {
   gap: 12px;
 }
 
+/* Header Platform Picker */
+.header-platform-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 5px 10px;
+  transition: all 0.2s ease;
+}
+
+.header-platform-picker:hover,
+.header-platform-picker:focus-within {
+  border-color: var(--brass-accent);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+.platform-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brass-accent);
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header-platform-select {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  max-width: 260px;
+}
+
+.header-platform-select option,
+.header-platform-select optgroup {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  padding: 4px;
+}
+
+.header-platform-select optgroup {
+  color: var(--brass-accent);
+  font-weight: 700;
+  font-size: 11px;
+}
+
 /* Prominent Bench Firearm Switcher Button */
 .bench-firearm-btn {
   display: flex;
@@ -394,6 +452,184 @@ body {
   font-weight: 700;
   letter-spacing: 1.2px;
   color: var(--brass-accent);
+}
+
+/* Sidebar Platform Quick Filter & Switcher Bar */
+.platform-quick-bar {
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.strip-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--brass-accent);
+  letter-spacing: 0.6px;
+}
+
+.catalog-link-btn {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--brass-accent);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.catalog-link-btn:hover {
+  background: var(--brass-accent);
+  color: #0b0e14;
+}
+
+.quick-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quick-filter-axis {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  width: 34px;
+  flex-shrink: 0;
+}
+
+.quick-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.quick-pill {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.quick-pill:hover {
+  background: var(--bg-card);
+  color: #ffffff;
+  border-color: var(--text-dim);
+}
+
+.quick-pill.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--brass-accent);
+  color: var(--brass-accent);
+  font-weight: 700;
+  box-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
+}
+
+/* Dynamic Quick-Switch Cards List in Sidebar */
+.platform-quick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 165px;
+  overflow-y: auto;
+  margin-top: 2px;
+  padding-right: 2px;
+}
+
+.platform-quick-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.platform-quick-item:hover {
+  background: var(--bg-card);
+  border-color: var(--border-focus);
+  transform: translateX(2px);
+}
+
+.platform-quick-item.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(18, 24, 34, 0.9));
+  border-color: var(--brass-accent);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+.quick-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.quick-item-name {
+  font-family: var(--font-heading);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.platform-quick-item.active .quick-item-name {
+  color: var(--brass-accent);
+  font-weight: 700;
+}
+
+.quick-item-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-mfg-tag {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.quick-type-tag {
+  font-size: 8.5px;
+  color: #7dd3fc;
+}
+
+.quick-item-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--brass-accent);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 /* Active Firearm Card on Workbench (Sidebar Top) */
@@ -2066,6 +2302,143 @@ body {
   color: var(--brass-accent);
   font-weight: 700;
   box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+}
+
+/* Catalog Status & Sort Bar */
+.catalog-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.catalog-active-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.active-filters-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.active-filter-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-tag-none {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.active-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid var(--brass-accent);
+  color: var(--brass-accent);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 12px;
+}
+
+.active-filter-pill button {
+  background: transparent;
+  border: none;
+  color: var(--brass-accent);
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.active-filter-pill button:hover {
+  color: #ffffff;
+}
+
+.clear-all-filters-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clear-all-filters-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.catalog-sort-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.catalog-sort-box label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.catalog-sort-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+.catalog-sort-select:focus {
+  border-color: var(--brass-accent);
+}
+
+.badge-action {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.badge-era {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 
 /* Firearms Catalog Grid */
