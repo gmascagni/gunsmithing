@@ -43,8 +43,8 @@ WORKSHOP: Dict[str, Dict[str, Any]] = {
                 "title": "Headspace Gauging Masterclass: GO, NO-GO & FIELD Explained",
                 "creator": "Larry Potterfield / MidwayUSA",
                 "category": "Bench Safety & Gauging",
-                "url": "https://www.youtube.com/watch?v=e8Headspacex9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/e8Headspacex9M2w",
+                "url": "https://www.youtube.com/results?search_query=General+Gunsmithing+%26+Workshop+Disciplines+Headspace+Gauging+Masterclass%3A+GO%2C+NO-GO+%26+FIELD+Explained+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=General+Gunsmithing+%26+Workshop+Disciplines+Headspace+Gauging+Masterclass%3A+GO%2C+NO-GO+%26+FIELD+Explained+gunsmithing+armorer",
                 "summary": "Master gunsmith Larry Potterfield demonstrates how headspace is measured across rimmed, rimless, and belted cases, and how to verify bolt safety."
             }
         ]

@@ -939,34 +939,49 @@ def enrich_part_with_rag(firearm_id: str, part: Dict[str, Any]) -> Dict[str, Any
     if matching_specs:
         part["tolerances"] = part.get("tolerances", "") + " | Spec: " + "; ".join(matching_specs[:2])
 
-    # Deep RAG: Search firearm's PDF manuals for primary source citations
+    # Deep RAG: Search firearm's PDF manuals for primary source citations using anatomical scoring
     try:
         import fitz
         manuals_dir = BASE_DIR / firearm_id / "manuals"
         if manuals_dir.exists():
-            keywords = [w for w in re.split(r"\W+", part.get("name", "").lower()) if len(w) > 3 and w not in ["part", "assembly", "group", "mechanism", "with", "plate"]]
-            if keywords:
-                for pdf_file in sorted(manuals_dir.glob("*.pdf")):
-                    try:
-                        doc = fitz.open(pdf_file)
-                        for page_idx in range(len(doc)):
-                            p_text = doc[page_idx].get_text()
-                            p_lower = p_text.lower()
-                            if all(kw in p_lower for kw in keywords[:2]):
-                                lines = [ln.strip() for ln in p_text.splitlines() if ln.strip()]
-                                snippet = " ".join(lines[:5])[:250]
-                                part["manual_citation"] = {
-                                    "manual_filename": pdf_file.name,
-                                    "manual_title": pdf_file.stem.replace("_", " "),
-                                    "page": page_idx + 1,
-                                    "snippet": snippet,
-                                    "url": f"/api/manuals/{firearm_id}/{pdf_file.name}#page={page_idx + 1}"
-                                }
-                                break
-                        if part.get("manual_citation"):
-                            break
-                    except Exception:
-                        continue
+            pname = part.get("name", "").lower()
+            if any(w in pname for w in ["stock", "butt", "buffer"]):
+                targets = ["stock", "butt", "buffer", "tang", "dovetail"]
+            elif any(w in pname for w in ["barrel", "bore", "gas", "shroud", "muzzle", "radiator"]):
+                targets = ["barrel", "gas", "piston", "bore", "cylinder", "radiator", "port"]
+            elif any(w in pname for w in ["trigger", "sear", "disconnect", "grip", "guard", "hammer"]):
+                targets = ["trigger", "sear", "guard", "disconnector", "pull", "hammer", "sear pin"]
+            elif any(w in pname for w in ["magazine", "feed", "pan", "drum", "clip"]):
+                targets = ["magazine", "clip", "feed", "pan", "follower", "feedway"]
+            elif any(w in pname for w in ["cylinder", "crane", "ratchet"]):
+                targets = ["cylinder", "crane", "ratchet", "yoke", "endshake"]
+            else:
+                targets = ["bolt", "receiver", "breech", "action", "slide", "striker", "firing pin"]
+
+            best_match = None
+            best_score = 0
+            for pdf_file in sorted(manuals_dir.glob("*.pdf")):
+                try:
+                    doc = fitz.open(pdf_file)
+                    for page_idx in range(len(doc)):
+                        p_text = doc[page_idx].get_text()
+                        p_lower = p_text.lower()
+                        score = sum(p_lower.count(t) for t in targets)
+                        if score > best_score:
+                            best_score = score
+                            lines = [ln.strip() for ln in p_text.splitlines() if ln.strip()]
+                            snippet = " ".join(lines[:4])[:260]
+                            best_match = {
+                                "manual_filename": pdf_file.name,
+                                "manual_title": pdf_file.stem.replace("_", " "),
+                                "page": page_idx + 1,
+                                "snippet": snippet,
+                                "url": f"/api/manuals/{firearm_id}/{pdf_file.name}#page={page_idx + 1}"
+                            }
+                except Exception:
+                    continue
+            if best_match and best_score > 0:
+                part["manual_citation"] = best_match
     except Exception:
         pass
 

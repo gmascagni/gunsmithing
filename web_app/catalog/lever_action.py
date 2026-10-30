@@ -43,8 +43,8 @@ LEVER_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Winchester Model 94 Complete Disassembly, Cleaning & Assembly",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Classic Lever Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=w8Win94x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/w8Win94x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Winchester+Model+1894+Winchester+Model+94+Complete+Disassembly%2C+Cleaning+%26+Assembly+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Winchester+Model+1894+Winchester+Model+94+Complete+Disassembly%2C+Cleaning+%26+Assembly+gunsmithing+armorer",
                 "summary": "Teardown of the Winchester 94 action: link pin, locking bolt, loading gate spring, hammer assembly, and timing the carrier."
             }
         ]
@@ -86,8 +86,8 @@ LEVER_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Fixing the Marlin Jam & Complete Model 336 / 1895 Disassembly",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Lever Action Repair",
-                "url": "https://www.youtube.com/watch?v=m8Mar336x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8Mar336x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Marlin+Model+336+%26+1895+Series+Fixing+the+Marlin+Jam+%26+Complete+Model+336+%2F+1895+Disassembly+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Marlin+Model+336+%26+1895+Series+Fixing+the+Marlin+Jam+%26+Complete+Model+336+%2F+1895+Disassembly+gunsmithing+armorer",
                 "summary": "Step-by-step disassembly of the Marlin 336/1895, diagnosing and fixing the carrier jam, two-piece firing pin service, and trigger stoning."
             }
         ]
@@ -129,8 +129,8 @@ LEVER_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Henry Big Boy Complete Disassembly, Cleaning & Action Tuning",
                 "creator": "MidwayUSA / Larry Potterfield",
                 "category": "Bench Disassembly",
-                "url": "https://www.youtube.com/watch?v=h8HenBBx9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/h8HenBBx9M2w",
+                "url": "https://www.youtube.com/results?search_query=Henry+Classic+%26+Big+Boy+Lever+Action+Henry+Big+Boy+Complete+Disassembly%2C+Cleaning+%26+Action+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Henry+Classic+%26+Big+Boy+Lever+Action+Henry+Big+Boy+Complete+Disassembly%2C+Cleaning+%26+Action+Tuning+gunsmithing+armorer",
                 "summary": "Teardown of the Henry Big Boy action: removing the bolt, extractor, transfer bar safety, and side-loading gate mechanism."
             }
         ]

@@ -1228,6 +1228,51 @@ body {
   line-height: 1.6;
 }
 
+.video-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-main);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.video-action-btn.primary {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #dc2626;
+}
+.video-action-btn.primary:hover {
+  background: #b91c1c;
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.45);
+  color: #ffffff;
+}
+
+.video-action-btn.secondary {
+  background: var(--bg-tertiary);
+  color: var(--brass-accent);
+  border: 1px solid var(--border-color);
+}
+.video-action-btn.secondary:hover {
+  background: #252b38;
+  border-color: var(--brass-accent);
+  color: #ffffff;
+}
+
 /* Dossier / Specs Stage */
 #dossierStage {
   overflow-y: auto;

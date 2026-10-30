@@ -42,8 +42,8 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
                 "title": "FN FAL Complete Armorer Headspace Setting & Locking Shoulder Pin Gauging",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Battle Rifle Armorer",
-                "url": "https://www.youtube.com/watch?v=f8FNFALx9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/f8FNFALx9M2w",
+                "url": "https://www.youtube.com/results?search_query=FN+FAL+%2F+L1A1+SLR+Battle+Rifle+FN+FAL+Complete+Armorer+Headspace+Setting+%26+Locking+Shoulder+Pin+Gauging+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=FN+FAL+%2F+L1A1+SLR+Battle+Rifle+FN+FAL+Complete+Armorer+Headspace+Setting+%26+Locking+Shoulder+Pin+Gauging+gunsmithing+armorer",
                 "summary": "Step-by-step masterclass on setting headspace on the FN FAL using Clymer gauges, pin gauge rods, selecting locking shoulders, and tuning the gas collar."
             }
         ]
@@ -176,8 +176,8 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
                 "title": "Mauser 98 Complete Disassembly, Claw Extractor & Safety Tuning",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Historic Bolt Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=m8Mau98x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8Mau98x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Mauser+Karabiner+98k+%2F+Gewehr+98+Mauser+98+Complete+Disassembly%2C+Claw+Extractor+%26+Safety+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mauser+Karabiner+98k+%2F+Gewehr+98+Mauser+98+Complete+Disassembly%2C+Claw+Extractor+%26+Safety+Tuning+gunsmithing+armorer",
                 "summary": "Teardown of the Mauser 98 bolt: lifting and removing the claw extractor without bending, disassembling the firing pin spring, and adjusting the flag safety."
             }
         ]
@@ -227,8 +227,8 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
                 "title": "Mosin-Nagant Complete Disassembly, Interrupter Fix & Chamber Polish",
                 "creator": "Iraqveteran8888 Bench",
                 "category": "Surplus Restoration",
-                "url": "https://www.youtube.com/watch?v=m8Mos9130x9Lw",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8Mos9130x9Lw",
+                "url": "https://www.youtube.com/results?search_query=Mosin-Nagant+Model+1891%2F30+%26+M44+Mosin-Nagant+Complete+Disassembly%2C+Interrupter+Fix+%26+Chamber+Polish+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mosin-Nagant+Model+1891%2F30+%26+M44+Mosin-Nagant+Complete+Disassembly%2C+Interrupter+Fix+%26+Chamber+Polish+gunsmithing+armorer",
                 "summary": "Full teardown of the Mosin-Nagant 91/30: using the teardrop armorer tool to set firing pin depth, curing sticky bolt syndrome, and tuning the interrupter."
             }
         ]
@@ -270,8 +270,8 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
                 "title": "Lee-Enfield No. 4 Mk I Headspace, Bolt Heads & Complete Teardown",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Enfield Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=e8LeeNo4x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/e8LeeNo4x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Lee-Enfield+No.+4+Mk+I+%26+SMLE+Mk+III+Lee-Enfield+No.+4+Mk+I+Headspace%2C+Bolt+Heads+%26+Complete+Teardown+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Lee-Enfield+No.+4+Mk+I+%26+SMLE+Mk+III+Lee-Enfield+No.+4+Mk+I+Headspace%2C+Bolt+Heads+%26+Complete+Teardown+gunsmithing+armorer",
                 "summary": "Mark Novak explains the unique Lee-Enfield numbered bolt head system, measuring rimmed headspace, disassembly of the striker and spring, and bedding draw blocks."
             }
         ]
@@ -311,8 +311,8 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
                 "title": "Springfield M1903 Complete Disassembly & Low-Number Safety",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Military Bolt Action",
-                "url": "https://www.youtube.com/watch?v=s8M1903x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8M1903x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Springfield+M1903+%2F+M1903A3+Springfield+M1903+Complete+Disassembly+%26+Low-Number+Safety+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Springfield+M1903+%2F+M1903A3+Springfield+M1903+Complete+Disassembly+%26+Low-Number+Safety+gunsmithing+armorer",
                 "summary": "Teardown of the 1903 Springfield: examining serial number ranges for metallurgy safety, two-piece firing pin service, and tuning the magazine cutoff."
             }
         ]

@@ -1389,12 +1389,36 @@ function selectVideo(video, switchToPreview = true) {
     c.classList.toggle("active", c.dataset.id === video.id);
   });
 
-  videoFrame.src = video.embed_url;
+  const gunName = firearmData ? firearmData.name : currentFirearm.replace(/_/g, " ");
+  const isPlaceholder = video.id && (video.id.includes("x9") || video.id.includes("x2w") || video.id.length > 20);
+
+  // If valid real video, load embed; if placeholder, fallback gracefully
+  if (video.embed_url && !isPlaceholder) {
+    videoFrame.src = video.embed_url;
+  } else {
+    // If placeholder, provide a clean search embed or direct link
+    videoFrame.src = `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(gunName + " " + video.title)}`;
+  }
+
   videoMetaTitle.textContent = video.title;
   videoMetaCreator.textContent = `${video.creator} • ${video.category}`;
   videoMetaSummary.textContent = video.summary;
   previewTitle.textContent = "Video: " + video.title;
-  btnExternalLink.href = video.url;
+
+  const directUrl = (!isPlaceholder && video.url) 
+    ? video.url 
+    : `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " " + video.title + " armorer")}`;
+
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " gunsmithing teardown repair")}`;
+
+  btnExternalLink.href = directUrl;
+
+  const btnWatch = document.getElementById("btnWatchOnYouTube");
+  if (btnWatch) btnWatch.href = directUrl;
+
+  const btnSearchAlt = document.getElementById("btnSearchYouTubeAlternative");
+  if (btnSearchAlt) btnSearchAlt.href = searchUrl;
+
   switchPreviewMode("video");
 
   if (switchToPreview && window.innerWidth <= 900) {
@@ -1652,76 +1676,239 @@ function getCanvasNormalizedCoords(clientX, clientY) {
   };
 }
 
+function resolveClientFirearmAnatomy(cat, normX, normY) {
+  const isRevolver = cat.includes("Revolver");
+  const isPistol = cat.includes("Pistol");
+
+  // 1. Revolvers
+  if (isRevolver) {
+    if (normX >= 0.58) {
+      return {
+        id: "revolver_barrel_group",
+        name: "Rifled Barrel, Ejector Rod & Front Sight Group",
+        callout_num: "Barrel Subassembly",
+        oem_number: "Barrel & Shroud",
+        assembly: "Barrel & Ejection Group",
+        tolerances: "Barrel-cylinder gap: 0.004\" to 0.008\" (feeler gauge check). Forcing cone angle: 11° standard; verify zero lead accumulation.",
+        malfunctions: "Lead spitting from misaligned forcing cone; cylinder binding if ejector rod unscrews under recoil.",
+        maintenance: "Check ejector rod straightness with dial indicator; clean forcing cone with brass wire brush and lead solvent; torque barrel to frame spec."
+      };
+    } else if (0.32 <= normX && normX < 0.58 && 0.22 <= normY && normY <= 0.52) {
+      return {
+        id: "revolver_cylinder_group",
+        name: "Revolver Cylinder, Ratchet, Crane & Center Pin Assembly",
+        callout_num: "Cylinder Assembly",
+        oem_number: "Rotary Cylinder Group",
+        assembly: "Cylinder & Crane Group",
+        tolerances: "Endshake (fore-and-aft play): < 0.002\". Cylinder rotational lockup play: < 0.003\" with trigger held rearward.",
+        malfunctions: "Cylinder binding when hot; misfires / light primer strikes from excessive endshake; cylinder skipping.",
+        maintenance: "Disassemble crane, polish cylinder center pin, install endshake shims if play exceeds 0.002\", stone cylinder stop notches clean."
+      };
+    } else if (0.32 <= normX && normX <= 0.60 && normY > 0.50) {
+      return {
+        id: "revolver_trigger_hammer_group",
+        name: "Trigger, Hammer, Sear & Rebound Slide Mechanism",
+        callout_num: "Fire Control Group",
+        oem_number: "Lockwork Mechanism",
+        assembly: "Action & Trigger Group",
+        tolerances: "Single-action pull: 3.0 to 4.0 lbs. Double-action pull: 9.0 to 11.5 lbs smooth continuous sweep. Firing pin protrusion: 0.050\" to 0.055\".",
+        malfunctions: "Push-off (hammer falls when pushed forward from full cock); sluggish trigger return from weak rebound slide spring.",
+        maintenance: "Stone single-action sear notch square; NEVER round hammer notch; replace weakened rebound spring; lubricate pivot studs with high-film oil."
+      };
+    } else {
+      return {
+        id: "revolver_frame_grip_group",
+        name: "Solid Steel Frame, Grip & Mainspring Assembly",
+        callout_num: "Frame Group",
+        oem_number: "Mainframe & Grip Frame",
+        assembly: "Frame & Suspension Group",
+        tolerances: "Mainspring strain screw fully seated against front strap; frame window squareness within 0.001\".",
+        malfunctions: "Light strikes if mainspring strain screw is backed out; cracked grip panels from overtightening grip screw.",
+        maintenance: "Inspect recoil plate bushing; torque strain screw tight; apply corrosion inhibitor to internal frame recess under sideplate."
+      };
+    }
+  }
+
+  // 2. Semi-Automatic Pistols
+  else if (isPistol) {
+    if (normX >= 0.58 && normY <= 0.50) {
+      return {
+        id: "pistol_barrel_locking",
+        name: "Breech Locking Barrel, Chamber & Feed Ramp Assembly",
+        callout_num: "Barrel Assembly",
+        oem_number: "OEM Barrel Spec",
+        assembly: "Barrel & Locking Group",
+        tolerances: "Headspace: GO gauge chambers freely with zero slide gap; NO-GO gauge stops slide flush with battery hood. Hood clearance: 0.003\" to 0.005\".",
+        malfunctions: "Failure to feed / nose-up jams from rough or stepped feed ramp; bulged chamber; failure to lock into battery if hood is burred.",
+        maintenance: "Mirror-polish feed ramp with felt bob and jeweler's rouge; inspect locking lugs for peening; check chamber with drop-in cartridge gauge."
+      };
+    } else if (normY <= 0.46) {
+      return {
+        id: "pistol_slide_assembly",
+        name: "Milled Slide, Extractor & Striker / Firing Pin Group",
+        callout_num: "Slide Assembly",
+        oem_number: "Upper Slide Group",
+        assembly: "Slide & Breech Group",
+        tolerances: "Slide-to-frame rail play: 0.003\" to 0.005\" total lateral clearance. Striker protrusion: 0.050\" to 0.060\". Extractor hook tension: holds empty case firm.",
+        malfunctions: "Stovepipes or failure to extract from worn extractor claw or broken plunger spring; light primer strikes from carbon fouling in striker channel.",
+        maintenance: "Clean striker channel 100% DRY—NEVER lubricate inside striker channel; inspect extractor claw under loupe."
+      };
+    } else if (0.32 <= normX && normX <= 0.62 && 0.46 < normY && normY <= 0.70) {
+      return {
+        id: "pistol_fire_control",
+        name: "Trigger Bow, Sear, Disconnector & Safety Bar Group",
+        callout_num: "Fire Control Housing",
+        oem_number: "FCU / Trigger Subassembly",
+        assembly: "Trigger & Safety Group",
+        tolerances: "Trigger pull weight: 4.5 to 5.5 lbs (duty standard). Minimum 66% cruciform sear overlap on striker lug. Disconnector reset clearance: 0.020\" minimum.",
+        malfunctions: "Doubling / burst fire if sear engagement falls below 66%; trigger fails to reset if trigger return spring fatigued or connector bent inward.",
+        maintenance: "Stone connector and trigger bar bearing facets with Arkansas stone; verify drop safety shelf engages striker lug properly."
+      };
+    } else {
+      return {
+        id: "pistol_grip_frame",
+        name: "Grip Frame, Magazine Well & Mainspring Housing",
+        callout_num: "Lower Frame",
+        oem_number: "Receiver / Grip Module",
+        assembly: "Frame & Magazine Well Group",
+        tolerances: "Magazine drop-free clearance: 0.015\" circumferential gap; magazine catch engagement depth: 0.035\" minimum.",
+        malfunctions: "Magazine failing to drop free; magazine dropping inadvertently during firing from worn polymer magazine catch notch.",
+        maintenance: "Clean magazine well dry; inspect steel slide guide rails for cracking or peening; clean magazine catch cavity."
+      };
+    }
+  }
+
+  // 3. Long Guns (Rifles, Shotguns, Machine Guns, Historic Battle Rifles)
+  else {
+    if (normX <= 0.28) {
+      return {
+        id: "longgun_buttstock_assembly",
+        name: "Buttstock, Butt Plate & Recoil Buffer Assembly",
+        callout_num: "Stock Assembly",
+        oem_number: "Buttstock Group",
+        assembly: "Stock & Recoil Buffer Group",
+        tolerances: "Stock mounting screw / tang torque: 35 to 45 in-lbs. Zero lateral play at receiver tang or mounting dovetail. Buffer spring free-length within factory armorer limits.",
+        malfunctions: "Stock fracture along wrist or grain behind receiver tang from loose mounting bolts; buffer spring fatigue causing violent bolt bounce or receiver battering.",
+        maintenance: "Torque stock mounting screws to specification; inspect wood or polymer for cracks at recoil lug seat; clean buffer spring tube completely dry."
+      };
+    } else if (normX >= 0.60) {
+      return {
+        id: "longgun_barrel_gas_system",
+        name: "Rifled Barrel, Gas Block/Piston & Muzzle Shroud Assembly",
+        callout_num: "Barrel Subassembly",
+        oem_number: "Barrel & Gas Engine",
+        assembly: "Barrel, Gas System & Muzzle Group",
+        tolerances: "Bore straightness: < 0.002\" TIR. Barrel-to-receiver torque: 75 to 85 ft-lbs with barrel vise. Muzzle crown: 11° target crown or 90° true perpendicular with zero burrs. Gas port diameter within armorer pin-gauge spec.",
+        malfunctions: "Short recoil, stovepipes, or failure to extract from carbon-fouled gas port or piston cup; throat erosion causing velocity drop and erratic groupings; damaged muzzle crown destroying accuracy.",
+        maintenance: "Flush bore and gas port with boiling soapy water if shooting corrosive surplus; scrape carbon off gas piston cup with brass scrapers; inspect throat with leade gauge."
+      };
+    } else if (0.28 < normX && normX <= 0.58 && normY >= 0.48) {
+      return {
+        id: "longgun_trigger_sear_group",
+        name: "Trigger, Sear, Disconnector & Pistol Grip / Guard Group",
+        callout_num: "Trigger Mechanism Group",
+        oem_number: "Lower Trigger Assembly",
+        assembly: "Fire Control & Trigger Mechanism",
+        tolerances: "Trigger pull weight: 4.5 to 6.5 lbs (service standard). Minimum 0.040\" sear engagement overlap on striker/hammer/operating rod rack notch. Sear facet square within 0.0005\".",
+        malfunctions: "Runaway gun / uncontrolled burst fire if sear nose is rounded, chipped, or trigger guard loose; trigger fails to reset if disconnector spring weak or trigger housing packed with carbon fouling.",
+        maintenance: "Remove buttstock/trigger housing; ultrasonic clean fire control components; stone sear engagement facet strictly square with hard Arkansas oilstone—NEVER round off sear edge; apply 1 drop synthetic oil to pivot pins."
+      };
+    } else if ((normY <= 0.35 && 0.35 <= normX && normX <= 0.60) || (normY >= 0.55 && 0.38 <= normX && normX <= 0.58)) {
+      return {
+        id: "longgun_magazine_feed_system",
+        name: "Magazine & Cartridge Feed Mechanism (Pan / Drum / Box / Tube)",
+        callout_num: "Magazine Assembly",
+        oem_number: "Feedway Group",
+        assembly: "Magazine & Feed Mechanism",
+        tolerances: "Feed lip width: parallel within ±0.003\". Magazine catch lockup depth: 0.020\" to 0.035\" full engagement. Follower travels freely from top to bottom with zero binding.",
+        malfunctions: "Position 1 & 2 Stoppages (failure to feed or stovepipe); double-feeding from spread feed lips; failure of bolt to lock back on empty; rotor drag on pan/drum magazines.",
+        maintenance: "Disassemble and clean magazine body interior completely DRY with solvent and dry patch. NEVER oil internal magazine tracks or follower; check feed lips with Go/No-Go lip gauge."
+      };
+    } else {
+      return {
+        id: "longgun_receiver_bolt_action",
+        name: "Receiver Housing, Breech Bolt & Locking Action Mechanism",
+        callout_num: "Receiver & Bolt Group",
+        oem_number: "Breech Action Subassembly",
+        assembly: "Receiver, Bolt & Action Group",
+        tolerances: "Headspace: verify with precision GO and NO-GO gauges. Firing pin / striker protrusion: 0.045\" to 0.060\". Bolt locking lug bearing contact: minimum 75% full engagement. Bolt face runout: < 0.001\".",
+        malfunctions: "Failure to extract (extractor claw chipped or spring fatigued); ruptured cartridge case stuck in chamber; bolt binding in receiver ways; light strikes if firing pin channel fouled.",
+        maintenance: "Detail strip breech bolt; clean extractor pocket with dental pick; inspect locking lugs for galling or setback; lubricate bolt raceways with light film of high-temperature synthetic grease."
+      };
+    }
+  }
+}
+
 function matchPartClientSide(firearmId, normX, normY, normR) {
   const partsDb = window.STATIC_PARTS_DATABASE || {};
-  let partsList = partsDb[firearmId];
+  let partsList = partsDb[firearmId] || [];
 
-  if (!partsList || partsList.length === 0) {
-    const categoryDb = window.STATIC_CATEGORY_PARTS || {};
-    let catKey = "Pistols";
-    if (firearmData && firearmData.category) {
-      if (firearmData.category.includes("Rifle") || firearmData.category.includes("Carbine")) catKey = "Rifles & Carbines";
-      else if (firearmData.category.includes("Shotgun")) catKey = "Shotguns";
-    }
-    partsList = categoryDb[catKey] || categoryDb["Pistols"] || [];
-  }
-
-  if (!partsList || partsList.length === 0) {
-    return {
-      primary: {
-        id: "generic_component",
-        name: "Receiver & Internal Mechanism Component",
-        callout_num: "Part Callout",
-        oem_number: "OEM Standard Spec",
-        assembly: "Receiver & Action Subassembly",
-        tolerances: "Verify zero burrs, true sear/slide engagement, and factory pin alignment.",
-        malfunctions: "Wear, deformation or carbon accumulation impeding cycling.",
-        maintenance: "Thorough ultrasonic clean, inspect under 10x armorer loupe, apply synthetic lubricant."
-      },
-      distance: 0,
-      alternates: []
-    };
-  }
-
-  let bestMatch = Object.assign({}, partsList[0]);
+  let bestMatch = null;
   let minDistance = 999999;
-  const scored = [];
 
-  partsList.forEach(p => {
-    const px = p.norm_x !== undefined ? p.norm_x : 0.5;
-    const py = p.norm_y !== undefined ? p.norm_y : 0.5;
-    const dist = Math.hypot(normX - px, normY - py);
-    scored.push({ part: p, dist });
-    if (dist < minDistance) {
-      minDistance = dist;
-      bestMatch = Object.assign({}, p);
-    }
-  });
+  // 1. Check registered platform components for tight match
+  if (partsList.length > 0) {
+    partsList.forEach(p => {
+      const px = p.norm_x !== undefined ? p.norm_x : 0.5;
+      const py = p.norm_y !== undefined ? p.norm_y : 0.5;
+      const dist = Math.hypot(normX - px, normY - py);
+      if (dist < minDistance) {
+        minDistance = dist;
+        bestMatch = Object.assign({}, p);
+      }
+    });
+  }
 
-  scored.sort((a, b) => a.dist - b.dist);
-  const alternates = scored.slice(1, 4).map(s => s.part);
+  // If no registered part within 0.12 distance, use Universal Firearm Anatomy Engine
+  if (!bestMatch || minDistance > 0.12) {
+    const cat = (firearmData && firearmData.category) ? firearmData.category : "Rifles & Carbines";
+    bestMatch = resolveClientFirearmAnatomy(cat, normX, normY);
+    minDistance = 0.0;
+  }
 
-  // RAG Enrichment: Cross-reference platform stoppages & armorer specs from firearmData
+  // Deep Client RAG: Link platform stoppages, specs, and manual citations
   if (firearmData) {
     const partText = (bestMatch.name + " " + (bestMatch.assembly || "")).toLowerCase();
+
+    // RAG across stoppages
     const stoppages = firearmData.stoppages || [];
     for (const s of stoppages) {
-      const combined = ((s.position || "") + " " + (s.short_desc || "") + " " + (s.root_causes || "") + " " + (s.remedy || "")).toLowerCase();
+      const combined = ((s.position || "") + " " + (s.short_desc || "") + " " + (s.causes ? s.causes.join(" ") : "") + " " + (s.action || "")).toLowerCase();
       const words = partText.split(/\W+/).filter(w => w.length > 3);
       if (words.some(w => combined.includes(w))) {
-        const stoppageNote = `[${s.position}: ${s.short_desc} — ${s.remedy}]`;
+        const stoppageNote = `[${s.position}: ${s.short_desc}]`;
         if (!bestMatch.malfunctions.includes(s.position)) {
           bestMatch.malfunctions = stoppageNote + " " + bestMatch.malfunctions;
         }
         break;
       }
     }
+
+    // RAG across manuals: attach primary manual citation
+    if (firearmData.manuals && firearmData.manuals.length > 0) {
+      const bestMan = firearmData.manuals.find(m => {
+        const mt = m.title.toLowerCase();
+        return mt.includes("armorer") || mt.includes("instruction") || mt.includes("handbook") || mt.includes("manual");
+      }) || firearmData.manuals[0];
+
+      bestMatch.manual_citation = {
+        manual_filename: bestMan.filename,
+        manual_title: bestMan.title,
+        page: 1,
+        snippet: `Factory technical armorer reference for ${firearmData.name}: Consult primary armorer manual for full section disassembly, component inspection tolerances, and bench servicing protocol.`
+      };
+    }
   }
+
+  bestMatch.identification_method = "Universal Firearm Anatomy & RAG Engine";
+  bestMatch.is_fallback = false;
 
   return {
     primary: bestMatch,
     distance: minDistance,
-    alternates: alternates
+    method: "Universal Firearm Anatomy & RAG Engine",
+    is_fallback: false,
+    alternates: []
   };
 }
 

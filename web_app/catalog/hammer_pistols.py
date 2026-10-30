@@ -180,8 +180,8 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "Sig Sauer P226 Complete Detail Disassembly & SRT Install",
                 "creator": "Sig Mechanics / Armorer Bench",
                 "category": "Armorer Detail Strip",
-                "url": "https://www.youtube.com/watch?v=s8P226x9M5w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8P226x9M5w",
+                "url": "https://www.youtube.com/results?search_query=SIG+Sauer+P226+%2F+P229+%2F+P220+Classic+Line+Sig+Sauer+P226+Complete+Detail+Disassembly+%26+SRT+Install+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=SIG+Sauer+P226+%2F+P229+%2F+P220+Classic+Line+Sig+Sauer+P226+Complete+Detail+Disassembly+%26+SRT+Install+gunsmithing+armorer",
                 "summary": "Teardown of the classic Sig P-series frame: decocker lever spring, sear, safety lever, mainspring strut, and installing the Short Reset Trigger sear kit."
             }
         ]
@@ -232,8 +232,8 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "CZ 75 Complete Detail Disassembly & Sear Cage Masterclass",
                 "creator": "Cajun Gun Works Bench",
                 "category": "Armorer Detail Strip",
-                "url": "https://www.youtube.com/watch?v=c7Z75x9B2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/c7Z75x9B2wQ",
+                "url": "https://www.youtube.com/results?search_query=CZ+75+%2F+75+B+%2F+SP-01+%2F+Shadow+2+CZ+75+Complete+Detail+Disassembly+%26+Sear+Cage+Masterclass+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=CZ+75+%2F+75+B+%2F+SP-01+%2F+Shadow+2+CZ+75+Complete+Detail+Disassembly+%26+Sear+Cage+Masterclass+gunsmithing+armorer",
                 "summary": "Step-by-step disassembly of the CZ 75 sear cage, using a slave pin to capture the sear springs, tuning the disconnector, and slide teardown."
             }
         ]
@@ -276,8 +276,8 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "Browning Hi-Power Complete Disassembly & Trigger Tuning",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Trigger Tuning & Disassembly",
-                "url": "https://www.youtube.com/watch?v=b8P35x9H7wL",
-                "embed_url": "https://www.youtube-nocookie.com/embed/b8P35x9H7wL",
+                "url": "https://www.youtube.com/results?search_query=Browning+Hi-Power+%2F+SA-35+Browning+Hi-Power+Complete+Disassembly+%26+Trigger+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Browning+Hi-Power+%2F+SA-35+Browning+Hi-Power+Complete+Disassembly+%26+Trigger+Tuning+gunsmithing+armorer",
                 "summary": "Mark Novak inspects the Hi-Power trigger transfer bar, cleans the sear lever in the slide, addresses hammer bite, and improves the trigger pull."
             }
         ]
@@ -362,8 +362,8 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "Ruger Mark IV Detail Disassembly & Volquartsen Trigger Job",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Disassembly & Tuning",
-                "url": "https://www.youtube.com/watch?v=r8M4x22Lk9W",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r8M4x22Lk9W",
+                "url": "https://www.youtube.com/results?search_query=Ruger+Mark+I%E2%80%93IV+Target+Pistols+Ruger+Mark+IV+Detail+Disassembly+%26+Volquartsen+Trigger+Job+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+Mark+I%E2%80%93IV+Target+Pistols+Ruger+Mark+IV+Detail+Disassembly+%26+Volquartsen+Trigger+Job+gunsmithing+armorer",
                 "summary": "Complete walk-through of the Mark IV one-button takedown, stripping the bolt, replacing the extractor with an EDM tool-steel claw, and installing target sears."
             }
         ]
@@ -405,8 +405,8 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "Desert Eagle .50 AE Complete Disassembly, Cleaning & Gas System",
                 "creator": "Forgotten Weapons / Magnum Bench",
                 "category": "Gas System Maintenance",
-                "url": "https://www.youtube.com/watch?v=d8E50x9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/d8E50x9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=Desert+Eagle+%2F+Magnum+Research+Desert+Eagle+.50+AE+Complete+Disassembly%2C+Cleaning+%26+Gas+System+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Desert+Eagle+%2F+Magnum+Research+Desert+Eagle+.50+AE+Complete+Disassembly%2C+Cleaning+%26+Gas+System+gunsmithing+armorer",
                 "summary": "Teardown of the rotating bolt, gas piston inspection, twin recoil rod replacement, and proper lubrication of the heavy steel slide tracks."
             }
         ]

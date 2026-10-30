@@ -109,8 +109,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "AR-10 / .308 AR Build, Tuning & Gas Port Optimization",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Large Frame Tuning",
-                "url": "https://www.youtube.com/watch?v=a8R10x9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/a8R10x9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=AR-10+%2F+SR-25+%2F+LR-308+Big-Bore+Platform+AR-10+%2F+.308+AR+Build%2C+Tuning+%26+Gas+Port+Optimization+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=AR-10+%2F+SR-25+%2F+LR-308+Big-Bore+Platform+AR-10+%2F+.308+AR+Build%2C+Tuning+%26+Gas+Port+Optimization+gunsmithing+armorer",
                 "summary": "Comparing ArmaLite vs DPMS patterns, sizing gas ports for .308 Win vs 6.5 Creedmoor, and setting headspace on big-bore AR rifles."
             }
         ]
@@ -162,8 +162,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "AK-47 / AKM Complete Armorer Inspection, Rivets & Headspace",
                 "creator": "Jim Fuller / Rifle Dynamics",
                 "category": "AK Gunsmith Masterclass",
-                "url": "https://www.youtube.com/watch?v=k8AK47x9M5w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/k8AK47x9M5w",
+                "url": "https://www.youtube.com/results?search_query=Kalashnikov+AK-47+%2F+AKM+%2F+AK-74+AK-47+%2F+AKM+Complete+Armorer+Inspection%2C+Rivets+%26+Headspace+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Kalashnikov+AK-47+%2F+AKM+%2F+AK-74+AK-47+%2F+AKM+Complete+Armorer+Inspection%2C+Rivets+%26+Headspace+gunsmithing+armorer",
                 "summary": "Master AK builder Jim Fuller explains front trunnion riveting, pressing barrel pins, setting headspace with stripped bolts, and tuning trigger groups."
             }
         ]
@@ -207,8 +207,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "Ruger 10/22 Complete Disassembly, Cleaning & Upgrades",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Rimfire Bench Disassembly",
-                "url": "https://www.youtube.com/watch?v=r81022x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r81022x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
                 "summary": "Teardown of the Ruger 10/22 action: V-block removal, bolt disassembly, auto-bolt release modification, and installing the BX trigger."
             }
         ]
@@ -250,8 +250,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "Ruger Mini-14 Complete Takedown, Gas Block Tuning & Accuracy",
                 "creator": "MidwayUSA / Larry Potterfield",
                 "category": "Armorer Tuning",
-                "url": "https://www.youtube.com/watch?v=m8Mini14x9Lw",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8Mini14x9Lw",
+                "url": "https://www.youtube.com/results?search_query=Ruger+Mini-14+%26+Mini+Thirty+Ruger+Mini-14+Complete+Takedown%2C+Gas+Block+Tuning+%26+Accuracy+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+Mini-14+%26+Mini+Thirty+Ruger+Mini-14+Complete+Takedown%2C+Gas+Block+Tuning+%26+Accuracy+gunsmithing+armorer",
                 "summary": "Teardown of the Mini-14, equalizing gas block screw gaps, disassembling the bolt with a bolt tool, and tuning the trigger group."
             }
         ]
@@ -304,8 +304,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "M1 Garand Complete Detail Disassembly, Inspection & Tilt Test",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Historic Military Armorer",
-                "url": "https://www.youtube.com/watch?v=g8M1x9Garand2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/g8M1x9Garand2w",
+                "url": "https://www.youtube.com/results?search_query=M1+Garand+Rifle+M1+Garand+Complete+Detail+Disassembly%2C+Inspection+%26+Tilt+Test+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=M1+Garand+Rifle+M1+Garand+Complete+Detail+Disassembly%2C+Inspection+%26+Tilt+Test+gunsmithing+armorer",
                 "summary": "Full USGI armorer teardown of the M1 Garand: performing the 45° tilt test, gauging the gas cylinder, inspecting the op-rod tab, and applying Lubriplate 130A."
             }
         ]
@@ -389,8 +389,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "Springfield M1A / M14 Armorer Maintenance & Accuracy Secrets",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "National Match Tuning",
-                "url": "https://www.youtube.com/watch?v=m8M1Ax9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8M1Ax9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=Springfield+M1A+%2F+M14+Rifle+Springfield+M1A+%2F+M14+Armorer+Maintenance+%26+Accuracy+Secrets+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Springfield+M1A+%2F+M14+Rifle+Springfield+M1A+%2F+M14+Armorer+Maintenance+%26+Accuracy+Secrets+gunsmithing+armorer",
                 "summary": "Complete walk-through of the M1A: gas piston cleaning without removing cylinder, gas cylinder unitizing, bolt roller greasing, and stock draw pressure."
             }
         ]
@@ -431,8 +431,8 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "title": "SKS 45 Complete Disassembly, Cosmoline Cleaning & Slam-Fire Fix",
                 "creator": "Iraqveteran8888 Bench",
                 "category": "Surplus Armorer Restoration",
-                "url": "https://www.youtube.com/watch?v=s8SKSx9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8SKSx9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=SKS+45+Carbine+SKS+45+Complete+Disassembly%2C+Cosmoline+Cleaning+%26+Slam-Fire+Fix+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=SKS+45+Carbine+SKS+45+Complete+Disassembly%2C+Cosmoline+Cleaning+%26+Slam-Fire+Fix+gunsmithing+armorer",
                 "summary": "Complete teardown of the SKS rifle: removing the trigger group, stripping the bolt, cleaning the gas tube and piston, and fixing slam-fire hazards."
             }
         ]

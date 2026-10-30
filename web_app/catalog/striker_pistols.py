@@ -407,8 +407,8 @@ STRIKER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "CZ P-10C Complete Armorer Disassembly & Trigger Polish",
                 "creator": "Cajun Gun Works",
                 "category": "Disassembly & Tuning",
-                "url": "https://www.youtube.com/watch?v=c7P10x9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/c7P10x9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=CZ+P-10+Series+Pistols+CZ+P-10C+Complete+Armorer+Disassembly+%26+Trigger+Polish+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=CZ+P-10+Series+Pistols+CZ+P-10C+Complete+Armorer+Disassembly+%26+Trigger+Polish+gunsmithing+armorer",
                 "summary": "Teardown of the CZ P-10 frame, removing locking block and sear assembly, smoothing trigger takeup, and reassembling slide components."
             }
         ]
@@ -495,8 +495,8 @@ STRIKER_PISTOLS: Dict[str, Dict[str, Any]] = {
                 "title": "Taurus TX22 & G3 Series Takedown, Cleaning & Tuning",
                 "creator": "22plinkster / Gunsmith Corner",
                 "category": "Cleaning & Feed Tuning",
-                "url": "https://www.youtube.com/watch?v=t2X22x9G3wL",
-                "embed_url": "https://www.youtube-nocookie.com/embed/t2X22x9G3wL",
+                "url": "https://www.youtube.com/results?search_query=Taurus+G-Series+%26+TX22+Pistols+Taurus+TX22+%26+G3+Series+Takedown%2C+Cleaning+%26+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Taurus+G-Series+%26+TX22+Pistols+Taurus+TX22+%26+G3+Series+Takedown%2C+Cleaning+%26+Tuning+gunsmithing+armorer",
                 "summary": "Teardown of the TX22 and G3 pistols: feed ramp polishing, magazine maintenance, and recoil spring inspection."
             }
         ]

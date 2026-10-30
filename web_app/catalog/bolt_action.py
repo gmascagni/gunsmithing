@@ -52,8 +52,8 @@ BOLT_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Remington 700 Bolt Disassembly, Cleaning & Firing Pin Service",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Bolt Teardown",
-                "url": "https://www.youtube.com/watch?v=r8M700x9B2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r8M700x9B2w",
+                "url": "https://www.youtube.com/results?search_query=Remington+Model+700+Rifles+Remington+700+Bolt+Disassembly%2C+Cleaning+%26+Firing+Pin+Service+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Remington+Model+700+Rifles+Remington+700+Bolt+Disassembly%2C+Cleaning+%26+Firing+Pin+Service+gunsmithing+armorer",
                 "summary": "Step-by-step teardown of the Remington 700 bolt using the coin or shoelace method, checking firing pin protrusion, and cleaning the firing pin spring."
             }
         ]
@@ -95,8 +95,8 @@ BOLT_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Winchester Model 70 Pre-64 Action & 3-Position Safety",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Classic Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=w8Win70x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/w8Win70x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Winchester+Model+70+Winchester+Model+70+Pre-64+Action+%26+3-Position+Safety+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Winchester+Model+70+Winchester+Model+70+Pre-64+Action+%26+3-Position+Safety+gunsmithing+armorer",
                 "summary": "Masterclass on the Model 70 action: coned breech geometry, claw extractor tension, timing the 3-position safety sleeve, and trigger stoning."
             }
         ]
@@ -139,8 +139,8 @@ BOLT_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Tikka T3x Complete Disassembly, Trigger Tuning & Upgrades",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Precision Rifle Tuning",
-                "url": "https://www.youtube.com/watch?v=t8T3xx9M2wQ",
-                "embed_url": "https://www.youtube-nocookie.com/embed/t8T3xx9M2wQ",
+                "url": "https://www.youtube.com/results?search_query=Tikka+T3+%26+T3x+Bolt+Action+Rifles+Tikka+T3x+Complete+Disassembly%2C+Trigger+Tuning+%26+Upgrades+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Tikka+T3+%26+T3x+Bolt+Action+Rifles+Tikka+T3x+Complete+Disassembly%2C+Trigger+Tuning+%26+Upgrades+gunsmithing+armorer",
                 "summary": "Teardown of the Tikka T3x: adjusting the trigger pull weight with an allen wrench, replacing the bolt shroud, and installing a steel recoil lug."
             }
         ]
@@ -182,8 +182,8 @@ BOLT_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Savage 110 Barrel Swap & Headspace Setting with Barrel Nut",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Barrel Nut Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=s8Sav110x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8Sav110x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Savage+Model+110+%26+Axis+Series+Savage+110+Barrel+Swap+%26+Headspace+Setting+with+Barrel+Nut+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Savage+Model+110+%26+Axis+Series+Savage+110+Barrel+Swap+%26+Headspace+Setting+with+Barrel+Nut+gunsmithing+armorer",
                 "summary": "Full demonstration of using a barrel nut wrench, Clymer GO/NO-GO gauges, swapping bolt heads from .223 to .308, and tuning the AccuTrigger."
             }
         ]
@@ -225,8 +225,8 @@ BOLT_ACTION: Dict[str, Dict[str, Any]] = {
                 "title": "Ruger American Rifle Teardown, Bedding & Trigger Adjustment",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Budget Rifle Tuning",
-                "url": "https://www.youtube.com/watch?v=r8AmRifx9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r8AmRifx9M2w",
+                "url": "https://www.youtube.com/results?search_query=Ruger+American+Rifle+Series+Ruger+American+Rifle+Teardown%2C+Bedding+%26+Trigger+Adjustment+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+American+Rifle+Series+Ruger+American+Rifle+Teardown%2C+Bedding+%26+Trigger+Adjustment+gunsmithing+armorer",
                 "summary": "Teardown of the Ruger American rifle, torque specs for Power Bedding V-blocks, adjusting the Marksman trigger, and bolt service."
             }
         ]

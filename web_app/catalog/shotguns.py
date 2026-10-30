@@ -52,8 +52,8 @@ SHOTGUNS: Dict[str, Dict[str, Any]] = {
                 "title": "Remington 870 Complete Armorer Disassembly & Flex-Tab Fix",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Armorer Detail Strip",
-                "url": "https://www.youtube.com/watch?v=r8Rem870x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r8Rem870x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Remington+Model+870+Shotguns+Remington+870+Complete+Armorer+Disassembly+%26+Flex-Tab+Fix+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Remington+Model+870+Shotguns+Remington+870+Complete+Armorer+Disassembly+%26+Flex-Tab+Fix+gunsmithing+armorer",
                 "summary": "Full armorer teardown of the Remington 870: trigger plate assembly, shell latches, ejector spring replacement, and polishing sticky chambers."
             }
         ]
@@ -95,8 +95,8 @@ SHOTGUNS: Dict[str, Dict[str, Any]] = {
                 "title": "Mossberg 500 / 590 Complete Disassembly & Armorer Tuning",
                 "creator": "MidwayUSA / Larry Potterfield",
                 "category": "Bench Disassembly",
-                "url": "https://www.youtube.com/watch?v=m8Mos500x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/m8Mos500x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Mossberg+500+%26+590+%2F+590A1+Series+Mossberg+500+%2F+590+Complete+Disassembly+%26+Armorer+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mossberg+500+%26+590+%2F+590A1+Series+Mossberg+500+%2F+590+Complete+Disassembly+%26+Armorer+Tuning+gunsmithing+armorer",
                 "summary": "Teardown of the Mossberg 500/590: removing bolt slide and dual extractors, replacing safety detent ball, and tuning the cartridge stop."
             }
         ]
@@ -138,8 +138,8 @@ SHOTGUNS: Dict[str, Dict[str, Any]] = {
                 "title": "Benelli M4 Complete Disassembly, ARGO Gas System & Maintenance",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Combat Shotgun Armorer",
-                "url": "https://www.youtube.com/watch?v=b8BenM4x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/b8BenM4x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Benelli+M4+%2F+M1014+Combat+Shotgun+Benelli+M4+Complete+Disassembly%2C+ARGO+Gas+System+%26+Maintenance+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Benelli+M4+%2F+M1014+Combat+Shotgun+Benelli+M4+Complete+Disassembly%2C+ARGO+Gas+System+%26+Maintenance+gunsmithing+armorer",
                 "summary": "Complete walk-through of the Benelli M4: removing dual ARGO pistons, bolt disassembly, magazine tube heating for removal, and trigger group service."
             }
         ]
@@ -180,8 +180,8 @@ SHOTGUNS: Dict[str, Dict[str, Any]] = {
                 "title": "Beretta 1301 Tactical & A300 Complete Teardown & Gas Maintenance",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Gas Shotgun Armorer",
-                "url": "https://www.youtube.com/watch?v=b8Ber1301x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/b8Ber1301x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Beretta+A300+Outlander+%26+1301+Tactical+Beretta+1301+Tactical+%26+A300+Complete+Teardown+%26+Gas+Maintenance+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Beretta+A300+Outlander+%26+1301+Tactical+Beretta+1301+Tactical+%26+A300+Complete+Teardown+%26+Gas+Maintenance+gunsmithing+armorer",
                 "summary": "Teardown of the Beretta 1301 B-LINK gas system: cleaning the piston and elastic ring, trigger group removal, and stock drop shim adjustment."
             }
         ]
@@ -223,8 +223,8 @@ SHOTGUNS: Dict[str, Dict[str, Any]] = {
                 "title": "Browning Citori Over/Under Disassembly & Action Tuning",
                 "creator": "MidwayUSA / Larry Potterfield",
                 "category": "Over/Under Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=b8CitOUx9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/b8CitOUx9M2w",
+                "url": "https://www.youtube.com/results?search_query=Browning+Citori+%2F+Superposed+Over%2FUnder+Browning+Citori+Over%2FUnder+Disassembly+%26+Action+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Browning+Citori+%2F+Superposed+Over%2FUnder+Browning+Citori+Over%2FUnder+Disassembly+%26+Action+Tuning+gunsmithing+armorer",
                 "summary": "Teardown of the Browning Citori: removing buttstock, inspecting inertia block and hammer springs, and checking top lever lockup."
             }
         ]

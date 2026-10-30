@@ -2079,8 +2079,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "CZ P-10C Complete Armorer Disassembly & Trigger Polish",
         "creator": "Cajun Gun Works",
         "category": "Disassembly & Tuning",
-        "url": "https://www.youtube.com/watch?v=c7P10x9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/c7P10x9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=CZ+P-10+Series+Pistols+CZ+P-10C+Complete+Armorer+Disassembly+%26+Trigger+Polish+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=CZ+P-10+Series+Pistols+CZ+P-10C+Complete+Armorer+Disassembly+%26+Trigger+Polish+gunsmithing+armorer",
         "summary": "Teardown of the CZ P-10 frame, removing locking block and sear assembly, smoothing trigger takeup, and reassembling slide components."
       }
     ],
@@ -2245,8 +2245,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Taurus TX22 & G3 Series Takedown, Cleaning & Tuning",
         "creator": "22plinkster / Gunsmith Corner",
         "category": "Cleaning & Feed Tuning",
-        "url": "https://www.youtube.com/watch?v=t2X22x9G3wL",
-        "embed_url": "https://www.youtube-nocookie.com/embed/t2X22x9G3wL",
+        "url": "https://www.youtube.com/results?search_query=Taurus+G-Series+%26+TX22+Pistols+Taurus+TX22+%26+G3+Series+Takedown%2C+Cleaning+%26+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Taurus+G-Series+%26+TX22+Pistols+Taurus+TX22+%26+G3+Series+Takedown%2C+Cleaning+%26+Tuning+gunsmithing+armorer",
         "summary": "Teardown of the TX22 and G3 pistols: feed ramp polishing, magazine maintenance, and recoil spring inspection."
       }
     ],
@@ -3100,8 +3100,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Sig Sauer P226 Complete Detail Disassembly & SRT Install",
         "creator": "Sig Mechanics / Armorer Bench",
         "category": "Armorer Detail Strip",
-        "url": "https://www.youtube.com/watch?v=s8P226x9M5w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8P226x9M5w",
+        "url": "https://www.youtube.com/results?search_query=SIG+Sauer+P226+%2F+P229+%2F+P220+Classic+Line+Sig+Sauer+P226+Complete+Detail+Disassembly+%26+SRT+Install+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=SIG+Sauer+P226+%2F+P229+%2F+P220+Classic+Line+Sig+Sauer+P226+Complete+Detail+Disassembly+%26+SRT+Install+gunsmithing+armorer",
         "summary": "Teardown of the classic Sig P-series frame: decocker lever spring, sear, safety lever, mainspring strut, and installing the Short Reset Trigger sear kit."
       }
     ],
@@ -3191,8 +3191,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "CZ 75 Complete Detail Disassembly & Sear Cage Masterclass",
         "creator": "Cajun Gun Works Bench",
         "category": "Armorer Detail Strip",
-        "url": "https://www.youtube.com/watch?v=c7Z75x9B2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/c7Z75x9B2wQ",
+        "url": "https://www.youtube.com/results?search_query=CZ+75+%2F+75+B+%2F+SP-01+%2F+Shadow+2+CZ+75+Complete+Detail+Disassembly+%26+Sear+Cage+Masterclass+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=CZ+75+%2F+75+B+%2F+SP-01+%2F+Shadow+2+CZ+75+Complete+Detail+Disassembly+%26+Sear+Cage+Masterclass+gunsmithing+armorer",
         "summary": "Step-by-step disassembly of the CZ 75 sear cage, using a slave pin to capture the sear springs, tuning the disconnector, and slide teardown."
       }
     ],
@@ -3272,8 +3272,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Browning Hi-Power Complete Disassembly & Trigger Tuning",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Trigger Tuning & Disassembly",
-        "url": "https://www.youtube.com/watch?v=b8P35x9H7wL",
-        "embed_url": "https://www.youtube-nocookie.com/embed/b8P35x9H7wL",
+        "url": "https://www.youtube.com/results?search_query=Browning+Hi-Power+%2F+SA-35+Browning+Hi-Power+Complete+Disassembly+%26+Trigger+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Browning+Hi-Power+%2F+SA-35+Browning+Hi-Power+Complete+Disassembly+%26+Trigger+Tuning+gunsmithing+armorer",
         "summary": "Mark Novak inspects the Hi-Power trigger transfer bar, cleans the sear lever in the slide, addresses hammer bite, and improves the trigger pull."
       }
     ],
@@ -3438,8 +3438,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger Mark IV Detail Disassembly & Volquartsen Trigger Job",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Disassembly & Tuning",
-        "url": "https://www.youtube.com/watch?v=r8M4x22Lk9W",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r8M4x22Lk9W",
+        "url": "https://www.youtube.com/results?search_query=Ruger+Mark+I%E2%80%93IV+Target+Pistols+Ruger+Mark+IV+Detail+Disassembly+%26+Volquartsen+Trigger+Job+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+Mark+I%E2%80%93IV+Target+Pistols+Ruger+Mark+IV+Detail+Disassembly+%26+Volquartsen+Trigger+Job+gunsmithing+armorer",
         "summary": "Complete walk-through of the Mark IV one-button takedown, stripping the bolt, replacing the extractor with an EDM tool-steel claw, and installing target sears."
       }
     ],
@@ -3520,8 +3520,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Desert Eagle .50 AE Complete Disassembly, Cleaning & Gas System",
         "creator": "Forgotten Weapons / Magnum Bench",
         "category": "Gas System Maintenance",
-        "url": "https://www.youtube.com/watch?v=d8E50x9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/d8E50x9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=Desert+Eagle+%2F+Magnum+Research+Desert+Eagle+.50+AE+Complete+Disassembly%2C+Cleaning+%26+Gas+System+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Desert+Eagle+%2F+Magnum+Research+Desert+Eagle+.50+AE+Complete+Disassembly%2C+Cleaning+%26+Gas+System+gunsmithing+armorer",
         "summary": "Teardown of the rotating bolt, gas piston inspection, twin recoil rod replacement, and proper lubrication of the heavy steel slide tracks."
       }
     ],
@@ -3619,8 +3619,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "S&W Revolver Tuning, Endshake & Action Job Masterclass",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Revolver Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=s8W686x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8W686x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Smith+%26+Wesson+K%2FL%2FN-Frame+Revolvers+S%26W+Revolver+Tuning%2C+Endshake+%26+Action+Job+Masterclass+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Smith+%26+Wesson+K%2FL%2FN-Frame+Revolvers+S%26W+Revolver+Tuning%2C+Endshake+%26+Action+Job+Masterclass+gunsmithing+armorer",
         "summary": "Masterclass on removing S&W sideplates without damaging mating seams, checking barrel-cylinder gap, installing endshake bearings, and stoning the rebound slide."
       },
       {
@@ -3710,8 +3710,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Colt Python Action Lockwork & Timing Masterclass",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Legacy Colt Lockwork",
-        "url": "https://www.youtube.com/watch?v=c8Pyt44x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/c8Pyt44x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Colt+Python+%26+Anaconda+Revolvers+Colt+Python+Action+Lockwork+%26+Timing+Masterclass+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Colt+Python+%26+Anaconda+Revolvers+Colt+Python+Action+Lockwork+%26+Timing+Masterclass+gunsmithing+armorer",
         "summary": "In-depth mechanical study of the classic Colt V-spring lockwork, hand timing, rebound lever tuning, and comparing the original to the 2020 Python design."
       }
     ],
@@ -3796,8 +3796,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger GP100 Complete Disassembly, Shimming & Trigger Job",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Revolver Shimming & Tuning",
-        "url": "https://www.youtube.com/watch?v=r8G100x9M5w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r8G100x9M5w",
+        "url": "https://www.youtube.com/results?search_query=Ruger+GP100+%2F+SP101+%26+Super+Redhawk+Ruger+GP100+Complete+Disassembly%2C+Shimming+%26+Trigger+Job+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+GP100+%2F+SP101+%26+Super+Redhawk+Ruger+GP100+Complete+Disassembly%2C+Shimming+%26+Trigger+Job+gunsmithing+armorer",
         "summary": "Teardown of the GP100 trigger group, installing Power Custom trigger shims, replacing mainspring and trigger return spring, and smoothing double action stroke."
       }
     ],
@@ -3879,8 +3879,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Colt Single Action Army Complete Disassembly & Tuning",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Historic Lockwork Restoration",
-        "url": "https://www.youtube.com/watch?v=c8SAA1873x2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/c8SAA1873x2w",
+        "url": "https://www.youtube.com/results?search_query=Colt+Single+Action+Army+%28SAA+1873+Peacemaker%29+Colt+Single+Action+Army+Complete+Disassembly+%26+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Colt+Single+Action+Army+%28SAA+1873+Peacemaker%29+Colt+Single+Action+Army+Complete+Disassembly+%26+Tuning+gunsmithing+armorer",
         "summary": "Mark Novak teardown of the 1873 Peacemaker, tuning the combination bolt/hand spring, timing cylinder lockup, and repairing damaged half-cock notches."
       }
     ],
@@ -4043,8 +4043,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "S&W J-Frame 642 Disassembly, Apex Trigger Kit & Tuning",
         "creator": "Apex Tactical Specialties",
         "category": "Snubnose Tuning",
-        "url": "https://www.youtube.com/watch?v=s8W642x9M5w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8W642x9M5w",
+        "url": "https://www.youtube.com/results?search_query=Smith+%26+Wesson+J-Frame+Snubnose+S%26W+J-Frame+642+Disassembly%2C+Apex+Trigger+Kit+%26+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Smith+%26+Wesson+J-Frame+Snubnose+S%26W+J-Frame+642+Disassembly%2C+Apex+Trigger+Kit+%26+Tuning+gunsmithing+armorer",
         "summary": "Step-by-step teardown of the S&W J-frame Airweight, installing the extended firing pin, lighter rebound spring, and achieving a smooth 8.5 lb carry trigger."
       }
     ],
@@ -4235,8 +4235,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "AR-10 / .308 AR Build, Tuning & Gas Port Optimization",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Large Frame Tuning",
-        "url": "https://www.youtube.com/watch?v=a8R10x9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/a8R10x9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=AR-10+%2F+SR-25+%2F+LR-308+Big-Bore+Platform+AR-10+%2F+.308+AR+Build%2C+Tuning+%26+Gas+Port+Optimization+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=AR-10+%2F+SR-25+%2F+LR-308+Big-Bore+Platform+AR-10+%2F+.308+AR+Build%2C+Tuning+%26+Gas+Port+Optimization+gunsmithing+armorer",
         "summary": "Comparing ArmaLite vs DPMS patterns, sizing gas ports for .308 Win vs 6.5 Creedmoor, and setting headspace on big-bore AR rifles."
       }
     ],
@@ -4330,8 +4330,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "AK-47 / AKM Complete Armorer Inspection, Rivets & Headspace",
         "creator": "Jim Fuller / Rifle Dynamics",
         "category": "AK Gunsmith Masterclass",
-        "url": "https://www.youtube.com/watch?v=k8AK47x9M5w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/k8AK47x9M5w",
+        "url": "https://www.youtube.com/results?search_query=Kalashnikov+AK-47+%2F+AKM+%2F+AK-74+AK-47+%2F+AKM+Complete+Armorer+Inspection%2C+Rivets+%26+Headspace+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Kalashnikov+AK-47+%2F+AKM+%2F+AK-74+AK-47+%2F+AKM+Complete+Armorer+Inspection%2C+Rivets+%26+Headspace+gunsmithing+armorer",
         "summary": "Master AK builder Jim Fuller explains front trunnion riveting, pressing barrel pins, setting headspace with stripped bolts, and tuning trigger groups."
       }
     ],
@@ -4412,8 +4412,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger 10/22 Complete Disassembly, Cleaning & Upgrades",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Rimfire Bench Disassembly",
-        "url": "https://www.youtube.com/watch?v=r81022x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r81022x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
         "summary": "Teardown of the Ruger 10/22 action: V-block removal, bolt disassembly, auto-bolt release modification, and installing the BX trigger."
       }
     ],
@@ -4496,8 +4496,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger Mini-14 Complete Takedown, Gas Block Tuning & Accuracy",
         "creator": "MidwayUSA / Larry Potterfield",
         "category": "Armorer Tuning",
-        "url": "https://www.youtube.com/watch?v=m8Mini14x9Lw",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8Mini14x9Lw",
+        "url": "https://www.youtube.com/results?search_query=Ruger+Mini-14+%26+Mini+Thirty+Ruger+Mini-14+Complete+Takedown%2C+Gas+Block+Tuning+%26+Accuracy+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+Mini-14+%26+Mini+Thirty+Ruger+Mini-14+Complete+Takedown%2C+Gas+Block+Tuning+%26+Accuracy+gunsmithing+armorer",
         "summary": "Teardown of the Mini-14, equalizing gas block screw gaps, disassembling the bolt with a bolt tool, and tuning the trigger group."
       }
     ],
@@ -4588,8 +4588,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "M1 Garand Complete Detail Disassembly, Inspection & Tilt Test",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Historic Military Armorer",
-        "url": "https://www.youtube.com/watch?v=g8M1x9Garand2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/g8M1x9Garand2w",
+        "url": "https://www.youtube.com/results?search_query=M1+Garand+Rifle+M1+Garand+Complete+Detail+Disassembly%2C+Inspection+%26+Tilt+Test+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=M1+Garand+Rifle+M1+Garand+Complete+Detail+Disassembly%2C+Inspection+%26+Tilt+Test+gunsmithing+armorer",
         "summary": "Full USGI armorer teardown of the M1 Garand: performing the 45\u00b0 tilt test, gauging the gas cylinder, inspecting the op-rod tab, and applying Lubriplate 130A."
       }
     ],
@@ -4747,8 +4747,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Springfield M1A / M14 Armorer Maintenance & Accuracy Secrets",
         "creator": "Brownells Gunsmithing Bench",
         "category": "National Match Tuning",
-        "url": "https://www.youtube.com/watch?v=m8M1Ax9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8M1Ax9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=Springfield+M1A+%2F+M14+Rifle+Springfield+M1A+%2F+M14+Armorer+Maintenance+%26+Accuracy+Secrets+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Springfield+M1A+%2F+M14+Rifle+Springfield+M1A+%2F+M14+Armorer+Maintenance+%26+Accuracy+Secrets+gunsmithing+armorer",
         "summary": "Complete walk-through of the M1A: gas piston cleaning without removing cylinder, gas cylinder unitizing, bolt roller greasing, and stock draw pressure."
       }
     ],
@@ -4825,8 +4825,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "SKS 45 Complete Disassembly, Cosmoline Cleaning & Slam-Fire Fix",
         "creator": "Iraqveteran8888 Bench",
         "category": "Surplus Armorer Restoration",
-        "url": "https://www.youtube.com/watch?v=s8SKSx9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8SKSx9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=SKS+45+Carbine+SKS+45+Complete+Disassembly%2C+Cosmoline+Cleaning+%26+Slam-Fire+Fix+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=SKS+45+Carbine+SKS+45+Complete+Disassembly%2C+Cosmoline+Cleaning+%26+Slam-Fire+Fix+gunsmithing+armorer",
         "summary": "Complete teardown of the SKS rifle: removing the trigger group, stripping the bolt, cleaning the gas tube and piston, and fixing slam-fire hazards."
       }
     ],
@@ -4922,8 +4922,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Remington 700 Bolt Disassembly, Cleaning & Firing Pin Service",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Bolt Teardown",
-        "url": "https://www.youtube.com/watch?v=r8M700x9B2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r8M700x9B2w",
+        "url": "https://www.youtube.com/results?search_query=Remington+Model+700+Rifles+Remington+700+Bolt+Disassembly%2C+Cleaning+%26+Firing+Pin+Service+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Remington+Model+700+Rifles+Remington+700+Bolt+Disassembly%2C+Cleaning+%26+Firing+Pin+Service+gunsmithing+armorer",
         "summary": "Step-by-step teardown of the Remington 700 bolt using the coin or shoelace method, checking firing pin protrusion, and cleaning the firing pin spring."
       }
     ],
@@ -5007,8 +5007,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Winchester Model 70 Pre-64 Action & 3-Position Safety",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Classic Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=w8Win70x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/w8Win70x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Winchester+Model+70+Winchester+Model+70+Pre-64+Action+%26+3-Position+Safety+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Winchester+Model+70+Winchester+Model+70+Pre-64+Action+%26+3-Position+Safety+gunsmithing+armorer",
         "summary": "Masterclass on the Model 70 action: coned breech geometry, claw extractor tension, timing the 3-position safety sleeve, and trigger stoning."
       }
     ],
@@ -5094,8 +5094,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Tikka T3x Complete Disassembly, Trigger Tuning & Upgrades",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Precision Rifle Tuning",
-        "url": "https://www.youtube.com/watch?v=t8T3xx9M2wQ",
-        "embed_url": "https://www.youtube-nocookie.com/embed/t8T3xx9M2wQ",
+        "url": "https://www.youtube.com/results?search_query=Tikka+T3+%26+T3x+Bolt+Action+Rifles+Tikka+T3x+Complete+Disassembly%2C+Trigger+Tuning+%26+Upgrades+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Tikka+T3+%26+T3x+Bolt+Action+Rifles+Tikka+T3x+Complete+Disassembly%2C+Trigger+Tuning+%26+Upgrades+gunsmithing+armorer",
         "summary": "Teardown of the Tikka T3x: adjusting the trigger pull weight with an allen wrench, replacing the bolt shroud, and installing a steel recoil lug."
       }
     ],
@@ -5181,8 +5181,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Savage 110 Barrel Swap & Headspace Setting with Barrel Nut",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Barrel Nut Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=s8Sav110x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8Sav110x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Savage+Model+110+%26+Axis+Series+Savage+110+Barrel+Swap+%26+Headspace+Setting+with+Barrel+Nut+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Savage+Model+110+%26+Axis+Series+Savage+110+Barrel+Swap+%26+Headspace+Setting+with+Barrel+Nut+gunsmithing+armorer",
         "summary": "Full demonstration of using a barrel nut wrench, Clymer GO/NO-GO gauges, swapping bolt heads from .223 to .308, and tuning the AccuTrigger."
       }
     ],
@@ -5268,8 +5268,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Ruger American Rifle Teardown, Bedding & Trigger Adjustment",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Budget Rifle Tuning",
-        "url": "https://www.youtube.com/watch?v=r8AmRifx9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r8AmRifx9M2w",
+        "url": "https://www.youtube.com/results?search_query=Ruger+American+Rifle+Series+Ruger+American+Rifle+Teardown%2C+Bedding+%26+Trigger+Adjustment+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+American+Rifle+Series+Ruger+American+Rifle+Teardown%2C+Bedding+%26+Trigger+Adjustment+gunsmithing+armorer",
         "summary": "Teardown of the Ruger American rifle, torque specs for Power Bedding V-blocks, adjusting the Marksman trigger, and bolt service."
       }
     ],
@@ -5352,8 +5352,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Winchester Model 94 Complete Disassembly, Cleaning & Assembly",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Classic Lever Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=w8Win94x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/w8Win94x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Winchester+Model+1894+Winchester+Model+94+Complete+Disassembly%2C+Cleaning+%26+Assembly+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Winchester+Model+1894+Winchester+Model+94+Complete+Disassembly%2C+Cleaning+%26+Assembly+gunsmithing+armorer",
         "summary": "Teardown of the Winchester 94 action: link pin, locking bolt, loading gate spring, hammer assembly, and timing the carrier."
       }
     ],
@@ -5436,8 +5436,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Fixing the Marlin Jam & Complete Model 336 / 1895 Disassembly",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Lever Action Repair",
-        "url": "https://www.youtube.com/watch?v=m8Mar336x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8Mar336x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Marlin+Model+336+%26+1895+Series+Fixing+the+Marlin+Jam+%26+Complete+Model+336+%2F+1895+Disassembly+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Marlin+Model+336+%26+1895+Series+Fixing+the+Marlin+Jam+%26+Complete+Model+336+%2F+1895+Disassembly+gunsmithing+armorer",
         "summary": "Step-by-step disassembly of the Marlin 336/1895, diagnosing and fixing the carrier jam, two-piece firing pin service, and trigger stoning."
       }
     ],
@@ -5523,8 +5523,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Henry Big Boy Complete Disassembly, Cleaning & Action Tuning",
         "creator": "MidwayUSA / Larry Potterfield",
         "category": "Bench Disassembly",
-        "url": "https://www.youtube.com/watch?v=h8HenBBx9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/h8HenBBx9M2w",
+        "url": "https://www.youtube.com/results?search_query=Henry+Classic+%26+Big+Boy+Lever+Action+Henry+Big+Boy+Complete+Disassembly%2C+Cleaning+%26+Action+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Henry+Classic+%26+Big+Boy+Lever+Action+Henry+Big+Boy+Complete+Disassembly%2C+Cleaning+%26+Action+Tuning+gunsmithing+armorer",
         "summary": "Teardown of the Henry Big Boy action: removing the bolt, extractor, transfer bar safety, and side-loading gate mechanism."
       }
     ],
@@ -5614,8 +5614,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Remington 870 Complete Armorer Disassembly & Flex-Tab Fix",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Armorer Detail Strip",
-        "url": "https://www.youtube.com/watch?v=r8Rem870x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/r8Rem870x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Remington+Model+870+Shotguns+Remington+870+Complete+Armorer+Disassembly+%26+Flex-Tab+Fix+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Remington+Model+870+Shotguns+Remington+870+Complete+Armorer+Disassembly+%26+Flex-Tab+Fix+gunsmithing+armorer",
         "summary": "Full armorer teardown of the Remington 870: trigger plate assembly, shell latches, ejector spring replacement, and polishing sticky chambers."
       }
     ],
@@ -5696,8 +5696,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Mossberg 500 / 590 Complete Disassembly & Armorer Tuning",
         "creator": "MidwayUSA / Larry Potterfield",
         "category": "Bench Disassembly",
-        "url": "https://www.youtube.com/watch?v=m8Mos500x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8Mos500x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Mossberg+500+%26+590+%2F+590A1+Series+Mossberg+500+%2F+590+Complete+Disassembly+%26+Armorer+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mossberg+500+%26+590+%2F+590A1+Series+Mossberg+500+%2F+590+Complete+Disassembly+%26+Armorer+Tuning+gunsmithing+armorer",
         "summary": "Teardown of the Mossberg 500/590: removing bolt slide and dual extractors, replacing safety detent ball, and tuning the cartridge stop."
       }
     ],
@@ -5774,8 +5774,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Benelli M4 Complete Disassembly, ARGO Gas System & Maintenance",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Combat Shotgun Armorer",
-        "url": "https://www.youtube.com/watch?v=b8BenM4x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/b8BenM4x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Benelli+M4+%2F+M1014+Combat+Shotgun+Benelli+M4+Complete+Disassembly%2C+ARGO+Gas+System+%26+Maintenance+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Benelli+M4+%2F+M1014+Combat+Shotgun+Benelli+M4+Complete+Disassembly%2C+ARGO+Gas+System+%26+Maintenance+gunsmithing+armorer",
         "summary": "Complete walk-through of the Benelli M4: removing dual ARGO pistons, bolt disassembly, magazine tube heating for removal, and trigger group service."
       }
     ],
@@ -5851,8 +5851,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Beretta 1301 Tactical & A300 Complete Teardown & Gas Maintenance",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Gas Shotgun Armorer",
-        "url": "https://www.youtube.com/watch?v=b8Ber1301x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/b8Ber1301x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Beretta+A300+Outlander+%26+1301+Tactical+Beretta+1301+Tactical+%26+A300+Complete+Teardown+%26+Gas+Maintenance+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Beretta+A300+Outlander+%26+1301+Tactical+Beretta+1301+Tactical+%26+A300+Complete+Teardown+%26+Gas+Maintenance+gunsmithing+armorer",
         "summary": "Teardown of the Beretta 1301 B-LINK gas system: cleaning the piston and elastic ring, trigger group removal, and stock drop shim adjustment."
       }
     ],
@@ -5936,8 +5936,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Browning Citori Over/Under Disassembly & Action Tuning",
         "creator": "MidwayUSA / Larry Potterfield",
         "category": "Over/Under Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=b8CitOUx9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/b8CitOUx9M2w",
+        "url": "https://www.youtube.com/results?search_query=Browning+Citori+%2F+Superposed+Over%2FUnder+Browning+Citori+Over%2FUnder+Disassembly+%26+Action+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Browning+Citori+%2F+Superposed+Over%2FUnder+Browning+Citori+Over%2FUnder+Disassembly+%26+Action+Tuning+gunsmithing+armorer",
         "summary": "Teardown of the Browning Citori: removing buttstock, inspecting inertia block and hammer springs, and checking top lever lockup."
       }
     ],
@@ -6017,8 +6017,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "FN FAL Complete Armorer Headspace Setting & Locking Shoulder Pin Gauging",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Battle Rifle Armorer",
-        "url": "https://www.youtube.com/watch?v=f8FNFALx9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/f8FNFALx9M2w",
+        "url": "https://www.youtube.com/results?search_query=FN+FAL+%2F+L1A1+SLR+Battle+Rifle+FN+FAL+Complete+Armorer+Headspace+Setting+%26+Locking+Shoulder+Pin+Gauging+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=FN+FAL+%2F+L1A1+SLR+Battle+Rifle+FN+FAL+Complete+Armorer+Headspace+Setting+%26+Locking+Shoulder+Pin+Gauging+gunsmithing+armorer",
         "summary": "Step-by-step masterclass on setting headspace on the FN FAL using Clymer gauges, pin gauge rods, selecting locking shoulders, and tuning the gas collar."
       }
     ],
@@ -6720,8 +6720,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Mauser 98 Complete Disassembly, Claw Extractor & Safety Tuning",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Historic Bolt Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=m8Mau98x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8Mau98x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Mauser+Karabiner+98k+%2F+Gewehr+98+Mauser+98+Complete+Disassembly%2C+Claw+Extractor+%26+Safety+Tuning+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mauser+Karabiner+98k+%2F+Gewehr+98+Mauser+98+Complete+Disassembly%2C+Claw+Extractor+%26+Safety+Tuning+gunsmithing+armorer",
         "summary": "Teardown of the Mauser 98 bolt: lifting and removing the claw extractor without bending, disassembling the firing pin spring, and adjusting the flag safety."
       }
     ],
@@ -6808,8 +6808,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Mosin-Nagant Complete Disassembly, Interrupter Fix & Chamber Polish",
         "creator": "Iraqveteran8888 Bench",
         "category": "Surplus Restoration",
-        "url": "https://www.youtube.com/watch?v=m8Mos9130x9Lw",
-        "embed_url": "https://www.youtube-nocookie.com/embed/m8Mos9130x9Lw",
+        "url": "https://www.youtube.com/results?search_query=Mosin-Nagant+Model+1891%2F30+%26+M44+Mosin-Nagant+Complete+Disassembly%2C+Interrupter+Fix+%26+Chamber+Polish+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Mosin-Nagant+Model+1891%2F30+%26+M44+Mosin-Nagant+Complete+Disassembly%2C+Interrupter+Fix+%26+Chamber+Polish+gunsmithing+armorer",
         "summary": "Full teardown of the Mosin-Nagant 91/30: using the teardrop armorer tool to set firing pin depth, curing sticky bolt syndrome, and tuning the interrupter."
       }
     ],
@@ -6887,8 +6887,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Lee-Enfield No. 4 Mk I Headspace, Bolt Heads & Complete Teardown",
         "creator": "Mark Novak / Anvil Gunsmithing",
         "category": "Enfield Gunsmithing",
-        "url": "https://www.youtube.com/watch?v=e8LeeNo4x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/e8LeeNo4x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Lee-Enfield+No.+4+Mk+I+%26+SMLE+Mk+III+Lee-Enfield+No.+4+Mk+I+Headspace%2C+Bolt+Heads+%26+Complete+Teardown+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Lee-Enfield+No.+4+Mk+I+%26+SMLE+Mk+III+Lee-Enfield+No.+4+Mk+I+Headspace%2C+Bolt+Heads+%26+Complete+Teardown+gunsmithing+armorer",
         "summary": "Mark Novak explains the unique Lee-Enfield numbered bolt head system, measuring rimmed headspace, disassembly of the striker and spring, and bedding draw blocks."
       }
     ],
@@ -6964,8 +6964,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Springfield M1903 Complete Disassembly & Low-Number Safety",
         "creator": "Brownells Gunsmithing Bench",
         "category": "Military Bolt Action",
-        "url": "https://www.youtube.com/watch?v=s8M1903x9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/s8M1903x9M2w",
+        "url": "https://www.youtube.com/results?search_query=Springfield+M1903+%2F+M1903A3+Springfield+M1903+Complete+Disassembly+%26+Low-Number+Safety+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Springfield+M1903+%2F+M1903A3+Springfield+M1903+Complete+Disassembly+%26+Low-Number+Safety+gunsmithing+armorer",
         "summary": "Teardown of the 1903 Springfield: examining serial number ranges for metallurgy safety, two-piece firing pin service, and tuning the magazine cutoff."
       }
     ],
@@ -7053,8 +7053,8 @@ window.STATIC_FIREARMS_DATA = {
         "title": "Headspace Gauging Masterclass: GO, NO-GO & FIELD Explained",
         "creator": "Larry Potterfield / MidwayUSA",
         "category": "Bench Safety & Gauging",
-        "url": "https://www.youtube.com/watch?v=e8Headspacex9M2w",
-        "embed_url": "https://www.youtube-nocookie.com/embed/e8Headspacex9M2w",
+        "url": "https://www.youtube.com/results?search_query=General+Gunsmithing+%26+Workshop+Disciplines+Headspace+Gauging+Masterclass%3A+GO%2C+NO-GO+%26+FIELD+Explained+gunsmithing+armorer",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=General+Gunsmithing+%26+Workshop+Disciplines+Headspace+Gauging+Masterclass%3A+GO%2C+NO-GO+%26+FIELD+Explained+gunsmithing+armorer",
         "summary": "Master gunsmith Larry Potterfield demonstrates how headspace is measured across rimmed, rimless, and belted cases, and how to verify bolt safety."
       }
     ],

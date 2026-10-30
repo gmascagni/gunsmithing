@@ -57,8 +57,8 @@ REVOLVERS: Dict[str, Dict[str, Any]] = {
                 "title": "S&W Revolver Tuning, Endshake & Action Job Masterclass",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Revolver Gunsmithing",
-                "url": "https://www.youtube.com/watch?v=s8W686x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8W686x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Smith+%26+Wesson+K%2FL%2FN-Frame+Revolvers+S%26W+Revolver+Tuning%2C+Endshake+%26+Action+Job+Masterclass+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Smith+%26+Wesson+K%2FL%2FN-Frame+Revolvers+S%26W+Revolver+Tuning%2C+Endshake+%26+Action+Job+Masterclass+gunsmithing+armorer",
                 "summary": "Masterclass on removing S&W sideplates without damaging mating seams, checking barrel-cylinder gap, installing endshake bearings, and stoning the rebound slide."
             },
             {
@@ -109,8 +109,8 @@ REVOLVERS: Dict[str, Dict[str, Any]] = {
                 "title": "Colt Python Action Lockwork & Timing Masterclass",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Legacy Colt Lockwork",
-                "url": "https://www.youtube.com/watch?v=c8Pyt44x9M2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/c8Pyt44x9M2w",
+                "url": "https://www.youtube.com/results?search_query=Colt+Python+%26+Anaconda+Revolvers+Colt+Python+Action+Lockwork+%26+Timing+Masterclass+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Colt+Python+%26+Anaconda+Revolvers+Colt+Python+Action+Lockwork+%26+Timing+Masterclass+gunsmithing+armorer",
                 "summary": "In-depth mechanical study of the classic Colt V-spring lockwork, hand timing, rebound lever tuning, and comparing the original to the 2020 Python design."
             }
         ]
@@ -154,8 +154,8 @@ REVOLVERS: Dict[str, Dict[str, Any]] = {
                 "title": "Ruger GP100 Complete Disassembly, Shimming & Trigger Job",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Revolver Shimming & Tuning",
-                "url": "https://www.youtube.com/watch?v=r8G100x9M5w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/r8G100x9M5w",
+                "url": "https://www.youtube.com/results?search_query=Ruger+GP100+%2F+SP101+%26+Super+Redhawk+Ruger+GP100+Complete+Disassembly%2C+Shimming+%26+Trigger+Job+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+GP100+%2F+SP101+%26+Super+Redhawk+Ruger+GP100+Complete+Disassembly%2C+Shimming+%26+Trigger+Job+gunsmithing+armorer",
                 "summary": "Teardown of the GP100 trigger group, installing Power Custom trigger shims, replacing mainspring and trigger return spring, and smoothing double action stroke."
             }
         ]
@@ -197,8 +197,8 @@ REVOLVERS: Dict[str, Dict[str, Any]] = {
                 "title": "Colt Single Action Army Complete Disassembly & Tuning",
                 "creator": "Mark Novak / Anvil Gunsmithing",
                 "category": "Historic Lockwork Restoration",
-                "url": "https://www.youtube.com/watch?v=c8SAA1873x2w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/c8SAA1873x2w",
+                "url": "https://www.youtube.com/results?search_query=Colt+Single+Action+Army+%28SAA+1873+Peacemaker%29+Colt+Single+Action+Army+Complete+Disassembly+%26+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Colt+Single+Action+Army+%28SAA+1873+Peacemaker%29+Colt+Single+Action+Army+Complete+Disassembly+%26+Tuning+gunsmithing+armorer",
                 "summary": "Mark Novak teardown of the 1873 Peacemaker, tuning the combination bolt/hand spring, timing cylinder lockup, and repairing damaged half-cock notches."
             }
         ]
@@ -282,8 +282,8 @@ REVOLVERS: Dict[str, Dict[str, Any]] = {
                 "title": "S&W J-Frame 642 Disassembly, Apex Trigger Kit & Tuning",
                 "creator": "Apex Tactical Specialties",
                 "category": "Snubnose Tuning",
-                "url": "https://www.youtube.com/watch?v=s8W642x9M5w",
-                "embed_url": "https://www.youtube-nocookie.com/embed/s8W642x9M5w",
+                "url": "https://www.youtube.com/results?search_query=Smith+%26+Wesson+J-Frame+Snubnose+S%26W+J-Frame+642+Disassembly%2C+Apex+Trigger+Kit+%26+Tuning+gunsmithing+armorer",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Smith+%26+Wesson+J-Frame+Snubnose+S%26W+J-Frame+642+Disassembly%2C+Apex+Trigger+Kit+%26+Tuning+gunsmithing+armorer",
                 "summary": "Step-by-step teardown of the S&W J-frame Airweight, installing the extended firing pin, lighter rebound spring, and achieving a smooth 8.5 lb carry trigger."
             }
         ]
