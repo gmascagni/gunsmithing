@@ -345,6 +345,17 @@ function setupEventListeners() {
     btn.addEventListener("click", () => setMobileView(btn.dataset.view));
   });
 
+  // Mobile Top Bar Quick Back Navigation
+  const mobileBackToLibBtn = document.getElementById("mobileBackToLibBtn");
+  if (mobileBackToLibBtn) {
+    mobileBackToLibBtn.addEventListener("click", () => setMobileView("library"));
+  }
+
+  const mobileBackToWorkBtn = document.getElementById("mobileBackToWorkBtn");
+  if (mobileBackToWorkBtn) {
+    mobileBackToWorkBtn.addEventListener("click", () => setMobileView("preview"));
+  }
+
   // Filter inside active tab
   tabFilterInput.addEventListener("input", filterCurrentTab);
 
@@ -2303,24 +2314,27 @@ function setupSchematicInspector() {
           e.touches[0].pageY - e.touches[1].pageY
         );
         initialZoom = currentSchematicZoom;
+        if (e.cancelable) e.preventDefault();
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         if (schematicToolMode === "pan") {
           isPanning = true;
           panStartX = touch.clientX - panX;
           panStartY = touch.clientY - panY;
+          if (e.cancelable) e.preventDefault();
         } else if (schematicToolMode === "circle") {
           isCircling = true;
           touchStartX = touch.clientX;
           touchStartY = touch.clientY;
           clearSchematicSelection();
-          isCircling = true;
+          if (e.cancelable) e.preventDefault();
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     schematicCanvas.addEventListener("touchmove", (e) => {
       if (e.touches.length === 2 && touchStartDist > 0) {
+        if (e.cancelable) e.preventDefault();
         const currentDist = Math.hypot(
           e.touches[0].pageX - e.touches[1].pageX,
           e.touches[0].pageY - e.touches[1].pageY
@@ -2331,10 +2345,12 @@ function setupSchematicInspector() {
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         if (isPanning && schematicToolMode === "pan") {
+          if (e.cancelable) e.preventDefault();
           panX = touch.clientX - panStartX;
           panY = touch.clientY - panStartY;
           applySchematicTransform();
         } else if (isCircling && schematicToolMode === "circle") {
+          if (e.cancelable) e.preventDefault();
           const pt1 = getCanvasNormalizedCoords(touchStartX, touchStartY);
           const pt2 = getCanvasNormalizedCoords(touch.clientX, touch.clientY);
           const cx = (pt1.x + pt2.x) / 2;
@@ -2354,7 +2370,7 @@ function setupSchematicInspector() {
           redrawCircle(previewCircle);
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     schematicCanvas.addEventListener("touchend", (e) => {
       touchStartDist = 0;
@@ -2385,7 +2401,24 @@ function setupSchematicInspector() {
             redrawCircle(currentCircle);
             positionActionPill(currentCircle);
           } else {
-            clearSchematicSelection();
+            // Smart Tap-to-Inspect for mobile touchscreens
+            const tapX = pt1.x;
+            const tapY = pt1.y;
+            const tapRadius = 42;
+            currentCircle = {
+              cx: tapX,
+              cy: tapY,
+              rx: tapRadius,
+              ry: tapRadius,
+              r: tapRadius,
+              rectW: pt1.rectW,
+              rectH: pt1.rectH,
+              norm_x: pt1.rectW > 0 ? tapX / pt1.rectW : 0.5,
+              norm_y: pt1.rectH > 0 ? tapY / pt1.rectH : 0.5,
+              norm_r: Math.max(pt1.rectW, pt1.rectH) > 0 ? tapRadius / Math.max(pt1.rectW, pt1.rectH) : 0.08
+            };
+            redrawCircle(currentCircle);
+            positionActionPill(currentCircle);
           }
         }
       }

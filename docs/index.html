@@ -216,6 +216,10 @@
     <!-- CENTER PANEL: Multi-Mode Workshop Previewer -->
     <section class="panel-preview" id="panelPreview">
       <div class="preview-toolbar">
+        <button id="mobileBackToLibBtn" class="mobile-nav-back-btn" title="Back to Library">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>Library</span>
+        </button>
         <div class="preview-mode-buttons">
           <button class="mode-btn active" data-mode="pdf">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -321,6 +325,7 @@
           </div>
 
           <div class="schematic-canvas" id="schematicCanvas">
+            <div class="schematic-touch-hint">👆 Tap part to inspect • Pinch to zoom</div>
             <div class="schematic-viewport" id="schematicViewport">
               <img id="schematicImg" src="" alt="Schematic Plate" crossorigin="anonymous">
               <canvas id="selectionOverlayCanvas" class="selection-overlay-canvas"></canvas>
@@ -338,6 +343,7 @@
 
           <!-- Slide-Up Part Inspector Drawer -->
           <div id="partInspectorDrawer" class="part-inspector-drawer hidden">
+            <div class="drawer-drag-pill"></div>
             <div class="inspector-header">
               <div class="inspector-badge-row">
                 <span class="inspector-tag">🔍 VISUAL PART IDENTIFIER</span>
@@ -507,6 +513,10 @@
     <!-- RIGHT PANEL: AI Gunsmith Assistant -->
     <aside class="panel-assistant" id="panelAssistant">
       <div class="assistant-header">
+        <button id="mobileBackToWorkBtn" class="mobile-nav-back-btn" title="Back to Workbench">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>Workbench</span>
+        </button>
         <div class="assistant-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <h3>ARMORER ASSISTANT</h3>
