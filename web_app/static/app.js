@@ -675,6 +675,53 @@ async function testLLMConnection() {
   const apiKey = llmApiKeyInput.value.trim();
   const model = llmModelSelect.value;
 
+  const isGitHubPages = window.location.hostname.includes("github.io") || (!window.location.port && window.location.protocol === "https:");
+
+  // Mixed Content / PNA check on hosted HTTPS sites:
+  if (isGitHubPages && (backend === "lmstudio" || backend === "ollama" || endpoint.includes("127.0.0.1") || endpoint.includes("localhost"))) {
+    connTestResult.style.color = "var(--brass-accent)";
+    connTestResult.innerHTML = `
+      <div style="text-align: left; line-height: 1.5; padding: 6px 0;">
+        <span style="color:var(--accent-red); font-weight:bold;">⚠️ Browser Mixed-Content Restriction:</span><br>
+        Web browsers (Chrome / Edge) strictly block hosted <code>https://</code> sites like GitHub Pages from connecting to local machine IP addresses (<code>${endpoint || 'http://127.0.0.1'}</code>).<br><br>
+        <strong>To connect to your local LM Studio / Ollama with PyMuPDF RAG:</strong><br>
+        1. Open your local <code>Gun Manuals</code> folder.<br>
+        2. Double-click <code style="color:var(--accent-green); font-weight:bold;">run_workbench.bat</code>.<br>
+        3. Open <a href="http://127.0.0.1:8055" target="_blank" style="color:var(--accent-green); text-decoration: underline; font-weight:bold;">http://127.0.0.1:8055</a> in your browser.<br><br>
+        <em>Note: When running locally, all local GPU models and manual PDFs connect with zero restrictions!</em>
+      </div>
+    `;
+    return;
+  }
+
+  // Direct client-side verification for Google Gemini on GitHub Pages
+  if (isGitHubPages && backend === "gemini") {
+    if (!apiKey) {
+      connTestResult.style.color = "var(--accent-red)";
+      connTestResult.textContent = "⚠️ Please enter your Google Gemini API Key.";
+      return;
+    }
+    try {
+      const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        const count = (gData.models || []).length;
+        connTestResult.style.color = "var(--accent-green)";
+        connTestResult.textContent = `✓ Connected to Google Gemini successfully! (${count} models available)`;
+        return;
+      } else {
+        const errJson = await gRes.json().catch(() => ({}));
+        connTestResult.style.color = "var(--accent-red)";
+        connTestResult.textContent = `⚠️ Gemini API Error: ${errJson.error?.message || gRes.statusText}`;
+        return;
+      }
+    } catch (gErr) {
+      connTestResult.style.color = "var(--accent-red)";
+      connTestResult.textContent = `⚠️ Network error reaching Gemini: ${gErr.message}`;
+      return;
+    }
+  }
+
   try {
     const res = await fetch("/api/llm/test", {
       method: "POST",

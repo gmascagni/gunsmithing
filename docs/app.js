@@ -675,6 +675,53 @@ async function testLLMConnection() {
   const apiKey = llmApiKeyInput.value.trim();
   const model = llmModelSelect.value;
 
+  const isGitHubPages = window.location.hostname.includes("github.io") || (!window.location.port && window.location.protocol === "https:");
+
+  // Mixed Content / PNA check on hosted HTTPS sites:
+  if (isGitHubPages && (backend === "lmstudio" || backend === "ollama" || endpoint.includes("127.0.0.1") || endpoint.includes("localhost"))) {
+    connTestResult.style.color = "var(--brass-accent)";
+    connTestResult.innerHTML = `
+      <div style="text-align: left; line-height: 1.5; padding: 6px 0;">
+        <span style="color:var(--accent-red); font-weight:bold;">⚠️ Browser Mixed-Content Restriction:</span><br>
+        Web browsers (Chrome / Edge) strictly block hosted <code>https://</code> sites like GitHub Pages from connecting to local machine IP addresses (<code>${endpoint || 'http://127.0.0.1'}</code>).<br><br>
+        <strong>To connect to your local LM Studio / Ollama with PyMuPDF RAG:</strong><br>
+        1. Open your local <code>Gun Manuals</code> folder.<br>
+        2. Double-click <code style="color:var(--accent-green); font-weight:bold;">run_workbench.bat</code>.<br>
+        3. Open <a href="http://127.0.0.1:8055" target="_blank" style="color:var(--accent-green); text-decoration: underline; font-weight:bold;">http://127.0.0.1:8055</a> in your browser.<br><br>
+        <em>Note: When running locally, all local GPU models and manual PDFs connect with zero restrictions!</em>
+      </div>
+    `;
+    return;
+  }
+
+  // Direct client-side verification for Google Gemini on GitHub Pages
+  if (isGitHubPages && backend === "gemini") {
+    if (!apiKey) {
+      connTestResult.style.color = "var(--accent-red)";
+      connTestResult.textContent = "⚠️ Please enter your Google Gemini API Key.";
+      return;
+    }
+    try {
+      const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        const count = (gData.models || []).length;
+        connTestResult.style.color = "var(--accent-green)";
+        connTestResult.textContent = `✓ Connected to Google Gemini successfully! (${count} models available)`;
+        return;
+      } else {
+        const errJson = await gRes.json().catch(() => ({}));
+        connTestResult.style.color = "var(--accent-red)";
+        connTestResult.textContent = `⚠️ Gemini API Error: ${errJson.error?.message || gRes.statusText}`;
+        return;
+      }
+    } catch (gErr) {
+      connTestResult.style.color = "var(--accent-red)";
+      connTestResult.textContent = `⚠️ Network error reaching Gemini: ${gErr.message}`;
+      return;
+    }
+  }
+
   try {
     const res = await fetch("/api/llm/test", {
       method: "POST",
@@ -3114,14 +3161,45 @@ async function handleChatSubmit() {
       api_key: activeLLMApiKey || null
     };
 
-    // If running statically on GitHub Pages without Python backend, run client-side expert engine
+    // If running statically on GitHub Pages without Python backend:
     const isStaticMode = window.location.hostname.includes("github.io") || window.STATIC_FIREARMS_DATA;
     if (isStaticMode) {
-      const reply = generateClientSideExpertReply(text, firearmData);
+      // 1. Direct Google Gemini Web API from client if key is set
+      if (activeLLMBackend === "gemini" && activeLLMApiKey) {
+        try {
+          const mod = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : "gemini-1.5-flash";
+          const gunPrompt = firearmData ? `Current Firearm Platform: ${firearmData.name} (${firearmData.id}). Answer as an expert master gunsmith and armorer assistant.` : "Answer as an expert master gunsmith and armorer assistant.";
+          const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${activeLLMApiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `${gunPrompt}\n\nUser Question: ${query}` }] }]
+            })
+          });
+          if (gemRes.ok) {
+            const gemData = await gemRes.json();
+            const replyText = gemData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (replyText) {
+              typingMsg.remove();
+              appendMessage("assistant", replyText, `Google Gemini (${mod}) [Cloud Web]`);
+              return;
+            }
+          }
+        } catch (gemErr) {
+          console.warn("Client-side Gemini API call failed, falling back to built-in engine", gemErr);
+        }
+      }
+
+      // 2. Client-side armorer engine
+      const reply = generateClientSideExpertReply(query, firearmData);
       setTimeout(() => {
-        typingIndicator.remove();
-        addMessage("assistant", reply, "Built-in Armorer Engine (Client)");
-      }, 500);
+        typingMsg.remove();
+        if ((activeLLMBackend === "lmstudio" || activeLLMBackend === "ollama") && (activeLLMEndpoint.includes("127.0.0.1") || activeLLMEndpoint.includes("localhost"))) {
+          appendMessage("assistant", `${reply}\n\n---\n*💡 **Local LM Studio / Ollama Notice:** You are currently viewing the hosted web version on GitHub Pages. Chrome blocks \`https://\` websites from connecting to local \`http://127.0.0.1\`. To connect to your local LM Studio / Ollama with PyMuPDF RAG, double-click \`run_workbench.bat\` in your \`Gun Manuals\` folder and open **http://127.0.0.1:8055**.*`, "Built-in Armorer Engine (Client)");
+        } else {
+          appendMessage("assistant", reply, "Built-in Armorer Engine (Client)");
+        }
+      }, 350);
       return;
     }
     const res = await fetch("/api/chat", {
@@ -3271,48 +3349,91 @@ function generateClientSideExpertReply(query, firearmData) {
   const fid = (firearmData && firearmData.id) ? firearmData.id.toLowerCase() : "";
   const fname = firearmData ? firearmData.name : "Firearm";
 
-  if (fid.includes("glock")) {
-    if (q.includes("sear") || q.includes("cruciform") || q.includes("engagement") || q.includes("drop")) {
-      return "### Glock Cruciform Sear Engagement Specification\n\n* **Safety Requirement:** Minimum **66% (2/3)** surface overlap between striker lug and trigger bar cruciform sear plate.\n* **Armorer Inspection:** Install orange Armorer Inspection Cover Plate (SP 02096). Verify engagement under 10x magnification.\n* ⚠️ **Warning:** Less than 66% overlap introduces risk of accidental discharge or full-auto slip.";
-    } else if (q.includes("lube") || q.includes("oil") || q.includes("clean") || q.includes("drop")) {
-      return "### Glock Factory 5-Drop Lubrication Protocol\n\n1. **Drops 1 & 2:** Rear slide rail channels.\n2. **Drops 3 & 4:** Front slide rail cuts.\n3. **Drop 5:** Barrel hood and circumference.\n4. **Half Drop:** Trigger bar cruciform wipe across connector ramp.\n\n⚠️ **MANDATORY WARNING:** NEVER lubricate the firing pin channel or safety plunger cavity. Keep 100% dry.";
-    } else if (q.includes("trigger") || q.includes("25") || q.includes("polish")) {
-      return "### Glock 25¢ Trigger Polish Job\n\n* Mirror polish with Flitz/Mothers on cruciform sear shelf, connector ramp, safety plunger dome, and trigger bar tab.\n* Never alter factory 90° sear angles or remove metal.";
-    }
-  } else if (fid.includes("ruger")) {
-    if (q.includes("10/22") || q.includes("torque") || q.includes("v-block")) {
-      return "### Ruger 10/22 Factory Torque Specifications\n\n* **Takedown Action Screw:** **15 to 20 in-lbs** (wood/synthetic) / 25 in-lbs (pillar bedded).\n* **Barrel V-Block Clamp Screws:** **25 to 30 in-lbs** in alternating 5 in-lb increments.\n* **Rim Recess Headspace:** 0.0425\" to 0.0435\".";
-    } else if (q.includes("magazine") || q.includes("rotary")) {
-      return "### Ruger 10/22 Rotary Magazine Pre-Tensioning\n\n* Pre-load the rotor clock spring exactly **1-1/4 full turns (450°)** counter-clockwise before seating into feed lips.";
-    } else if (q.includes("mark") || q.includes("strut") || q.includes("reassembly")) {
-      return "### Ruger Mark Series Hammer Strut Alignment\n\n* Point muzzle 45° upward, pull trigger to drop hammer forward, point muzzle up so hammer strut dangles into mainspring housing cup before closing.";
-    }
-  } else if (fid.includes("beretta")) {
-    if (q.includes("dead trigger") || q.includes("spring") || q.includes("grip")) {
-      return "### Beretta 92FS / M9 Dead Trigger Remedy\n\n* **Root Cause:** Forward leg of trigger bar spring unseated from underside groove (common after removing right grip panel).\n* **Remedy:** Reseat spring leg into slot and verify grip bushing does not pinch spring.";
-    } else if (q.includes("locking block") || q.includes("block")) {
-      return "### Beretta 92 Locking Block Tolerances\n\n* Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds with Gen 3 radiused kit. Replace recoil spring every 3,000–5,000 rounds.";
-    }
-  } else if (fid.includes("sears") || fid.includes("roebuck") || q.includes("sears") || q.includes("1922") || q.includes("side by side")) {
-    if (q.includes("chamber") || q.includes("length") || q.includes("2-3/4") || q.includes("safety")) {
-      return "### ⚠️ 1922 Sears 12G Double Chamber Safety Warning\n\n* **Pre-1927 Short Chamber Warning:** Many early doubles used **2-5/8\" or 2-1/2\" chambers** for roll-crimp paper shells. Firing modern star-crimped 2-3/4\" shells opens petals into the forcing cone, causing catastrophic pressure spikes (15,000+ psi).\n* **Action Required:** Measure with a 12G chamber gauge or Cerrosafe cast before firing modern ammunition.";
-    } else if (q.includes("maker") || q.includes("manufacturer") || q.includes("code") || q.includes("who made")) {
-      return "### Sears Shotgun Manufacturer Cross-Reference\n\nSears never manufactured firearms; they used 3-digit store codes:\n* **101.xxxx:** J. Stevens Arms Co. (Stevens 311 / 5100 / Springfield 5100)\n* **105.xxxx:** Crescent Fire Arms Co. (Empire Ejector / Triumph)\n* **103.xxxx:** Marlin Firearms Co.\n* **Meriden Fire Arms:** Owned directly by Sears (1905–1918; A.J. Aubrey doubles).";
-    } else if (q.includes("headspace") || q.includes("loose") || q.includes("off-face") || q.includes("play")) {
-      return "### 1922 Sears 12G Lockup & Headspace Tolerances\n\n* **12G Rim Headspace:** 0.054\" GO / 0.064\" NO-GO; maximum FIELD limit is 0.070\".\n* **Hinge Pin:** 0.375\" nominal hardened pin. If barrels rattle (off-face), fit oversize +0.005\" pin and stone hook bearing to 80%+ contact.\n* **Top Lever:** Must rest at 4:30 to 5:00 o'clock when shut. If at 6:00 o'clock center, underbolt is worn.";
-    }
-  } else if (fid.includes("general") || fid.includes("smithing")) {
-    if (q.includes("headspace") || q.includes("gauge") || q.includes("go")) {
-      return "### Headspace Gauging Rules\n\n* **GO:** Minimum chamber; bolt MUST close.\n* **NO-GO:** Max new chamber; bolt must NOT close with light finger pressure.\n* **FIELD:** Absolute service limit. If bolt closes on FIELD, the firearm is **UNSAFE TO FIRE**.";
-    } else if (q.includes("cerrosafe") || q.includes("cast")) {
-      return "### Cerrosafe Chamber Casting Timing\n\n* Pour at 160°–190°F. Measure cast at **PRECISELY 1 HOUR after pouring** for 1:1 true chamber dimension.";
-    }
-  } else {
-    if (q.includes("tension") || q.includes("spring") || q.includes("clock")) {
-      return "### Lewis Gun Return Mainspring Calibration\n\n* Normal operating tension is **12 to 14 lbs pull** at cocking handle.\n* Baseline from slack is **2 to 2½ full revolutions** of gear casing.";
+  // Lewis Automatic Machine Gun
+  if (fid.includes("lewis") || q.includes("lewis")) {
+    if (q.includes("clean") || q.includes("maintenance") || q.includes("lube") || q.includes("oil") || q.includes("care") || q.includes("carbon")) {
+      return `### Lewis Automatic Machine Gun — Armorer Cleaning & Maintenance Protocol\n\n` +
+        `1. **Gas Cylinder & Piston Rod Assembly:**\n` +
+        `   * Disassemble gas cylinder and thoroughly scrub interior walls and ports with nitro powder solvent and a stiff brass wire brush to eliminate lead, carbon, and copper wash.\n` +
+        `   * Wipe piston head, piston rings, and rack teeth completely dry. **Never leave heavy oil or wet grease inside the gas chamber** (causes violent smoking and rapid baked carbon buildup).\n\n` +
+        `2. **Gear Casing & Clockwork Return Mainspring (Part #18):**\n` +
+        `   * Lubricate spiral mainspring leaves with a light coat of medium petroleum grease (graphite blend).\n` +
+        `   * ⚠️ **MANDATORY SAFETY WARNING:** Never allow the gear casing to spin free or release tension uncontrolled. Hold casing securely while pulling tension locking key.\n\n` +
+        `3. **Aluminum Radiator & Barrel Shroud:**\n` +
+        `   * Inspect the longitudinal cooling fins for dirt, mud, or bent vanes that obstruct airflow. Clean with kerosene and soft bristle brush.\n` +
+        `   * Ensure the aluminum casing and barrel clamp screws are torqued evenly to preserve straight barrel-to-gas-cylinder alignment.\n\n` +
+        `4. **Feed Mechanism & Pan Magazine:**\n` +
+        `   * Apply a light wipe of gun oil to the bolt feed stud, actuator track, and striker post. Keep feed arm pawl pivots free of grit.`;
+    } else if (q.includes("tension") || q.includes("spring") || q.includes("clock") || q.includes("pull") || q.includes("gear")) {
+      return `### Lewis Gun Return Mainspring Calibration\n\n` +
+        `* **Operating Tension:** **12 to 14 lbs pull** measured with a spring scale hooked to the cocking handle.\n` +
+        `* **Baseline Pre-load:** From dead-slack, rotate gear casing counter-clockwise exactly **2 to 2½ full revolutions** before seating the tension latch key.\n` +
+        `* **Pinion Teeth Runout:** Must remain under **0.003\"**.\n` +
+        `* **Field Adjustment:** If sluggish forward stroke causes failure to feed from 47-round drum, add 1/2 turn (2 clicks). If bolt recoils excessively hard against buffer, reduce tension by 1 click.`;
+    } else if (q.includes("gas") || q.includes("regulator") || q.includes("port") || q.includes("cup")) {
+      return `### Lewis Gun Gas Port & Regulator System\n\n` +
+        `* **Two-Port Cup Regulator:** Features large ('L') and small ('S' or 'H') gas ports.\n` +
+        `* **Standard Service:** Always run on the smaller port under normal conditions (firing ~500–600 rpm).\n` +
+        `* **Adverse Conditions:** Rotate regulator cup using the armorer combination wrench to the large port if heavy fouling or sub-zero mud causes short-recoil stoppages.`;
+    } else if (q.includes("stoppage") || q.includes("jam") || q.includes("position") || q.includes("fail")) {
+      return `### Lewis Gun 4-Position Stoppage Diagnostics\n\n` +
+        `* **Position 1 (Cocking Handle fully forward):** Misfire, empty drum, or broken striker. Wait 5s for hangfire, cock, replace drum.\n` +
+        `* **Position 2 (Cocking Handle 1\" to 2\" from forward):** Thick rimmed cartridge, deformed bullet, or dirt in chamber. Clear, check gas regulator.\n` +
+        `* **Position 3 (Cocking Handle near full rear):** Separated case or broken ejector. Insert clearing plug / extract ruptured case.\n` +
+        `* **Position 4 (Cocking Handle jammed full rear):** Pinion gear sheared, return spring broken, or bent piston rod. Dismount gear casing.`;
     }
   }
 
+  // Glock Safe-Action Pistols
+  if (fid.includes("glock") || q.includes("glock")) {
+    if (q.includes("sear") || q.includes("cruciform") || q.includes("engagement") || q.includes("drop")) {
+      return `### Glock Cruciform Sear Engagement Specification\n\n* **Safety Requirement:** Minimum **66% (2/3)** surface overlap between striker lug and trigger bar cruciform sear plate.\n* **Armorer Inspection:** Install orange Armorer Inspection Cover Plate (SP 02096). Verify engagement under 10x magnification.\n* ⚠️ **Warning:** Less than 66% overlap introduces risk of accidental discharge or full-auto slip.`;
+    } else if (q.includes("lube") || q.includes("oil") || q.includes("clean") || q.includes("drop")) {
+      return `### Glock Factory 5-Drop Lubrication Protocol\n\n1. **Drops 1 & 2:** Rear slide rail channels.\n2. **Drops 3 & 4:** Front slide rail cuts.\n3. **Drop 5:** Barrel hood and circumference.\n4. **Half Drop:** Trigger bar cruciform wipe across connector ramp.\n\n⚠️ **MANDATORY WARNING:** NEVER lubricate the firing pin channel or safety plunger cavity. Keep 100% dry.`;
+    } else if (q.includes("trigger") || q.includes("25") || q.includes("polish")) {
+      return `### Glock 25¢ Trigger Polish Job\n\n* Mirror polish with Flitz/Mothers on cruciform sear shelf, connector ramp, safety plunger dome, and trigger bar tab.\n* Never alter factory 90° sear angles or remove metal.`;
+    }
+  }
+
+  // Ruger Firearms
+  if (fid.includes("ruger") || q.includes("ruger")) {
+    if (q.includes("10/22") || q.includes("torque") || q.includes("v-block")) {
+      return `### Ruger 10/22 Factory Torque Specifications\n\n* **Takedown Action Screw:** **15 to 20 in-lbs** (wood/synthetic) / 25 in-lbs (pillar bedded).\n* **Barrel V-Block Clamp Screws:** **25 to 30 in-lbs** in alternating 5 in-lb increments.\n* **Rim Recess Headspace:** 0.0425\" to 0.0435\".`;
+    } else if (q.includes("magazine") || q.includes("rotary")) {
+      return `### Ruger 10/22 Rotary Magazine Pre-Tensioning\n\n* Pre-load the rotor clock spring exactly **1-1/4 full turns (450°)** counter-clockwise before seating into feed lips.`;
+    } else if (q.includes("mark") || q.includes("strut") || q.includes("reassembly")) {
+      return `### Ruger Mark Series Hammer Strut Alignment\n\n* Point muzzle 45° upward, pull trigger to drop hammer forward, point muzzle up so hammer strut dangles into mainspring housing cup before closing.`;
+    }
+  }
+
+  // Beretta Pistols
+  if (fid.includes("beretta") || q.includes("beretta")) {
+    if (q.includes("dead trigger") || q.includes("spring") || q.includes("grip")) {
+      return `### Beretta 92FS / M9 Dead Trigger Remedy\n\n* **Root Cause:** Forward leg of trigger bar spring unseated from underside groove (common after removing right grip panel).\n* **Remedy:** Reseat spring leg into slot and verify grip bushing does not pinch spring.`;
+    } else if (q.includes("locking block") || q.includes("block")) {
+      return `### Beretta 92 Locking Block Tolerances\n\n* Inspect every 5,000 rounds; replace every 15,000 to 20,000 rounds with Gen 3 radiused kit. Replace recoil spring every 3,000–5,000 rounds.`;
+    }
+  }
+
+  // Sears Roebuck Double Shotgun
+  if (fid.includes("sears") || fid.includes("roebuck") || q.includes("sears") || q.includes("1922") || q.includes("side by side")) {
+    if (q.includes("chamber") || q.includes("length") || q.includes("2-3/4") || q.includes("safety")) {
+      return `### ⚠️ 1922 Sears 12G Double Chamber Safety Warning\n\n* **Pre-1927 Short Chamber Warning:** Many early doubles used **2-5/8\" or 2-1/2\" chambers** for roll-crimp paper shells. Firing modern star-crimped 2-3/4\" shells opens petals into the forcing cone, causing catastrophic pressure spikes (15,000+ psi).\n* **Action Required:** Measure with a 12G chamber gauge or Cerrosafe cast before firing modern ammunition.`;
+    } else if (q.includes("maker") || q.includes("manufacturer") || q.includes("code") || q.includes("who made")) {
+      return `### Sears Shotgun Manufacturer Cross-Reference\n\nSears never manufactured firearms; they used 3-digit store codes:\n* **101.xxxx:** J. Stevens Arms Co. (Stevens 311 / 5100 / Springfield 5100)\n* **105.xxxx:** Crescent Fire Arms Co. (Empire Ejector / Triumph)\n* **103.xxxx:** Marlin Firearms Co.\n* **Meriden Fire Arms:** Owned directly by Sears (1905–1918; A.J. Aubrey doubles).`;
+    } else if (q.includes("headspace") || q.includes("loose") || q.includes("off-face") || q.includes("play")) {
+      return `### 1922 Sears 12G Lockup & Headspace Tolerances\n\n* **12G Rim Headspace:** 0.054\" GO / 0.064\" NO-GO; maximum FIELD limit is 0.070\".\n* **Hinge Pin:** 0.375\" nominal hardened pin. If barrels rattle (off-face), fit oversize +0.005\" pin and stone hook bearing to 80%+ contact.\n* **Top Lever:** Must rest at 4:30 to 5:00 o'clock when shut. If at 6:00 o'clock center, underbolt is worn.`;
+    }
+  }
+
+  // General Gunsmithing Standards
+  if (q.includes("headspace") || q.includes("gauge") || q.includes("go") || q.includes("no-go")) {
+    return `### Headspace Gauging Rules\n\n* **GO:** Minimum chamber dimension; bolt MUST close completely without forcing.\n* **NO-GO:** Maximum allowable dimension for new/re-barreled firearms; bolt must NOT close with light finger pressure.\n* **FIELD:** Absolute maximum service safety limit. If the bolt closes on a FIELD gauge, the firearm has excessive headspace and is **UNSAFE TO FIRE** until repaired.`;
+  }
+  if (q.includes("cerrosafe") || q.includes("cast")) {
+    return `### Cerrosafe Chamber Casting Timing Protocol\n\n* Pour molten alloy at 160°–190°F into clean, lightly oiled chamber.\n* Cerrosafe shrinks during initial cooling, then expands to **EXACT 1:1 true chamber dimension at PRECISELY 1 HOUR after pouring**.\n* Measure all critical diameters and forcing cone lengths at the 1-hour mark with calibrated micrometers.`;
+  }
+
   // General summary
-  return `### Armorer Technical Summary: ${fname}\n\n* **Platform:** ${fname}\n* **Manuals Available:** ${firearmData.manuals ? firearmData.manuals.length : 0}\n* **Schematics Available:** ${firearmData.schematics ? firearmData.schematics.length : 0}\n* **Curated Bench Videos:** ${firearmData.videos ? firearmData.videos.length : 0}\n\nSelect any document, schematic plate, or video from the left library panel to inspect directly on your bench.`;
+  return `### Armorer Technical Summary: ${fname}\n\n* **Platform:** ${fname}\n* **Manuals Available:** ${firearmData && firearmData.manuals ? firearmData.manuals.length : 0}\n* **Schematics Available:** ${firearmData && firearmData.schematics ? firearmData.schematics.length : 0}\n* **Curated Bench Videos:** ${firearmData && firearmData.videos ? firearmData.videos.length : 0}\n\nSelect any document, schematic plate, or video from the left library panel to inspect directly on your bench.`;
 }
