@@ -74,6 +74,12 @@ const pdfStage = document.getElementById("pdfStage");
 const schematicStage = document.getElementById("schematicStage");
 const videoStage = document.getElementById("videoStage");
 const dossierStage = document.getElementById("dossierStage");
+const previewStageContainer = document.querySelector(".preview-stage-container");
+const btnSwapPanes = document.getElementById("btnSwapPanes");
+const modeBtnSplit = document.getElementById("modeBtnSplit");
+
+let currentPreviewMode = "pdf";
+let isPanesSwapped = false;
 
 const panelLibrary = document.getElementById("panelLibrary");
 const panelPreview = document.getElementById("panelPreview");
@@ -367,6 +373,21 @@ function setupEventListeners() {
   document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.addEventListener("click", () => switchPreviewMode(btn.dataset.mode));
   });
+
+  // Swap panes in Bench Split View
+  if (btnSwapPanes) {
+    btnSwapPanes.addEventListener("click", () => {
+      isPanesSwapped = !isPanesSwapped;
+      if (previewStageContainer) {
+        previewStageContainer.classList.toggle("swapped", isPanesSwapped);
+      }
+      btnSwapPanes.title = isPanesSwapped ? "Manual (Left) & Schematic (Right) — Click to Swap" : "Schematic (Left) & Manual (Right) — Click to Swap";
+      setTimeout(() => {
+        resetZoom();
+        fitPdfToWidth();
+      }, 50);
+    });
+  }
 
   // Library Navigation Tabs (left panel)
   document.querySelectorAll(".lib-tab").forEach(tab => {
@@ -1621,10 +1642,16 @@ function selectManual(filename, title, switchToPreview = true, page = 1) {
   if (btnExternalLink) btnExternalLink.href = (isStatic && manualObj) ? (manualObj.github_url || manualObj.url) : pdfUrl;
   if (btnPdfDownload) btnPdfDownload.href = (isStatic && manualObj) ? (manualObj.raw_url || manualObj.url) : pdfUrl;
 
-  previewTitle.textContent = title;
   if (pdfDocName) pdfDocName.textContent = title;
   if (pdfMobileDocName) pdfMobileDocName.textContent = title;
-  switchPreviewMode("pdf");
+
+  if (currentPreviewMode === "split") {
+    const sTitle = schematicPlateSelect?.options[schematicPlateSelect.selectedIndex]?.text || "Schematic";
+    previewTitle.textContent = `Bench Split: ${sTitle} | ${title}`;
+  } else {
+    previewTitle.textContent = title;
+    switchPreviewMode("pdf");
+  }
 
   loadPdfDocument(pdfUrl, page);
 
@@ -1663,7 +1690,14 @@ function selectSchematic(url, title, switchToPreview = true) {
   }
   clearSchematicSelection();
   resetZoom();
-  switchPreviewMode("schematic");
+
+  if (currentPreviewMode === "split") {
+    const mTitle = pdfDocName ? pdfDocName.textContent : "Technical Manual";
+    previewTitle.textContent = `Bench Split: ${title} | ${mTitle}`;
+  } else {
+    previewTitle.textContent = "Schematic: " + title;
+    switchPreviewMode("schematic");
+  }
 
   if (switchToPreview && window.innerWidth <= 900) {
     setMobileView("preview");
@@ -1854,9 +1888,49 @@ function switchPreviewMode(mode) {
   if (mode === "manual") mode = "pdf";
   if (mode === "specs" || mode === "stoppages" || mode === "stoppage") mode = "dossier";
 
+  currentPreviewMode = mode;
+
   document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
+
+  const previewContainer = document.querySelector(".preview-stage-container");
+
+  // Handle Dual Bench Split Mode
+  if (mode === "split") {
+    if (previewContainer) previewContainer.classList.add("split-mode");
+    if (btnSwapPanes) btnSwapPanes.classList.remove("hidden");
+
+    // Both Schematic (Left) and Manual (Right) visible
+    schematicStage.classList.remove("hidden");
+    schematicStage.classList.add("active", "split-pane");
+
+    pdfStage.classList.remove("hidden");
+    pdfStage.classList.add("active", "split-pane");
+
+    videoStage.classList.add("hidden");
+    videoStage.classList.remove("active", "split-pane");
+    dossierStage.classList.add("hidden");
+    dossierStage.classList.remove("active", "split-pane");
+
+    const sTitle = schematicPlateSelect?.options[schematicPlateSelect.selectedIndex]?.text || "Schematic";
+    const mTitle = pdfDocName ? pdfDocName.textContent : "Technical Manual";
+    previewTitle.textContent = `Bench Split: ${sTitle} | ${mTitle}`;
+
+    // Fit both viewports to their split dimensions
+    setTimeout(() => {
+      resetZoom();
+      fitPdfToWidth();
+    }, 60);
+    return;
+  }
+
+  // Single-stage mode
+  if (previewContainer) previewContainer.classList.remove("split-mode");
+  if (btnSwapPanes) btnSwapPanes.classList.add("hidden");
+
+  pdfStage.classList.remove("split-pane");
+  schematicStage.classList.remove("split-pane");
 
   pdfStage.classList.toggle("hidden", mode !== "pdf");
   schematicStage.classList.toggle("hidden", mode !== "schematic");
@@ -1870,6 +1944,13 @@ function switchPreviewMode(mode) {
 
   if (mode === "dossier") {
     previewTitle.textContent = "Workshop Specifications & Diagnostic Standards";
+  } else if (mode === "schematic") {
+    const sTitle = schematicPlateSelect?.options[schematicPlateSelect.selectedIndex]?.text || "Schematic";
+    previewTitle.textContent = "Schematic: " + sTitle;
+    setTimeout(() => resetZoom(), 50);
+  } else if (mode === "pdf") {
+    previewTitle.textContent = pdfDocName ? pdfDocName.textContent : "Technical Manual";
+    setTimeout(() => fitPdfToWidth(), 50);
   }
 }
 
@@ -2456,7 +2537,9 @@ async function executeIdentifyPart() {
       if (jumpBtn) {
         jumpBtn.addEventListener("click", () => {
           selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true, part.manual_citation.page);
-          switchPreviewMode("pdf");
+          if (currentPreviewMode !== "split") {
+            switchPreviewMode("pdf");
+          }
         });
       }
     } else {
@@ -2809,7 +2892,9 @@ function setupSchematicInspector() {
 
       if (part.manual_citation && part.manual_citation.manual_filename) {
         selectManual(part.manual_citation.manual_filename, part.manual_citation.manual_title, true, part.manual_citation.page);
-        switchPreviewMode("pdf");
+        if (currentPreviewMode !== "split") {
+          switchPreviewMode("pdf");
+        }
         return;
       }
 
@@ -2820,7 +2905,9 @@ function setupSchematicInspector() {
         tabFilterInput.value = part.name.split(" ")[0];
         filterActiveTabList(tabFilterInput.value);
       }
-      switchPreviewMode("pdf");
+      if (currentPreviewMode !== "split") {
+        switchPreviewMode("pdf");
+      }
     });
   }
 }

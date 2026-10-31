@@ -1114,6 +1114,105 @@ body {
   left: 0;
 }
 
+/* ==========================================================================
+   BENCH SPLIT-SCREEN VIEWPORT (SCHEMATIC & MANUAL SIDE-BY-SIDE)
+   ========================================================================== */
+.preview-stage-container.split-mode {
+  display: flex !important;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-stage-container.split-mode > .stage.split-pane {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: 50% !important;
+  height: 100% !important;
+  flex: 1 1 50% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Default Order: Schematic (Left), Manual (Right) */
+.preview-stage-container.split-mode > #schematicStage.split-pane {
+  order: 1;
+  border-right: 2px solid var(--border-color);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.45);
+}
+
+.preview-stage-container.split-mode > #pdfStage.split-pane {
+  order: 2;
+}
+
+/* Swapped Order: Manual (Left), Schematic (Right) */
+.preview-stage-container.split-mode.swapped > #schematicStage.split-pane {
+  order: 2;
+  border-right: none;
+  border-left: 2px solid var(--border-color);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.45);
+}
+
+.preview-stage-container.split-mode.swapped > #pdfStage.split-pane {
+  order: 1;
+}
+
+/* Split Mode Responsive Toolbars */
+.preview-stage-container.split-mode .schematic-controls {
+  padding: 0 10px;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.preview-stage-container.split-mode .schematic-controls select {
+  max-width: 140px;
+  font-size: 11px;
+}
+
+.preview-stage-container.split-mode .pdf-viewer-bar {
+  padding: 6px 10px;
+  gap: 6px;
+}
+
+.preview-stage-container.split-mode .pdf-viewer-info span {
+  max-width: 130px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.mode-btn.split-mode-btn.active {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: var(--brass-accent);
+  color: var(--brass-accent);
+  box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.15);
+}
+
+/* Vertical Stack on Compact Screens (< 1024px) */
+@media (max-width: 1023px) {
+  .preview-stage-container.split-mode {
+    flex-direction: column !important;
+  }
+
+  .preview-stage-container.split-mode > .stage.split-pane {
+    width: 100% !important;
+    height: 50% !important;
+    flex: 1 1 50% !important;
+  }
+
+  .preview-stage-container.split-mode > #schematicStage.split-pane {
+    border-right: none !important;
+    border-bottom: 2px solid var(--border-color) !important;
+  }
+
+  .preview-stage-container.split-mode.swapped > #schematicStage.split-pane {
+    border-left: none !important;
+    border-top: 2px solid var(--border-color) !important;
+  }
+}
+
 /* PDF Stage */
 #pdfStage iframe {
   width: 100%;
