@@ -1050,7 +1050,30 @@ def generate_fallback_expert_response(query: str, firearm_data: Dict[str, Any]) 
 
     # 5. Lewis Machine Gun Platform
     else:
-        if any(k in q for k in ["tension", "spring", "clock", "pinion", "mainspring", "lbs"]):
+        if any(k in q for k in ["barrel shield", "shield", "radiator", "casing", "mouthpiece", "barrel group", "cooling"]):
+            return (
+                "### Master Armorer: Lewis Automatic Machine Gun — Barrel Group & Radiator Casing Stripping Protocol\n\n"
+                "*⚠️ **Armorer Warning:** Disassembly of the aluminum radiator and barrel group should only be performed for deep armory overhaul, barrel replacement, or clearing heavy baked carbon from the gas cylinder.*\n\n"
+                "**Step-by-Step Stripping Sequence:**\n"
+                "1. **Clamp Ring (Part #3-13):**\n"
+                "   * Using the flat screwdriver bit on the armorer barrel mouthpiece spanner, unscrew the clamp ring screw (Part #3-15).\n"
+                "   * Slide the clamp ring—which carries the front sight (Part #3-14) and positioning screw—forward off the radiator casing.\n\n"
+                "2. **Radiator Casing Front (Barrel Shield / Outer Shroud, Part #3-4):**\n"
+                "   * Grasp the cylindrical aluminum radiator casing front and pull it straight off forward away from the longitudinal cooling fins.\n\n"
+                "3. **Radiator Casing Rear (Part #3-20A):**\n"
+                "   * Withdraw the radiator casing rear (permanently assembled to the radiator casing rear locking piece) straight off to the rear towards the receiver.\n\n"
+                "4. **Gas Cylinder (Part #3-19):**\n"
+                "   * Unscrew and dismount the gas cylinder. *Armorer Field Trick:* Use the piston rack (Part #8-1) as your wrench—the cross-section of the rack is purpose-machined to match the gas cylinder wrench flats.\n\n"
+                "5. **Gas Chamber Gland (Part #3-7) & Barrel Mouthpiece (Part #3-2) — ⚠️ LEFT-HANDED THREADS:**\n"
+                "   * Fit the armorer combination spanner to the barrel mouthpiece (Part #3-2) and gas chamber gland (Part #3-7).\n"
+                "   * ⚠️ **MANDATORY WARNING:** Both components are machined with **LEFT-HANDED (REVERSE) THREADS**. Turn clockwise to loosen; turning counterclockwise will strip or shear the threads.\n\n"
+                "6. **Barrel Dismounting (Part #3-1) & Gas Chamber (Part #3-6):**\n"
+                "   * Keep the barrel mouthpiece threaded on approximately 3 threads to protect the crown.\n"
+                "   * Strike the mouthpiece lightly with a brass or lead mallet to drive the barrel rearward, breaking the taper fit inside the aluminum radiator (Part #3-3).\n"
+                "   * Unscrew the barrel completely; the gas chamber (Part #3-6) will drop free from its recess inside the radiator.\n\n"
+                "*Reference Manual:* [1917 Savage Arms Lewis Machine Gun Hand-Book (pp. 13–15, Plate III)](/api/manuals/Lewis_Automatic_Machine_Gun/1917_Savage_Arms_Lewis_Machine_Gun_Handbook.pdf#page=13)"
+            )
+        elif any(k in q for k in ["tension", "spring", "clock", "pinion", "mainspring", "lbs"]):
             return (
                 "### Return Mainspring (Clock Spring) & Pinion Calibration\n\n"
                 "**Primary Spec:**\n"
@@ -1246,7 +1269,7 @@ async def chat_handler(req: ChatRequest):
                 "stream": False,
                 "options": {"temperature": temp}
             }
-            async with httpx.AsyncClient(timeout=45.0) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(45.0, connect=1.5)) as client:
                 resp = await client.post(f"{ep.rstrip('/')}/api/generate", json=payload)
                 if resp.status_code == 200:
                     ans = resp.json().get("response", "").strip()
@@ -1273,7 +1296,7 @@ async def chat_handler(req: ChatRequest):
                 "messages": messages,
                 "temperature": temp
             }
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(20.0, connect=1.5)) as client:
                 resp = await client.post(f"{ep.rstrip('/')}/chat/completions", json=payload)
                 if resp.status_code == 200:
                     data = resp.json()
@@ -1304,6 +1327,11 @@ async def chat_handler(req: ChatRequest):
 async def search_repository(q: str = Query(..., min_length=2), firearm_id: str = "Lewis_Automatic_Machine_Gun"):
     query = q.lower().strip()
     raw_tokens = [t for t in query.replace("-", " ").replace("/", " ").replace(".", "").split() if len(t) > 0]
+    
+    STOP_WORDS = {"my", "the", "a", "an", "is", "in", "on", "for", "to", "of", "with", "and", "needs", "need", "want", "how", "what", "where", "i", "can", "please", "do", "get", "take", "off", "deep", "does", "it", "any", "some", "at", "by", "from", "as", "about"}
+    content_tokens = [t for t in raw_tokens if t not in STOP_WORDS]
+    tokens_to_match = content_tokens if content_tokens else raw_tokens
+
     results = []
     platform_matches = []
 
@@ -1321,20 +1349,27 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
 
         score = 0
         if query in fname or query in searchable_blob:
-            score += 100
+            score += 120
         
-        # Check token coverage (e.g. ['glock', '17', 'gen', '4'])
-        matched_tokens = [t for t in raw_tokens if t in searchable_blob]
-        if raw_tokens and len(matched_tokens) == len(raw_tokens):
-            score += 80 + len(matched_tokens) * 5
-        elif raw_tokens and len(matched_tokens) >= max(1, len(raw_tokens) - 1):
-            score += 40 + len(matched_tokens) * 5
+        # Check token coverage against content words
+        matched_tokens = [t for t in tokens_to_match if t in searchable_blob]
+        if tokens_to_match and len(matched_tokens) == len(tokens_to_match):
+            score += 100 + len(matched_tokens) * 10
+        elif tokens_to_match and len(matched_tokens) >= max(1, len(tokens_to_match) - 1):
+            score += 60 + len(matched_tokens) * 8
 
-        # Extra weight if specific model token matches model list
+        # Extra weight if specific model token matches model list (e.g. "17" for Glock 17)
+        has_model_match = False
         for m in models:
-            m_clean = m.replace("-", " ")
-            if any(t in m_clean for t in raw_tokens if len(t) > 1):
-                score += 25
+            m_clean = m.replace("-", " ").split()
+            if any(t in m_clean for t in tokens_to_match if len(t) >= 2 or t.isdigit()):
+                score += 80
+                has_model_match = True
+                break
+
+        # Platform + Model compound match (e.g. "glock" AND "17")
+        if has_model_match and any(t in fname or t in mfg for t in tokens_to_match):
+            score += 150
 
         if score > 0:
             platform_matches.append({
@@ -1356,7 +1391,8 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
 
     # Search manuals
     for m in data["manuals"]:
-        if query in m["title"].lower():
+        m_text = f"{m['title']} {m['filename']}".lower()
+        if any(t in m_text for t in tokens_to_match) or query in m_text:
             results.append({
                 "type": "manual",
                 "title": m["title"],
@@ -1367,7 +1403,8 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
 
     # Search videos
     for v in data["videos"]:
-        if query in v["title"].lower() or query in v["summary"].lower() or query in v["category"].lower():
+        v_text = f"{v['title']} {v.get('summary', '')} {v.get('category', '')}".lower()
+        if any(t in v_text for t in tokens_to_match) or query in v_text:
             results.append({
                 "type": "video",
                 "title": v["title"],
@@ -1377,14 +1414,15 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
             })
 
     # Search stoppages
-    for s in data["stoppages"]:
-        if query in s["position"].lower() or query in s["short_desc"].lower() or any(query in c.lower() for c in s["causes"]):
+    for s in data.get("stoppages", []):
+        s_text = f"{s.get('position', '')} {s.get('short_desc', '')} {s.get('root_causes', '')} {s.get('remedy', '')}".lower()
+        if any(t in s_text for t in tokens_to_match) or query in s_text:
             results.append({
                 "type": "stoppage",
-                "title": s["position"],
-                "subtitle": s["short_desc"],
+                "title": f"Stoppage: {s.get('position', '')}",
+                "subtitle": s.get('short_desc', ''),
                 "action": "open_stoppage",
-                "target": s["position"]
+                "target": s.get('position', '')
             })
 
     # Search specs

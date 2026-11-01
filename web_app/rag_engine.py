@@ -222,6 +222,31 @@ class ArmorerRAGEngine:
         if not query_tokens:
             return []
 
+        # Platform domain synonym expansion
+        expanded_tokens = list(query_tokens)
+        fid_lower = (firearm_id or "").lower()
+        if "lewis" in fid_lower:
+            if any(w in query_tokens for w in ["shield", "shroud", "casing"]):
+                expanded_tokens.extend(["radiator", "casing", "mouthpiece", "clamp"])
+            if any(w in query_tokens for w in ["barrel", "front"]):
+                expanded_tokens.extend(["radiator", "mouthpiece", "cylinder", "gland"])
+            if any(w in query_tokens for w in ["spring", "tension", "clock"]):
+                expanded_tokens.extend(["mainspring", "pinion", "casing", "collet"])
+            if any(w in query_tokens for w in ["strip", "remove", "takedown", "disassemble", "take", "off"]):
+                expanded_tokens.extend(["unscrew", "casing", "clamp", "spanner"])
+        elif "glock" in fid_lower:
+            if any(w in query_tokens for w in ["clean", "cleaning", "deep", "lube", "oil"]):
+                expanded_tokens.extend(["drops", "lubricat", "rail", "connector", "solvent"])
+            if any(w in query_tokens for w in ["sear", "drop", "safety"]):
+                expanded_tokens.extend(["cruciform", "engagement", "plate", "inspection"])
+            if any(w in query_tokens for w in ["trigger", "polish"]):
+                expanded_tokens.extend(["connector", "cruciform", "plunger", "ramp"])
+        elif "ar15" in fid_lower or "m4" in fid_lower:
+            if any(w in query_tokens for w in ["key", "gas"]):
+                expanded_tokens.extend(["staking", "carrier", "screws", "torque"])
+            if any(w in query_tokens for w in ["buffer", "recoil", "weight"]):
+                expanded_tokens.extend(["carbine", "h2", "spring", "extension"])
+
         results = []
         for c in self.chunks:
             # Reconstruct tokens if loaded from cache without 'tokens' field
@@ -230,16 +255,19 @@ class ArmorerRAGEngine:
                 c_tokens = self.tokenize(c["text"])
                 c["tokens"] = c_tokens
 
-            base_score = self.score_bm25(query_tokens, c_tokens)
+            base_score = self.score_bm25(expanded_tokens, c_tokens)
             if base_score <= 0.0:
                 continue
 
-            # Platform affinity boost: prioritize active firearm
+            # Platform affinity boost: heavily prioritize active firearm
             final_score = base_score
-            if firearm_id and c["firearm_id"] == firearm_id:
-                final_score *= 2.2 # Heavy boost for matching platform
-            elif firearm_id and c["firearm_id"] in ["General_Gunsmithing"]:
-                final_score *= 1.2 # Moderate boost for general gunsmithing manuals
+            if firearm_id:
+                if c["firearm_id"] == firearm_id:
+                    final_score *= 3.5 # Heavy boost for matching platform
+                elif c["firearm_id"] in ["General_Gunsmithing"]:
+                    final_score *= 1.2 # Moderate boost for general gunsmithing manuals
+                else:
+                    final_score *= 0.25 # Downweight non-matching platforms
 
             # Bonus for exact multi-token substring matches in text
             lower_text = c["text"].lower()
