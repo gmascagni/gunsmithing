@@ -91,6 +91,8 @@ const videosListView = document.getElementById("videosListView");
 const stoppagesListView = document.getElementById("stoppagesListView");
 
 const globalSearchInput = document.getElementById("globalSearchInput");
+const btnGlobalSearch = document.getElementById("btnGlobalSearch");
+const btnGlobalSearchClear = document.getElementById("btnGlobalSearchClear");
 const searchResultsPopup = document.getElementById("searchResultsPopup");
 const tabFilterInput = document.getElementById("tabFilterInput");
 const firearmSelect = document.getElementById("firearmSelect");
@@ -161,6 +163,21 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
 const clearChatBtn = document.getElementById("clearChatBtn");
+
+// Local LLM Header Start Button & Popover Controls
+const btnStartLocalLLM = document.getElementById("btnStartLocalLLM");
+const btnStartLocalLLMText = document.getElementById("btnStartLocalLLMText");
+const llmAssistantDot = document.getElementById("llmAssistantDot");
+const llmPowerIcon = document.getElementById("llmPowerIcon");
+const localLLMPopover = document.getElementById("localLLMPopover");
+const popoverStatusDot = document.getElementById("popoverStatusDot");
+const popoverStatusTitle = document.getElementById("popoverStatusTitle");
+const popoverEndpoint = document.getElementById("popoverEndpoint");
+const popoverModelSelect = document.getElementById("popoverModelSelect");
+const popoverEngineName = document.getElementById("popoverEngineName");
+const popoverModelVram = document.getElementById("popoverModelVram");
+const btnPopoverStartStop = document.getElementById("btnPopoverStartStop");
+const btnPopoverConfig = document.getElementById("btnPopoverConfig");
 
 const llmStatusPill = document.getElementById("llmStatusPill");
 const llmStatusText = document.getElementById("llmStatusText");
@@ -413,17 +430,48 @@ function setupEventListeners() {
   // Filter inside active tab
   tabFilterInput.addEventListener("input", filterCurrentTab);
 
-  // Global search input
+  // Global search input with explicit Search Button, Clear, and Enter key
   let searchTimeout = null;
-  globalSearchInput.addEventListener("input", (e) => {
-    clearTimeout(searchTimeout);
-    const q = e.target.value.trim();
-    if (q.length < 2) {
+  if (globalSearchInput) {
+    globalSearchInput.addEventListener("input", (e) => {
+      clearTimeout(searchTimeout);
+      const q = e.target.value.trim();
+      if (btnGlobalSearchClear) {
+        btnGlobalSearchClear.classList.toggle("hidden", q.length === 0);
+      }
+      if (q.length < 2) {
+        searchResultsPopup.classList.add("hidden");
+        return;
+      }
+      searchTimeout = setTimeout(() => executeGlobalSearch(q, false), 220);
+    });
+
+    globalSearchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        clearTimeout(searchTimeout);
+        executeGlobalSearch(globalSearchInput.value.trim(), true);
+      } else if (e.key === "Escape") {
+        searchResultsPopup.classList.add("hidden");
+      }
+    });
+  }
+
+  if (btnGlobalSearch) {
+    btnGlobalSearch.addEventListener("click", () => {
+      clearTimeout(searchTimeout);
+      executeGlobalSearch(globalSearchInput.value.trim(), true);
+    });
+  }
+
+  if (btnGlobalSearchClear) {
+    btnGlobalSearchClear.addEventListener("click", () => {
+      globalSearchInput.value = "";
+      btnGlobalSearchClear.classList.add("hidden");
       searchResultsPopup.classList.add("hidden");
-      return;
-    }
-    searchTimeout = setTimeout(() => executeGlobalSearch(q), 250);
-  });
+      globalSearchInput.focus();
+    });
+  }
 
   // Close search popup when clicking outside
   document.addEventListener("click", (e) => {
@@ -434,6 +482,9 @@ function setupEventListeners() {
 
   // Setup Interactive Schematic Inspector (Pan, Zoom & Circle-to-Search)
   setupSchematicInspector();
+
+  // Setup Video Diagnostics Lab & Malfunction Simulator
+  setupVideoDiagnostics();
 
   // Chat Form Submit
   chatForm.addEventListener("submit", (e) => {
@@ -458,6 +509,59 @@ function setupEventListeners() {
         </div>
       </div>
     `;
+  });
+
+  // Local LLM AI Start Button & Control Popover
+  if (btnStartLocalLLM) {
+    btnStartLocalLLM.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const ollama = (availableBackends || []).find(b => b.id === "ollama");
+      const isOnline = ollama && ollama.status === "online";
+      if (!isOnline) {
+        startLocalLLM();
+      } else {
+        if (localLLMPopover) localLLMPopover.classList.toggle("hidden");
+      }
+    });
+  }
+
+  if (btnPopoverStartStop) {
+    btnPopoverStartStop.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const ollama = (availableBackends || []).find(b => b.id === "ollama");
+      const isOnline = ollama && ollama.status === "online";
+      if (isOnline) {
+        stopLocalLLM();
+      } else {
+        startLocalLLM();
+      }
+    });
+  }
+
+  if (popoverModelSelect) {
+    popoverModelSelect.addEventListener("change", (e) => {
+      switchLocalModel(e.target.value);
+    });
+  }
+
+  if (btnPopoverConfig) {
+    btnPopoverConfig.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (localLLMPopover) localLLMPopover.classList.add("hidden");
+      if (settingsDialog) {
+        settingsDialog.showModal();
+        updateSettingsFields();
+      }
+    });
+  }
+
+  // Close popover when clicking anywhere outside
+  document.addEventListener("click", (e) => {
+    if (localLLMPopover && !localLLMPopover.classList.contains("hidden")) {
+      if (!localLLMPopover.contains(e.target) && e.target !== btnStartLocalLLM && !btnStartLocalLLM.contains(e.target)) {
+        localLLMPopover.classList.add("hidden");
+      }
+    }
   });
 
   // Quick Prompt Chips
@@ -2960,8 +3064,8 @@ function setupSchematicInspector() {
 }
 
 // Global Live Search with Cross-Platform & Cross-Manufacturer Matching
-async function executeGlobalSearch(q) {
-  const query = q.trim();
+async function executeGlobalSearch(q, autoSelectOnEnter = false) {
+  const query = (q || "").trim();
   if (query.length < 2) {
     searchResultsPopup.classList.add("hidden");
     return;
@@ -2984,7 +3088,6 @@ async function executeGlobalSearch(q) {
     // Client-side search if on GitHub Pages or if API returned no platform matches
     if (results.length === 0 || isStatic) {
       const clientResults = executeClientSideSearch(query);
-      // Merge or prioritize platform switcher items
       const existingTargets = new Set(results.map(r => r.target));
       clientResults.forEach(cr => {
         if (!existingTargets.has(cr.target)) {
@@ -2999,8 +3102,24 @@ async function executeGlobalSearch(q) {
     }
 
     if (results.length === 0) {
-      searchResultsPopup.innerHTML = `<div style="padding: 12px; color: var(--text-dim); text-align: center;">No matches found for "${escapeHtml(query)}".</div>`;
+      searchResultsPopup.innerHTML = `<div style="padding: 14px; color: var(--text-dim); text-align: center;">No firearm platform, model, or manual matches found for "<strong>${escapeHtml(query)}</strong>".<br><span style="font-size: 11px; opacity: 0.8;">Try: Glock 17, AR-15, 1911, Lewis Gun, 10/22, 870, or Remington 700</span></div>`;
       searchResultsPopup.classList.remove("hidden");
+      return;
+    }
+
+    // Auto-select on Enter or Search click: if the top result is a firearm platform switch
+    if (autoSelectOnEnter && results.length > 0 && results[0].action === "switch_firearm") {
+      const topMatch = results[0];
+      searchResultsPopup.classList.add("hidden");
+      currentFirearm = topMatch.target;
+      await loadFirearm(topMatch.target);
+      if (firearmData) {
+        addMessage(
+          "assistant",
+          `🔫 Switched active bench platform to **${escapeHtml(firearmData.name)}** for search query *"${escapeHtml(query)}"*. Loaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench videos** ready for service.`,
+          "Platform Switched"
+        );
+      }
       return;
     }
 
@@ -3017,17 +3136,18 @@ async function executeGlobalSearch(q) {
         <span class="item-tag">${isSwitch ? "BENCH" : r.type}</span>
       `;
 
-      row.addEventListener("click", () => {
+      row.addEventListener("click", async () => {
         searchResultsPopup.classList.add("hidden");
         globalSearchInput.value = "";
+        if (btnGlobalSearchClear) btnGlobalSearchClear.classList.add("hidden");
         
         if (r.action === "switch_firearm") {
           currentFirearm = r.target;
-          loadFirearm(r.target);
+          await loadFirearm(r.target);
           if (firearmData) {
             addMessage(
               "assistant",
-              `Switched active platform to **${escapeHtml(firearmData.name)}** from global search. Ready on the bench!`,
+              `🔫 Switched active platform to **${escapeHtml(firearmData.name)}** from search. Ready on the bench!`,
               "Platform Switched"
             );
           }
@@ -3036,7 +3156,7 @@ async function executeGlobalSearch(q) {
           selectManual(r.target, r.title, true);
         } else if (r.action === "open_video") {
           switchLibraryTab("videos");
-          const v = firearmData.videos.find(item => item.id === r.target);
+          const v = (firearmData.videos || []).find(item => item.id === r.target);
           if (v) selectVideo(v, true);
         } else if (r.action === "open_stoppage" || r.action === "open_spec") {
           switchPreviewMode("dossier");
@@ -3053,38 +3173,69 @@ async function executeGlobalSearch(q) {
   }
 }
 
-// Client-side search engine for offline & GitHub Pages support
+// Client-side search engine for offline & GitHub Pages support with tokenized multi-word scoring
 function executeClientSideSearch(q) {
-  const query = q.toLowerCase();
+  const query = (q || "").toLowerCase().trim();
+  const rawTokens = query.replace(/[-/.]/g, " ").split(/\s+/).filter(t => t.length > 0);
   const results = [];
+  const platformMatches = [];
 
-  // 1. Search all platforms / manufacturers / models
+  // 1. Search all platforms / manufacturers / models with tokenized scoring
   (availableFirearmsList || []).forEach(f => {
-    const blob = [
-      f.name,
-      f.subtitle,
-      f.manufacturer,
-      f.category,
-      ...(f.models || []),
-      ...(f.calibers || []),
-      ...(f.key_tasks || [])
-    ].join(" ").toLowerCase();
+    const fname = (f.name || "").toLowerCase();
+    const mfg = (f.manufacturer || "").toLowerCase();
+    const sub = (f.subtitle || "").toLowerCase();
+    const models = (f.models || []).map(m => m.toLowerCase());
+    const calibers = (f.calibers || []).map(c => c.toLowerCase());
+    const tasks = (f.key_tasks || []).map(t => t.toLowerCase());
 
-    if (blob.includes(query)) {
-      results.push({
-        type: "platform",
-        title: `🔫 Put on Bench: ${f.name}`,
-        subtitle: `${f.manufacturer} • ${f.category}`,
-        action: "switch_firearm",
-        target: f.id
+    const blob = [
+      fname,
+      sub,
+      mfg,
+      f.category || "",
+      ...models,
+      ...calibers,
+      ...tasks
+    ].join(" ").replace(/[-/.]/g, " ").toLowerCase();
+
+    let score = 0;
+    if (blob.includes(query)) score += 100;
+
+    const matchedTokens = rawTokens.filter(t => blob.includes(t));
+    if (rawTokens.length > 0 && matchedTokens.length === rawTokens.length) {
+      score += 80 + matchedTokens.length * 5;
+    } else if (rawTokens.length > 1 && matchedTokens.length >= rawTokens.length - 1) {
+      score += 40 + matchedTokens.length * 5;
+    }
+
+    // Model specific boost (e.g. '17' matching Glock 17)
+    models.forEach(m => {
+      if (rawTokens.some(t => t.length > 1 && m.includes(t))) score += 25;
+    });
+
+    if (score > 0) {
+      platformMatches.push({
+        score: score,
+        item: {
+          type: "platform",
+          title: `🔫 Put on Bench: ${f.name}`,
+          subtitle: `${f.manufacturer} • ${f.subtitle || f.category}`,
+          action: "switch_firearm",
+          target: f.id
+        }
       });
     }
   });
 
+  platformMatches.sort((a, b) => b.score - a.score);
+  results.push(...platformMatches.map(pm => pm.item));
+
   // 2. Search active firearm technical manuals
   if (firearmData && firearmData.manuals) {
     firearmData.manuals.forEach(m => {
-      if ((m.title + " " + m.filename).toLowerCase().includes(query)) {
+      const mText = (m.title + " " + m.filename).toLowerCase();
+      if (mText.includes(query) || (rawTokens.length > 0 && rawTokens.every(t => mText.includes(t)))) {
         results.push({
           type: "manual",
           title: m.title,
@@ -3099,7 +3250,8 @@ function executeClientSideSearch(q) {
   // 3. Search active firearm videos
   if (firearmData && firearmData.videos) {
     firearmData.videos.forEach(v => {
-      if ((v.title + " " + (v.summary || "")).toLowerCase().includes(query)) {
+      const vText = (v.title + " " + (v.summary || "")).toLowerCase();
+      if (vText.includes(query) || (rawTokens.length > 0 && rawTokens.every(t => vText.includes(t)))) {
         results.push({
           type: "video",
           title: v.title,
@@ -3114,13 +3266,30 @@ function executeClientSideSearch(q) {
   // 4. Search active firearm stoppages
   if (firearmData && firearmData.stoppages) {
     firearmData.stoppages.forEach(s => {
-      if ((s.position + " " + (s.causes || []).join(" ") + " " + s.action).toLowerCase().includes(query)) {
+      const sText = (s.position + " " + (s.causes || []).join(" ") + " " + s.action).toLowerCase();
+      if (sText.includes(query) || (rawTokens.length > 0 && rawTokens.every(t => sText.includes(t)))) {
         results.push({
           type: "stoppage",
           title: s.position,
-          subtitle: s.short_desc || "Malfunction Diagnostics",
+          subtitle: s.short_desc,
           action: "open_stoppage",
           target: s.position
+        });
+      }
+    });
+  }
+
+  // 5. Search active firearm specs
+  if (firearmData && firearmData.specs) {
+    Object.entries(firearmData.specs).forEach(([k, v]) => {
+      const spText = (k + " " + String(v)).toLowerCase();
+      if (spText.includes(query) || (rawTokens.length > 0 && rawTokens.every(t => spText.includes(t)))) {
+        results.push({
+          type: "spec",
+          title: k.replace(/_/g, " ").toUpperCase(),
+          subtitle: String(v),
+          action: "open_spec",
+          target: k
         });
       }
     });
@@ -3129,7 +3298,6 @@ function executeClientSideSearch(q) {
   return results;
 }
 
-// AI Assistant Chat Handler
 async function handleChatSubmit() {
   const query = chatInput.value.trim();
   if (!query) return;
@@ -3175,7 +3343,7 @@ async function handleChatSubmit() {
     }
 
     const data = await res.json();
-    appendMessage("assistant", data.reply, data.backend_used);
+    appendMessage("assistant", data.reply, data.backend_used, data.sources);
 
   } catch (err) {
     typingMsg.remove();
@@ -3185,7 +3353,7 @@ async function handleChatSubmit() {
   }
 }
 
-function appendMessage(role, text, backend = null) {
+function appendMessage(role, text, backend = null, sources = []) {
   const msg = document.createElement("div");
   msg.className = `chat-msg ${role}`;
 
@@ -3193,10 +3361,27 @@ function appendMessage(role, text, backend = null) {
   const htmlContent = formatMarkdown(text);
   const badgeHtml = backend ? `<div class="msg-badge">Answered by: ${escapeHtml(backend)}</div>` : "";
 
+  let sourcesHtml = "";
+  if (sources && sources.length > 0) {
+    sourcesHtml = `<div class="msg-sources-list"><span class="msg-sources-label">📚 Grounded Manual Citations (RAG):</span>`;
+    sources.forEach(s => {
+      const title = s.title || "Manual Reference";
+      if (s.url && s.url.startsWith("/api/manuals/")) {
+        sourcesHtml += `<button class="msg-source-chip" onclick="openManualFromCitation('${escapeHtml(s.url)}', '${escapeHtml(title)}')">📄 ${escapeHtml(title)}</button>`;
+      } else if (s.url && s.url !== "#") {
+        sourcesHtml += `<a class="msg-source-chip" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">🔗 ${escapeHtml(title)}</a>`;
+      } else {
+        sourcesHtml += `<span class="msg-source-chip">📑 ${escapeHtml(title)}</span>`;
+      }
+    });
+    sourcesHtml += `</div>`;
+  }
+
   msg.innerHTML = `
     <div class="msg-avatar">${avatar}</div>
     <div class="msg-content">
       ${htmlContent}
+      ${sourcesHtml}
       ${badgeHtml}
     </div>
   `;
@@ -3289,6 +3474,177 @@ function updateStatusPill() {
       llmStatusText.textContent = "⚡ Built-in Engine";
       dot.className = "status-dot pulsing";
     }
+  }
+
+  // Synchronize the dedicated Start Local AI button next to Armorer Assistant
+  updateLocalLLMButtonState();
+}
+
+// ==========================================================================
+// LOCAL LLM AI DEDICATED START BUTTON & POPOVER ENGINE
+// ==========================================================================
+function updateLocalLLMButtonState() {
+  if (!btnStartLocalLLM) return;
+  const ollama = (availableBackends || []).find(b => b.id === "ollama");
+  const isOnline = ollama && ollama.status === "online";
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+
+  if (isStatic) {
+    btnStartLocalLLM.className = "btn-start-local-llm online";
+    btnStartLocalLLMText.textContent = "Built-in AI (Offline)";
+    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot online";
+    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
+    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot online";
+    if (popoverStatusTitle) popoverStatusTitle.textContent = "Client Engine Active";
+    if (popoverEndpoint) popoverEndpoint.textContent = "GitHub Pages Static";
+    if (popoverEngineName) popoverEngineName.textContent = "Browser Engine";
+    if (popoverModelVram) popoverModelVram.textContent = "Client-Side";
+    if (btnPopoverStartStop) {
+      btnPopoverStartStop.textContent = "⚙️ Configure Web AI";
+      btnPopoverStartStop.className = "popover-btn primary";
+    }
+    return;
+  }
+
+  if (isOnline) {
+    const curModel = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : (ollama.default_model || "qwen3.5:4b");
+    btnStartLocalLLM.className = "btn-start-local-llm online";
+    btnStartLocalLLMText.textContent = `Local AI (${curModel})`;
+    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot online";
+    if (llmPowerIcon) llmPowerIcon.textContent = "🟢";
+
+    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot online";
+    if (popoverStatusTitle) popoverStatusTitle.textContent = "Local AI Online";
+    if (popoverEndpoint) popoverEndpoint.textContent = ollama.endpoint || "http://127.0.0.1:11434";
+    if (popoverEngineName) popoverEngineName.textContent = "Ollama Local";
+    if (popoverModelVram) popoverModelVram.textContent = "100% GPU / VRAM";
+    if (btnPopoverStartStop) {
+      btnPopoverStartStop.textContent = "⏹️ Stop Local AI";
+      btnPopoverStartStop.className = "popover-btn danger";
+    }
+
+    // Populate model select in popover if empty or changed
+    if (popoverModelSelect && ollama.models && ollama.models.length > 0) {
+      popoverModelSelect.innerHTML = "";
+      ollama.models.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        if (m === curModel) opt.selected = true;
+        popoverModelSelect.appendChild(opt);
+      });
+      if (!popoverModelSelect.value && popoverModelSelect.options.length > 0) {
+        popoverModelSelect.value = curModel;
+      }
+    }
+  } else {
+    btnStartLocalLLM.className = "btn-start-local-llm";
+    btnStartLocalLLMText.textContent = "Start Local AI";
+    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
+    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
+
+    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot";
+    if (popoverStatusTitle) popoverStatusTitle.textContent = "Local AI Offline";
+    if (popoverEndpoint) popoverEndpoint.textContent = "http://127.0.0.1:11434";
+    if (popoverEngineName) popoverEngineName.textContent = "Ollama Local";
+    if (popoverModelVram) popoverModelVram.textContent = "Not Running";
+    if (btnPopoverStartStop) {
+      btnPopoverStartStop.textContent = "⚡ Start Local AI";
+      btnPopoverStartStop.className = "popover-btn primary";
+    }
+  }
+}
+
+async function startLocalLLM() {
+  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
+  if (isStatic) {
+    if (settingsDialog) {
+      settingsDialog.showModal();
+      updateSettingsFields();
+    }
+    return;
+  }
+
+  // Set starting state
+  if (btnStartLocalLLM) btnStartLocalLLM.className = "btn-start-local-llm starting";
+  if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Starting Local AI...";
+  if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot starting";
+  if (llmPowerIcon) llmPowerIcon.textContent = "⏳";
+  if (localLLMPopover) localLLMPopover.classList.add("hidden");
+
+  try {
+    const res = await fetch("/api/llm/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ backend: "ollama" })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      activeLLMBackend = "ollama";
+      activeLLMModel = data.model;
+      await checkLLMBackends();
+      
+      addMessage(
+        "system",
+        `🟢 **Local LLM AI Engine Online!**\n\nConnected to **Ollama** running **${escapeHtml(data.model)}** on \`${data.endpoint}\` (${data.vram_info || 'GPU Acceleration Active'}).\n\nAll armorer and gunsmith inquiries are now processed privately with zero cloud latency.`,
+        "Local AI Engine"
+      );
+    } else {
+      throw new Error(data.error || "Could not launch Ollama.");
+    }
+  } catch (err) {
+    console.error("Failed to start Local AI:", err);
+    if (btnStartLocalLLM) btnStartLocalLLM.className = "btn-start-local-llm";
+    if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Start Local AI";
+    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
+    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
+    
+    addMessage(
+      "assistant",
+      `⚠️ **Could Not Start Local AI:** ${escapeHtml(err.message || err)}\n\nPlease ensure **Ollama** is installed on your workstation. Run \`ollama serve\` in your terminal or click the settings button to configure a web API key.`,
+      "Armorer System"
+    );
+  }
+}
+
+async function stopLocalLLM() {
+  try {
+    const res = await fetch("/api/llm/stop", { method: "POST" });
+    const data = await res.json();
+    activeLLMBackend = "builtin";
+    activeLLMModel = "auto";
+    if (localLLMPopover) localLLMPopover.classList.add("hidden");
+    await checkLLMBackends();
+    addMessage(
+      "system",
+      `⏹️ **Local AI Stopped:** Disconnected from local engine. Switched to Built-in Armorer Expert Engine.`,
+      "Armorer System"
+    );
+  } catch (err) {
+    console.error("Error stopping Local AI:", err);
+  }
+}
+
+async function switchLocalModel(newModel) {
+  try {
+    const res = await fetch("/api/llm/switch-model", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: newModel, backend: "ollama" })
+    });
+    if (res.ok) {
+      activeLLMModel = newModel;
+      await checkLLMBackends();
+      if (localLLMPopover) localLLMPopover.classList.add("hidden");
+      addMessage(
+        "system",
+        `🔄 **Model Switched:** Active local model is now **${escapeHtml(newModel)}**.`,
+        "Local AI Engine"
+      );
+    }
+  } catch (err) {
+    console.error("Failed to switch model:", err);
   }
 }
 

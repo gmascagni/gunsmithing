@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +24,16 @@ try:
     from web_app.parts_data import PARTS_DATABASE, DEFAULT_CATEGORY_PARTS, find_part_by_coordinates
 except ImportError:
     from parts_data import PARTS_DATABASE, DEFAULT_CATEGORY_PARTS, find_part_by_coordinates
+
+try:
+    from web_app.rag_engine import rag_engine
+except ImportError:
+    from rag_engine import rag_engine
+
+try:
+    from web_app.video_analyzer import analyze_malfunction_video, SAMPLE_CASES, UPLOAD_DIR
+except ImportError:
+    from video_analyzer import analyze_malfunction_video, SAMPLE_CASES, UPLOAD_DIR
 
 app = FastAPI(title="Armorer's Workbench", version="1.0.0")
 
@@ -59,6 +69,15 @@ class LLMConfig(BaseModel):
     api_key: Optional[str] = None
     temperature: Optional[float] = 0.3
 
+class LLMStartRequest(BaseModel):
+    backend: Optional[str] = "ollama"
+    model: Optional[str] = None
+    endpoint: Optional[str] = None
+
+class SwitchModelRequest(BaseModel):
+    model: str
+    backend: Optional[str] = None
+
 class IdentifyPartRequest(BaseModel):
     firearm_id: str
     norm_x: float
@@ -66,6 +85,11 @@ class IdentifyPartRequest(BaseModel):
     norm_r: Optional[float] = 0.08
     image_crop: Optional[str] = None
     plate_id: Optional[str] = None
+
+class VideoAnalyzeRequest(BaseModel):
+    firearm_id: Optional[str] = "AR15_M4_Platform"
+    sample_id: Optional[str] = None
+    user_notes: Optional[str] = ""
 
 CONFIG_FILE = BASE_DIR / "web_app" / "config.json"
 
@@ -316,6 +340,189 @@ async def test_llm_connection(req: Dict[str, Any]):
 
     return {"success": True, "message": "Built-in Armorer Knowledge Engine active (offline)."}
 
+@app.post("/api/llm/start")
+async def start_local_llm(req: Optional[LLMStartRequest] = None):
+    """Starts or connects to the local LLM AI engine (Ollama on localhost or LAN)."""
+    cfg = get_saved_config()
+    target_backend = (req.backend if req and req.backend else cfg.get("backend", "ollama")) or "ollama"
+    ep = (req.endpoint if req and req.endpoint else cfg.get("endpoint", "http://127.0.0.1:11434")) or "http://127.0.0.1:11434"
+    desired_model = req.model if req and req.model else cfg.get("model", "auto")
+
+    if target_backend == "ollama":
+        is_running = False
+        models = []
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                res = await client.get(f"{ep.rstrip('/')}/api/tags")
+                if res.status_code == 200:
+                    is_running = True
+                    models = [m["name"] for m in res.json().get("models", [])]
+        except Exception:
+            is_running = False
+
+        if not is_running:
+            import shutil, subprocess
+            ollama_bin = shutil.which("ollama")
+            if not ollama_bin:
+                candidate_paths = [
+                    Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama.exe",
+                    Path(os.environ.get("PROGRAMFILES", "")) / "Ollama" / "ollama.exe",
+                    Path(r"C:\Users\gmasc\AppData\Local\Programs\Ollama\ollama.exe"),
+                ]
+                for cp in candidate_paths:
+                    if cp.exists():
+                        ollama_bin = str(cp)
+                        break
+
+            if ollama_bin:
+                try:
+                    if os.name == "nt":
+                        subprocess.Popen(
+                            [ollama_bin, "serve"],
+                            creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL
+                        )
+                    else:
+                        subprocess.Popen(
+                            [ollama_bin, "serve"],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            start_new_session=True
+                        )
+                except Exception as e:
+                    return JSONResponse({
+                        "success": False,
+                        "error": f"Failed to spawn Ollama process: {str(e)}",
+                        "status": "offline"
+                    })
+
+                for _ in range(12):
+                    await asyncio.sleep(0.5)
+                    try:
+                        async with httpx.AsyncClient(timeout=1.0) as client:
+                            res = await client.get(f"{ep.rstrip('/')}/api/tags")
+                            if res.status_code == 200:
+                                is_running = True
+                                models = [m["name"] for m in res.json().get("models", [])]
+                                break
+                    except Exception:
+                        pass
+
+        if not is_running:
+            return JSONResponse({
+                "success": False,
+                "error": "Ollama service could not be started or reached on localhost:11434. Please verify Ollama is installed and run 'ollama serve'.",
+                "status": "offline",
+                "backend": "ollama"
+            })
+
+        # Select best active model
+        active_model = "qwen3.5:4b"
+        if desired_model and desired_model != "auto" and desired_model in models:
+            active_model = desired_model
+        elif "qwen3.5:4b" in models:
+            active_model = "qwen3.5:4b"
+        elif any("llama-3" in m.lower() for m in models):
+            active_model = next(m for m in models if "llama-3" in m.lower())
+        elif models:
+            chat_models = [m for m in models if not any(x in m for x in ["embed", "bge", "bert"])]
+            active_model = chat_models[0] if chat_models else models[0]
+
+        cfg["backend"] = "ollama"
+        cfg["model"] = active_model
+        cfg["endpoint"] = ep
+        CONFIG_FILE.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+
+        vram_info = "Ready in VRAM"
+        try:
+            async with httpx.AsyncClient(timeout=1.5) as client:
+                ps_res = await client.get(f"{ep.rstrip('/')}/api/ps")
+                if ps_res.status_code == 200:
+                    running_models = ps_res.json().get("models", [])
+                    active_running = [rm for rm in running_models if rm.get("name") == active_model]
+                    if active_running:
+                        size_gb = round(active_running[0].get("size_vram", 0) / (1024**3), 2)
+                        vram_info = f"{size_gb} GB VRAM (GPU)" if size_gb > 0 else "Loaded in GPU Memory"
+        except Exception:
+            pass
+
+        return JSONResponse({
+            "success": True,
+            "status": "online",
+            "backend": "ollama",
+            "model": active_model,
+            "models": models,
+            "endpoint": ep,
+            "vram_info": vram_info,
+            "message": f"Connected to Local Ollama AI! Active Model: {active_model}"
+        })
+
+    elif target_backend == "lmstudio":
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                res = await client.get(f"{ep.rstrip('/')}/models")
+                if res.status_code == 200:
+                    models = [m["id"] for m in res.json().get("data", [])]
+                    active_model = models[0] if models else "local-model"
+                    cfg["backend"] = "lmstudio"
+                    cfg["model"] = active_model
+                    cfg["endpoint"] = ep
+                    CONFIG_FILE.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+                    return JSONResponse({
+                        "success": True,
+                        "status": "online",
+                        "backend": "lmstudio",
+                        "model": active_model,
+                        "models": models,
+                        "endpoint": ep,
+                        "message": f"Connected to Local LM Studio! Active Model: {active_model}"
+                    })
+        except Exception as e:
+            return JSONResponse({
+                "success": False,
+                "error": f"LM Studio is not reachable at {ep}: {str(e)}. Start LM Studio with Local Server enabled.",
+                "status": "offline",
+                "backend": "lmstudio"
+            })
+
+    return JSONResponse({
+        "success": True,
+        "status": "online",
+        "backend": "builtin",
+        "model": "gunsmith-expert-v1",
+        "message": "Switched to Built-in Armorer Expert Engine (Offline)."
+    })
+
+@app.post("/api/llm/stop")
+async def stop_local_llm():
+    """Unlinks local LLM and falls back to built-in offline expert."""
+    cfg = get_saved_config()
+    cfg["backend"] = "builtin"
+    CONFIG_FILE.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    return JSONResponse({
+        "success": True,
+        "status": "offline",
+        "backend": "builtin",
+        "model": "gunsmith-expert-v1",
+        "message": "Local AI unlinked. Switched to Built-in Armorer Expert Engine."
+    })
+
+@app.post("/api/llm/switch-model")
+async def switch_model(req: SwitchModelRequest):
+    """Quickly switches active model for local LLM."""
+    cfg = get_saved_config()
+    if req.backend:
+        cfg["backend"] = req.backend
+    cfg["model"] = req.model
+    CONFIG_FILE.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    return JSONResponse({
+        "success": True,
+        "backend": cfg.get("backend", "ollama"),
+        "model": req.model,
+        "message": f"Switched model to {req.model}"
+    })
+
 @app.get("/api/llm/backends")
 async def check_llm_backends():
     backends = []
@@ -423,11 +630,259 @@ async def check_llm_backends():
 
     return {"backends": backends, "saved_config": cfg}
 
+def build_master_armorer_system_prompt(firearm_data: Dict[str, Any], specs_str: str) -> str:
+    """Builds the comprehensive Master Gunsmith directive across military weapons, optics, accessories, long range, and backyard setups."""
+    fname = firearm_data.get("name", "Firearm Platform")
+    fsub = firearm_data.get("subtitle", "")
+    return (
+        f"You are the Master Armorer and Chief Weaponsmith of the Armorer's Workbench.\n\n"
+        f"CORE DIRECTIVE & SPECIALIZATION (NOT A GENERALIST):\n"
+        f"You are NOT a generalist AI summarizing surface-level information. You are a seasoned, highly technical master gunsmith and military weapons specialist with elite, authoritative mastery across five core disciplines:\n\n"
+        f"1. MILITARY WEAPONS (HISTORIC TO MODERN):\n"
+        f"   - Complete mechanical cycle of operations: feeding, chambering, locking, firing, unlocking, extracting, ejecting, cocking.\n"
+        f"   - Gas operating systems (Direct Impingement, Short-Stroke, Long-Stroke, Roller-Delayed, Falling Block, Short Recoil, Open-Bolt).\n"
+        f"   - Military weapons mastery: M16/M4/AR-15, AR-10/SR-25, AK-47/AKM/AK-74, FN FAL, G3/PTR, M1 Garand, M14/M1A, SKS 45, Mauser 98k, Mosin-Nagant 91/30, Lee-Enfield No. 4, Lewis Light Machine Gun, M249 SAW, M240, PKM, 1911, Beretta 92FS/M9, Sig P320/M17, Glock Gen 1–5, Browning Hi-Power, HK USP.\n"
+        f"   - Full-auto trip timing, disconnector overlap, sear engagement geometries, gas port erosion, dwell time, buffer tube weight calibration (Carbine/H/H2/H3/A5), carrier tilt mitigation.\n"
+        f"   - Headspace standards: GO, NO-GO, and FIELD gauges across rimmed, rimless, belted, and bottlenecked cartridges.\n\n"
+        f"2. PRECISION OPTICS & SCOPE MOUNTING:\n"
+        f"   - Scope mounting protocols: rail bedding, screw degreasing, blue threadlocker (Loctite 242), exact torque specs (Base: 30–35 in-lbs, Ring Crossbolts: 45–65 in-lbs, Ring Caps: 15–18 in-lbs in crisscross sequence—NEVER crush or pinch erector tubes).\n"
+        f"   - Ring alignment & lapping: 1-inch, 30mm, 34mm, 35mm coaxial truing with 220-grit compound; checking ring squareness and concentricity.\n"
+        f"   - Optical leveling & calibration: mechanical zero, optical centering, leveling reticles via plumb bob or precision feeler gauges between rail and turret flat, tall-target tracking test (100-yard tracking verification).\n"
+        f"   - Reticle subtensions & mechanics: First Focal Plane (FFP) vs Second Focal Plane (SFP); MRAD/MIL (0.1 mil = 1cm at 100m, 0.36\" at 100 yd) vs MOA (1.047\" at 100 yd); parallax elimination vs ocular focus; eye box/relief; zero stops.\n"
+        f"   - Tactical optics: Red dots (Aimpoint, EOTech), prism scopes (ACOG, Elcan), co-witness heights (absolute, lower 1/3, 1.93\", 2.26\" NVG), 45°/35° offset mounts.\n\n"
+        f"3. ACCESSORIES, SUPPRESSORS & TACTICAL HARDWARE:\n"
+        f"   - Suppressors: Direct-thread vs QD taper mounts (SureFire, KeyMo, Plan B, Rearden, ASR), bore-to-can concentricity checking using precision alignment rods to prevent catastrophic baffle strikes.\n"
+        f"   - Suppressor gas management: adjustable gas blocks (bleed-off vs restrictive), enhanced bolt carriers, gas-busting charging handles, heavier buffer weights.\n"
+        f"   - Weapon lights & IR designators: SureFire, Modlite, Cloud Defensive, PEQ-15, DBAL, MAWL, zeroing IR lasers with parallel offset vs converging zero.\n"
+        f"   - Rail systems: M-LOK T-nut orientation and torque (35 in-lbs metal, 15 in-lbs polymer), Picatinny (MIL-STD-1913), Arca-Swiss precision tripod dovetails.\n"
+        f"   - Bipods & slings: Harris, Atlas, MDT Ckye-Pod loading, 2-point adjustable tactical slings (Vickers, Ferro) and anti-rotation QD cup placement.\n\n"
+        f"4. LONG RANGE SHOOTING & PRECISION BALLISTICS:\n"
+        f"   - Action accurizing: Action truing/blueprinting (facing receiver face, single-point thread recutting, lapping bolt lugs for >85% contact with Dykem).\n"
+        f"   - Barrel work: Chamber reaming to minimum SAAMI, 11° precision target crown or 90° recessed step, free-floating barrel check (dollar bill test).\n"
+        f"   - Bedding: Aluminum pillar bedding and glass bedding with Devcon 10110 Plastic Steel or Marine-Tex, action screw torque (55–65 in-lbs into pillars).\n"
+        f"   - Ballistics & load craft: Cartridge Base to Ogive (CBTO), finding rifling lands with Hornady OAL gauge, tuning bullet jump (0.015\"–0.030\"), barrel twist stabilization (Greenhill / Miller twist formula e.g. 1:7 for 77gr 5.56, 1:8 for 140gr 6.5 Creedmoor, 1:10 for 175gr .308), G1 vs G7 ballistic coefficients, transonic transition, density altitude.\n\n"
+        f"5. BACKYARD SETUPS & HOME ARMORER WORKBENCH CRAFT:\n"
+        f"   - Home bench anatomy: Heavy rigid bench (4x4 timber legs, 2-3\" solid top), heavy bench vise with soft non-marring jaw caps (nylon, brass, leather), receiver clamshells, barrel vise blocks, reaction rods that engage extension lugs to protect receiver index pins.\n"
+        f"   - Hand tools: Hollow-ground parallel gunsmith screwdrivers (NEVER hardware store tapered drivers that slip and ruin screw slots), roll pin punches, roll pin starter punches, brass drift punches, Wheeler FAT wrench inch-pound torque wrench.\n"
+        f"   - Backyard zeroing & range setup: Safe backstop design (minimum 8–10 ft dirt berm with 2:1 slope, railroad tie cribbing, sand traps, zero rock fill, verified downrange safety), 25/36/50/100 yard zeroing geometry, bore sighting at 25 yards through the bore or with laser arbor to guarantee paper hit at 100 yards.\n"
+        f"   - Practical DIY boundaries: Clearly define what can be hand-stoned, polished, or fitted with Arkansas stones and files vs what strictly requires a lathe, vertical mill, or factory armory.\n\n"
+        f"ACTIVE FIREARM DOSSIER: {fname} ({fsub})\n"
+        f"KEY WORKSHOP SPECIFICATIONS & TOLERANCES:\n"
+        f"{specs_str}\n\n"
+        f"TONE & RESPONSE STYLE:\n"
+        f"- Speak with the seasoned authority, technical precision, and practical wisdom of a Master Gunsmith.\n"
+        f"- Always quote exact torque specs (in-lbs / ft-lbs), clearances, drill/punch sizes, and gauge readings.\n"
+        f"- Highlight critical safety warnings with ⚠️ CRITICAL ARMORER NOTICE.\n"
+        f"- Structure responses with clean markdown headers (###), bold technical terms, and step-by-step procedures."
+    )
+
 def generate_fallback_expert_response(query: str, firearm_data: Dict[str, Any]) -> str:
     """Intelligent rule-based expert answer tailored to active firearm platform when LLM is offline."""
     q = query.lower()
     fid = firearm_data.get("id", "")
     fname = firearm_data.get("name", "Firearm")
+
+    # =========================================================================
+    # SPECIALIZED DOMAIN 1: SCOPES, OPTICS, RETICLES & MOUNTING TORQUE
+    # =========================================================================
+    if any(k in q for k in ["scope", "optic", "ring", "lapping", "torque", "mount", "mrad", "moa", "reticle", "leveling", "cant", "eye relief", "parallax", "ffp", "sfp"]):
+        if any(k in q for k in ["torque", "spec", "tighten", "inch-pound", "in-lb", "lbs"]):
+            return (
+                "### Master Gunsmith: Scope Mounting & Precision Torque Specifications\n\n"
+                "* **Base / Picatinny Rail to Receiver:**\n"
+                "  * **Torque:** **30 to 35 in-lbs** using T15/T20 Torx fasteners.\n"
+                "  * **Preparation:** Degrease receiver tapped holes completely with 99% isopropyl alcohol or acetone. Apply one drop of **Loctite 242 (Blue)** or Vibra-TITE. Bedding the base underside with a thin skim of Loctite or release-agent paste ensures 100% stress-free contact.\n"
+                "* **Ring-to-Base Crossbolts (Clamps):**\n"
+                "  * **Steel Crossbolts (Weaver / Picatinny):** **45 to 65 in-lbs** (e.g. Badger Ordnance, Nightforce, Hawkins).\n"
+                "  * **Aluminum Crossbolts:** **35 to 45 in-lbs** max (e.g. Vortex Precision Matched, Leupold BackCountry).\n"
+                "* **Ring Caps (Scope Tube Clamping):**\n"
+                "  * **Torque:** **15 to 18 in-lbs** (NEVER exceed 18 in-lbs).\n"
+                "  * **⚠️ CRITICAL ARMORER WARNING:** Overtightening ring caps will crush the internal 30mm/34mm erector tube, causing turret binding, parallax freeze, and reticle tracking failures. Always tighten in an alternating X-pattern with even ring gaps on both left and right sides."
+            )
+        elif any(k in q for k in ["lap", "lapping", "alignment", "bar", "concentric"]):
+            return (
+                "### Scope Ring Lapping & Coaxial Truing Protocol\n\n"
+                "* **When to Lap:** Required on paired two-piece rings mounted on multi-piece receivers where manufacturing tolerances create coaxial misalignment. (One-piece unimounts usually do not require lapping).\n"
+                "* **Alignment Inspection:** Mount rings, insert pointed alignment rods, and verify that the opposing sharp tips meet within **0.002\"**.\n"
+                "* **Lapping Procedure:**\n"
+                "  1. Apply **220-grit silicon carbide lapping compound** evenly across bottom ring saddles.\n"
+                "  2. Install cylindrical steel lapping bar with top caps tightened to light sliding friction (~5 in-lbs).\n"
+                "  3. Work bar in figure-8 and linear strokes while rotating slightly.\n"
+                "  4. Lap until **75% to 80% surface contact** is achieved on both rings. Degrease completely before optic installation."
+            )
+        elif any(k in q for k in ["level", "leveling", "cant", "plumb", "straight"]):
+            return (
+                "### Precision Scope Leveling & Optical Alignment\n\n"
+                "1. **Level the Action:** Clamp the rifle in a bench vise. Place a precision machinist bubble level across the receiver rails or bolt raceway and level to 0.0°.\n"
+                "2. **The Feeler Gauge Flat Method:** If the bottom of your optic's turret housing is precision-ground flat (e.g., Nightforce, Vortex Razor, Kahles, Tangent Theta), slide an automotive feeler gauge stack between the flat bottom of the scope and the flat top of the Picatinny rail until snug. Tighten ring caps evenly.\n"
+                "3. **Plumb Bob Verification:** For long-range rifles, hang a high-contrast weighted plumb line at 50–100 yards. Align the vertical reticle hair directly to the plumb string through the bore.\n"
+                "4. **Install Anti-Cant Indicator:** Mount an electronic or bubble level to the scope tube while aligned with the plumb line. A 1° cant error at 1,000 yards induces over **5 inches of horizontal dispersion**!"
+            )
+        elif any(k in q for k in ["moa", "mrad", "mil", "reticle", "ffp", "sfp"]):
+            return (
+                "### Masterclass: MRAD vs MOA & Focal Plane Selection\n\n"
+                "* **MRAD (Mil-Radian):**\n"
+                "  * Based on trigonometric radian: 1 Mil = 1/1000th of distance = **10 cm at 100 meters** = **3.6 inches at 100 yards**.\n"
+                "  * Standard turret clicks: **0.1 MRAD = 1 cm @ 100m = 0.36\" @ 100 yd**.\n"
+                "  * Universal military and PRS standard for intuitive range estimation and DOPE math.\n"
+                "* **MOA (Minute of Angle):**\n"
+                "  * Based on 1/60th of a degree: True MOA = **1.047 inches at 100 yards** (often rounded to 1.0\" SMOA).\n"
+                "  * Standard turret clicks: **1/4 MOA = 0.26\" @ 100 yd**.\n"
+                "* **FFP (First Focal Plane) vs SFP (Second Focal Plane):**\n"
+                "  * **FFP:** Reticle scales proportionally with magnification. Subtensions and holdovers are **100% accurate at EVERY magnification setting**. Mandatory for long range and tactical field engagements.\n"
+                "  * **SFP:** Reticle remains fixed size. Subtensions are ONLY true at one specific magnification (usually maximum power). Ideal for fixed-distance benchrest or close-range hunting."
+            )
+        else:
+            return (
+                "### Master Gunsmith Optics & Scope Systems Overview\n\n"
+                "* **Base Fasteners:** 30–35 in-lbs with blue Loctite 242 into degreased receiver holes.\n"
+                "* **Ring Crossbolts:** 45–65 in-lbs (steel) / 35–45 in-lbs (aluminum).\n"
+                "* **Ring Caps:** 15–18 in-lbs in crisscross sequence; maintain equal ring gap on both sides.\n"
+                "* **Lapping:** 220-grit compound until 75–80% contact achieved on two-piece mounts.\n"
+                "* **Leveling:** Align vertical reticle hair to distant plumb line; install anti-cant bubble."
+            )
+
+    # =========================================================================
+    # SPECIALIZED DOMAIN 2: LONG RANGE, ACCURIZING, BEDDING & BALLISTICS
+    # =========================================================================
+    if any(k in q for k in ["long range", "accuriz", "bedding", "pillar", "truing", "blueprinting", "bullet jump", "cbto", "twist rate", "ballistics", "dope", "crown"]):
+        if any(k in q for k in ["bedding", "pillar", "glass", "devcon", "epoxy"]):
+            return (
+                "### Pillar & Glass Bedding Accurizing Masterclass\n\n"
+                "* **Aluminum Pillars:** Drill out stock action screw holes with 5/8\" Forstner bit. Cut 6061-T6 aluminum pillars to contour the bottom metal and receiver tang. Pillars isolate the action from wood/fiberglass compression.\n"
+                "* **Epoxy Compound:** Use **Devcon 10110 Plastic Steel Putty** or **Marine-Tex Gray**. High compressive strength with near-zero cure shrinkage.\n"
+                "* **Release Agent:** Apply 2 coats of pure carnauba paste wax or PVA (polyvinyl alcohol) release agent to ALL metal surfaces, screw threads, and recoil lug sides. Never skip release agent!\n"
+                "* **Recoil Lug Taping:** Wrap 2 layers of masking tape on the **front, bottom, and sides** of the recoil lug. Leave ONLY the rear bearing face bare metal. This ensures the lug bears 100% against the epoxy block while releasing freely during future disassembly.\n"
+                "* **Action Screw Torque:** Torque screws into cured pillars to **55 to 65 in-lbs** in an aluminum chassis or pillar-bedded stock."
+            )
+        elif any(k in q for k in ["bullet jump", "cbto", "ogive", "lands", "freebore"]):
+            return (
+                "### Cartridge Base to Ogive (CBTO) & Bullet Jump Tuning\n\n"
+                "* **Measurement Standard:** Never measure bullet seating depth by Cartridge Overall Length (COAL) to the meplat tip (tips vary by 0.010\"). Always measure **CBTO (Cartridge Base to Ogive)** using a comparator insert on a dial caliper.\n"
+                "* **Finding the Lands:** Use a Hornady OAL Gauge with a modified threaded case. Gently push the rod until the projectile kisses the rifling lands. Record three consistent measurements.\n"
+                "* **Optimal Jump Windows:**\n"
+                "  * **Tangent Ogives (e.g. Sierra MatchKing):** 0.015\" to 0.030\" jump into lands.\n"
+                "  * **Hybrid Ogives (e.g. Berger Hybrid):** Jump-tolerant, sweet spot typically 0.020\" to 0.050\" off lands.\n"
+                "  * **Secant / VLD Ogives:** Sensitive to jump; typically tune in 0.005\" steps starting from 0.010\" off lands.\n"
+                "* **⚠️ SAAMI Warning:** Ensure tuned CBTO still fits inside your rifle's internal box magazine (e.g. AICS 2.870\" limit for .308/6.5 Creedmoor)."
+            )
+        elif any(k in q for k in ["twist", "twist rate", "stabiliz", "greenhill", "grain"]):
+            return (
+                "### Precision Barrel Twist Rate & Projectile Stabilization\n\n"
+                "* **Miller Twist Rule:** Bullet length (not weight) dictates required twist rate. Bullets need a gyroscopic stability factor ($S_g$) between **1.4 and 1.8** to avoid yaw or excessive spin-drift.\n"
+                "* **Proven Long-Range Caliber Twists:**\n"
+                "  * **5.56x45mm / .223 Rem:** **1:7\"** for 75gr–77gr OTM (Mk 262); **1:8\"** for 69gr–73gr; **1:9\"** for 55gr–62gr.\n"
+                "  * **6.5mm Creedmoor / .260 Rem:** **1:8\"** optimal for 140gr–147gr ELD-M / Berger Hybrids.\n"
+                "  * **.308 Winchester:** **1:10\"** for 168gr–175gr (M118LR) and up to 200gr; **1:11.25\"** (M24 Palma spec).\n"
+                "  * **.300 Win Mag / .300 PRC:** **1:9\" to 1:8.5\"** for 215gr–225gr high-BC projectiles."
+            )
+        elif any(k in q for k in ["truing", "blueprint", "recut", "action"]):
+            return (
+                "### Action Blueprinting & Receiver Truing Protocol\n\n"
+                "1. **Single-Point Mandrel Setup:** Dial in receiver bolt raceway on an engine lathe within **0.0001\" TIR** using dual 4-jaw spider chucks.\n"
+                "2. **Face Receiver Ring:** Take a clean 0.002\" pass square to the raceway centerline.\n"
+                "3. **Single-Point Recut Threads:** Clean internal tenon threads (e.g. Remington 700 1-1/16\"-16) to ensure 100% concentricity.\n"
+                "4. **Lap Bolt Locking Lugs:** Apply 400-grit clover compound to bolt lug rear surfaces. Cycle bolt in receiver under light rearward spring pressure until **≥ 85% full contact** is established on both upper and lower lugs (verified with Dykem)."
+            )
+        else:
+            return (
+                "### Master Long Range & Rifle Accurizing Summary\n\n"
+                "* **Bedding:** Aluminum pillars + Devcon 10110; 55–65 in-lbs action screw torque; relieve front/sides of recoil lug.\n"
+                "* **Barrel Crown:** Recessed 11° target crown concentric to bore axis; zero burrs.\n"
+                "* **Seating Depth:** Measure CBTO, not COAL; test bullet jumps between 0.015\" and 0.040\".\n"
+                "* **Twist Stabilization:** Match barrel twist to projectile length ($S_g >= 1.5$)."
+            )
+
+    # =========================================================================
+    # SPECIALIZED DOMAIN 3: SUPPRESSORS, ACCESSORIES & TACTICAL HARDWARE
+    # =========================================================================
+    if any(k in q for k in ["suppressor", "silencer", "muzzle brake", "concentricity", "alignment rod", "m-lok", "mlok", "bipod", "weapon light", "laser", "ir designator", "peq", "sling"]):
+        if any(k in q for k in ["concentric", "alignment", "rod", "baffle", "strike"]):
+            return (
+                "### Suppressor Concentricity & Baffle Strike Prevention\n\n"
+                "* **The Golden Rule:** NEVER fire a newly mounted suppressor without first verifying bore-to-can concentricity with a **precision ground alignment rod** (Geissele, Huxwrx, or CNC tool steel rod).\n"
+                "* **Inspection Steps:**\n"
+                "  1. Mount suppressor and torque muzzle device or direct thread adapter to **25 to 30 ft-lbs**.\n"
+                "  2. Slide caliber-specific alignment rod down the bore from muzzle end.\n"
+                "  3. Check rod tip position at the suppressor front endcap. The rod must sit **dead center** in the aperture with equal circumferential clearance.\n"
+                "  4. If the rod touches or leans near the endcap edge: **DO NOT FIRE**. The barrel shoulder may lack squareness, or a crush washer was improperly used. Always use precision shims for muzzle devices on suppressor hosts—**NEVER use crush washers**!"
+            )
+        elif any(k in q for k in ["gas", "blowback", "tuning", "buffer", "charging handle"]):
+            return (
+                "### Suppressor Gas Mitigation & Recoil Tuning\n\n"
+                "* **Gas-in-the-Face Remedies:** Suppressors increase backpressure and bolt carrier velocity by 25–40%.\n"
+                "* **Three-Tier Tuning Protocol:**\n"
+                "  1. **Adjustable Gas Block (AGB):** Install a restrictive or bleed-off AGB (e.g. Superlative Arms). Tune until bolt reliably locks back on an empty magazine with weak training ammo, then add 1 click.\n"
+                "  2. **Buffer Mass:** Upgrade buffer from standard Carbine (3.0 oz) to **H2 (4.6 oz)** or **H3 (5.4 oz)** to delay carrier unlock timing and drop chamber residual pressure.\n"
+                "  3. **Gas Busting Charging Handle:** Install a silicone-sealed charging handle (e.g. Radian Raptor-SD, Geissele Airborne, or PRI Gas Buster) to deflect port gases away from the shooter's eyes."
+            )
+        elif any(k in q for k in ["m-lok", "mlok", "rail", "t-nut"]):
+            return (
+                "### M-LOK Handguard Accessory Mounting & Torque\n\n"
+                "* **T-Nut Geometry:** The M-LOK T-nut must be aligned parallel with the accessory slot, inserted through, and rotated exactly **90° perpendicular** across the slot lips as the screw tightens.\n"
+                "* **Torque Specifications:**\n"
+                "  * **Into Metal Handguard:** **35 in-lbs** maximum.\n"
+                "  * **Into Polymer Handguard / Stock:** **15 in-lbs** maximum (over-torquing will strip polymer shoulders).\n"
+                "* **Thread Prep:** Apply blue threadlocker (Loctite 242) to prevent vibration backing under sustained firing."
+            )
+        else:
+            return (
+                "### Masterclass: Tactical Accessories & Hardware Installation\n\n"
+                "* **Suppressor Concentricity:** Verify with alignment rod before live fire; use precision shims, NEVER crush washers.\n"
+                "* **Gas Mitigation:** AGB + H2/H3 buffer + gas-busting charging handle.\n"
+                "* **M-LOK Torque:** 35 in-lbs (metal) / 15 in-lbs (polymer) with 90° rotated T-nuts.\n"
+                "* **Weapon Lights / Lasers:** Torque 1913 crossbolts to 30 in-lbs; co-align slaved IR laser with visible laser at 50/100 yd."
+            )
+
+    # =========================================================================
+    # SPECIALIZED DOMAIN 4: BACKYARD SETUPS, HOME WORKBENCH & RANGE CRAFT
+    # =========================================================================
+    if any(k in q for k in ["backyard", "home bench", "bench setup", "vise", "soft jaws", "backstop", "berm", "bore sight", "boresight", "zeroing", "punch set", "tools", "screwdriver"]):
+        if any(k in q for k in ["backstop", "berm", "sandbag", "safety", "range", "yard"]):
+            return (
+                "### Safe Backyard Testing & Range Backstop Architecture\n\n"
+                "* **Berm Construction Standards (US Military Field Range Criteria):**\n"
+                "  * **Height & Depth:** Minimum **8 to 10 feet tall** with a **2:1 slope angle** and minimum 4-foot top crest thickness.\n"
+                "  * **Material:** Sifted earth, clean sand, or clay free of rocks, large gravel, or debris to eliminate ricochet hazard.\n"
+                "  * **Impact Box / Sand Trap:** Build a wooden cribbing box from treated 6x6 timbers or railroad ties packed with 3 feet of dry sand. Sand absorbs handgun, rifle, and shotgun impacts with zero splash-back.\n"
+                "* **Downrange Safety Margin:** Confirm a zero-occupancy safety fan downrange. Even a .22 LR travels up to 1.5 miles at high angles!\n"
+                "* **Sound Containment:** Line shooting bench sidewalls with acoustic baffling or dense horse stall rubber mats to reduce muzzle blast propagation to neighbors."
+            )
+        elif any(k in q for k in ["bench", "vise", "tool", "jaw", "reaction rod"]):
+            return (
+                "### The Master Armorer Home Workbench Setup\n\n"
+                "* **Workbench Construction:** Rigid 4x4 timber legs with double-layered 3/4\" Baltic birch or solid 2\" butcher block top. Bolt the bench to wall studs or floor to prevent flex during heavy barrel torquing (up to 80 ft-lbs).\n"
+                "* **Bench Vise & Non-Marring Jaws:** Mount a 5\" to 6\" heavy ductile iron vise (Wilton, Yost). Never clamp gun parts in bare steel jaws! Equip with:\n"
+                "  1. Polyurethane multi-groove soft jaws (holds barrels and round bolts without scratching).\n"
+                "  2. Brass / aluminum jaw caps.\n"
+                "  3. Thick saddle-leather jaw liners for delicate blued surfaces.\n"
+                "* **Essential Armorer Tool Arsenal:**\n"
+                "  * **Screwdrivers:** Hollow-ground parallel bits only (Brownells Magna-Tip). Hardware store wedge drivers will slip and destroy collector screw slots.\n"
+                "  * **Punches:** Hardened roll pin punches with hemispherical guide nits, roll pin starter punches, and brass drift punches.\n"
+                "  * **Torque Wrenches:** Wheeler FAT Wrench (10–65 in-lbs) + 1/2\" drive clicker torque wrench (20–150 ft-lbs).\n"
+                "  * **AR Barrel Work:** Always use a spline-engaging **Reaction Rod** (Geissele / Midwest Industries) that locks into barrel extension lugs, NOT an upper clamshell that can twist and shear the receiver indexing pin!"
+            )
+        elif any(k in q for k in ["bore sight", "boresight", "zero", "zeroing", "25"]):
+            return (
+                "### Backyard Bore Sighting & 25-to-100 Yard Zeroing Method\n\n"
+                "* **Visual Bore Sight (Bolt Actions & AR Platforms):**\n"
+                "  1. Secure weapon rock-solid in a bench rest or sandbag rest.\n"
+                "  2. Remove bolt (or separate AR upper and remove BCG).\n"
+                "  3. Look through the bore from the breech at a high-contrast target 25 yards away (e.g. a 2\" orange dot or building corner).\n"
+                "  4. Without moving the rifle, look through the optic and adjust windage/elevation turrets until crosshairs sit directly on the target center.\n"
+                "* **25-Yard Trajectory Math:**\n"
+                "  * **5.56 NATO / AR-15 (2.6\" Sight Height):** At 25 yards, point of impact should be **1.2 to 1.5 inches LOW** to achieve a combat zero at 50/200 yards or 36/300 yards.\n"
+                "  * **.308 Win / 6.5 CM (1.5\" Sight Height):** At 25 yards, point of impact should be **0.5 inches LOW** for a direct 100-yard center zero.\n"
+                "* This two-minute procedure guarantees your first shot is on paper at 100 yards without burning costly match ammunition!"
+            )
+        else:
+            return (
+                "### Master Home Armorer Workbench & Backyard Range Summary\n\n"
+                "* **Bench:** Rigid solid timber bench with 5\"–6\" vise and non-marring soft jaws (polyurethane/brass).\n"
+                "* **Tools:** Hollow-ground gunsmith screwdrivers; roll pin starters; Reaction Rod; in-lb torque wrench.\n"
+                "* **Bore Sighting:** Visual bore alignment at 25 yards guarantees first-shot paper hits at 100 yards.\n"
+                "* **Backyard Backstop:** Minimum 8–10 ft sifted dirt berm with 3-foot deep sand trap box."
+            )
     
     # 1. Glock Pistols Platform
     if "glock" in fid.lower():
@@ -672,23 +1127,37 @@ async def chat_handler(req: ChatRequest):
     specs_lines = [f"- {k.replace('_', ' ').title()}: {v}" for k, v in firearm_data.get('specs', {}).items()]
     specs_str = "\n".join(specs_lines) if specs_lines else "- Refer to factory armorer manuals in repository."
 
-    # Dynamic document sources
-    doc_sources = [m["title"] for m in firearm_data.get("manuals", [])[:2]]
-    if firearm_data.get("videos"):
-        doc_sources.append(firearm_data["videos"][0]["title"])
-    if not doc_sources:
-        doc_sources = [firearm_data.get("name", "Technical Dossier")]
+    # Retrieve grounded RAG technical manual citations
+    rag_prompt_block, rag_sources = rag_engine.get_grounding_prompt(user_query, req.firearm_id, top_k=3)
     
-    # System prompt injected with platform technical specifications
-    system_prompt = (
-        f"You are an expert master gunsmith and armorer assistant helping a technician service, repair, clean, "
-        f"troubleshoot, and maintain firearms. You have access to the complete workshop technical files for the "
-        f"{firearm_data['name']} ({firearm_data['subtitle']}).\n\n"
-        f"KEY WORKSHOP SPECIFICATIONS & TOLERANCES:\n"
-        f"{specs_str}\n\n"
-        f"Always provide precise, technical, armorer-level advice with safety warnings (e.g. spring safety, headspace limits, zero lubricant where prohibited, torque specs). "
-        f"Format your response with clear markdown headers, bold bullet points, and step-by-step procedures."
-    )
+    # Assemble comprehensive Master Armorer System Directive
+    base_master_prompt = build_master_armorer_system_prompt(firearm_data, specs_str)
+    system_prompt = f"{base_master_prompt}\n\n{rag_prompt_block}" if rag_prompt_block else base_master_prompt
+
+    # Dynamic document sources including deep manual RAG citations
+    doc_sources = []
+    if rag_sources:
+        for s in rag_sources:
+            doc_sources.append({
+                "title": s["title"],
+                "url": s["url"],
+                "type": "rag_citation",
+                "page": s["page"]
+            })
+    for m in firearm_data.get("manuals", [])[:2]:
+        doc_sources.append({
+            "title": m["title"],
+            "url": f"/api/manuals/{req.firearm_id}/{m['filename']}",
+            "type": "manual"
+        })
+    if firearm_data.get("videos"):
+        doc_sources.append({
+            "title": firearm_data["videos"][0]["title"],
+            "url": f"https://www.youtube.com/watch?v={firearm_data['videos'][0]['id']}",
+            "type": "video"
+        })
+    if not doc_sources:
+        doc_sources = [{"title": firearm_data.get("name", "Technical Dossier"), "url": "#", "type": "dossier"}]
 
     cfg = get_saved_config()
     backend = req.backend or cfg.get("backend", "auto")
@@ -777,7 +1246,7 @@ async def chat_handler(req: ChatRequest):
                 "stream": False,
                 "options": {"temperature": temp}
             }
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=45.0) as client:
                 resp = await client.post(f"{ep.rstrip('/')}/api/generate", json=payload)
                 if resp.status_code == 200:
                     ans = resp.json().get("response", "").strip()
@@ -820,6 +1289,11 @@ async def chat_handler(req: ChatRequest):
 
     # 5. Fallback to Built-in Expert Engine
     fallback_reply = generate_fallback_expert_response(user_query, firearm_data)
+    if rag_sources:
+        fallback_reply += "\n\n### 📖 Grounded Technical Manual References:\n"
+        for s in rag_sources:
+            fallback_reply += f"* **[{s['title']}]({s['url']})**\n"
+
     return JSONResponse({
         "reply": fallback_reply,
         "backend_used": "Built-in Armorer Knowledge Engine (Offline)",
@@ -828,10 +1302,12 @@ async def chat_handler(req: ChatRequest):
 
 @app.get("/api/search")
 async def search_repository(q: str = Query(..., min_length=2), firearm_id: str = "Lewis_Automatic_Machine_Gun"):
-    query = q.lower()
+    query = q.lower().strip()
+    raw_tokens = [t for t in query.replace("-", " ").replace("/", " ").replace(".", "").split() if len(t) > 0]
     results = []
+    platform_matches = []
 
-    # 1. Search Across All Firearms / Manufacturers / Models / Key Tasks
+    # 1. Search Across All Firearms / Manufacturers / Models / Key Tasks with Token Scoring
     for fid, meta in FIREARMS_METADATA.items():
         fname = meta.get("name", "").lower()
         mfg = meta.get("manufacturer", "").lower()
@@ -840,17 +1316,40 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
         calibers = [c.lower() for c in meta.get("calibers", [])]
         key_tasks = [t.lower() for t in meta.get("key_tasks", [])]
         specs_blob = " ".join(str(v).lower() for v in meta.get("specs", {}).values())
+
+        searchable_blob = f"{fname} {mfg} {sub} {' '.join(models)} {' '.join(calibers)} {' '.join(key_tasks)} {specs_blob}".replace("-", " ").replace("/", " ").replace(".", "")
+
+        score = 0
+        if query in fname or query in searchable_blob:
+            score += 100
         
-        if (query in fname or query in mfg or query in sub or 
-            any(query in m for m in models) or any(query in c for c in calibers) or
-            any(query in t for t in key_tasks) or query in specs_blob):
-            results.append({
-                "type": "firearm",
-                "title": f"🔫 Switch to: {meta.get('name')}",
-                "subtitle": f"{meta.get('manufacturer')} • {meta.get('category')}",
-                "action": "switch_firearm",
-                "target": fid
+        # Check token coverage (e.g. ['glock', '17', 'gen', '4'])
+        matched_tokens = [t for t in raw_tokens if t in searchable_blob]
+        if raw_tokens and len(matched_tokens) == len(raw_tokens):
+            score += 80 + len(matched_tokens) * 5
+        elif raw_tokens and len(matched_tokens) >= max(1, len(raw_tokens) - 1):
+            score += 40 + len(matched_tokens) * 5
+
+        # Extra weight if specific model token matches model list
+        for m in models:
+            m_clean = m.replace("-", " ")
+            if any(t in m_clean for t in raw_tokens if len(t) > 1):
+                score += 25
+
+        if score > 0:
+            platform_matches.append({
+                "score": score,
+                "item": {
+                    "type": "firearm",
+                    "title": f"🔫 Switch Bench to: {meta.get('name')}",
+                    "subtitle": f"{meta.get('manufacturer')} • {meta.get('subtitle') or meta.get('category')}",
+                    "action": "switch_firearm",
+                    "target": fid
+                }
             })
+
+    platform_matches.sort(key=lambda x: x["score"], reverse=True)
+    results.extend([pm["item"] for pm in platform_matches])
 
     # 2. Search active firearm technical data
     data = load_firearm_data(firearm_id)
@@ -900,6 +1399,69 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
             })
 
     return {"results": results}
+
+@app.get("/api/rag/search")
+async def rag_search_endpoint(q: str = Query(..., min_length=2), firearm_id: Optional[str] = None, limit: int = 5):
+    """Deep search across all 80 indexed armorer manuals and technical dossiers."""
+    results = rag_engine.search(q, firearm_id=firearm_id, top_k=limit)
+    return {"query": q, "firearm_id": firearm_id, "results": results}
+
+@app.get("/api/video/samples")
+async def get_video_samples():
+    """Returns available malfunction test cases for visual diagnostic simulation."""
+    return {"samples": list(SAMPLE_CASES.values())}
+
+@app.post("/api/video/analyze")
+async def analyze_video_endpoint(
+    request: Request,
+    file: Optional[UploadFile] = File(None),
+    firearm_id: Optional[str] = Form(None),
+    sample_id: Optional[str] = Form(None),
+    user_notes: Optional[str] = Form(None)
+):
+    target_fid = firearm_id
+    target_sample = sample_id
+    target_notes = user_notes or ""
+
+    # Check if request is JSON body
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            body = await request.json()
+            target_fid = body.get("firearm_id") or target_fid
+            target_sample = body.get("sample_id") or target_sample
+            target_notes = body.get("user_notes") or target_notes
+        except Exception:
+            pass
+
+    target_fid = target_fid or "AR15_M4_Platform"
+    cfg = get_saved_config()
+    video_path = None
+
+    if file and file.filename:
+        ext = Path(file.filename).suffix or ".mp4"
+        video_path = UPLOAD_DIR / f"upload_{os.urandom(6).hex()}{ext}"
+        contents = await file.read()
+        with open(video_path, "wb") as f:
+            f.write(contents)
+
+    try:
+        report = await analyze_malfunction_video(
+            firearm_id=target_fid,
+            video_path=video_path,
+            sample_id=target_sample,
+            user_notes=target_notes,
+            cfg=cfg
+        )
+        return {"status": "ok", "report": report}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Video analysis error: {str(e)}")
+    finally:
+        if video_path and video_path.exists():
+            try:
+                video_path.unlink()
+            except Exception:
+                pass
 
 @app.get("/api/parts/{firearm_id}")
 async def get_parts(firearm_id: str):

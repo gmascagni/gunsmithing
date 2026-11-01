@@ -154,6 +154,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Factory_Armorers_Manual.pdf",
         "local_url": "/api/manuals/Glock_Pistols/Glock_Factory_Armorers_Manual.pdf"
+      },
+      {
+        "id": "Glock_Gen_4_Armorer_Manual_Update.pdf",
+        "title": "Glock Gen 4 Armorer Manual Update",
+        "filename": "Glock_Gen_4_Armorer_Manual_Update.pdf",
+        "size_mb": 3.62,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Gen_4_Armorer_Manual_Update.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Glock_Pistols/manuals/Glock_Gen_4_Armorer_Manual_Update.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Glock_Pistols/manuals/Glock_Gen_4_Armorer_Manual_Update.pdf",
+        "local_url": "/api/manuals/Glock_Pistols/Glock_Gen_4_Armorer_Manual_Update.pdf"
       }
     ],
     "schematics": [
@@ -1651,6 +1661,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P365_Pistols/manuals/Armorer_Technical_Manual_Sig_P365_Pistols.pdf",
         "local_url": "/api/manuals/Sig_P365_Pistols/Armorer_Technical_Manual_Sig_P365_Pistols.pdf"
+      },
+      {
+        "id": "Sig_Sauer_P365_Armorer_Manual.pdf",
+        "title": "Sig Sauer P365 Armorer Manual",
+        "filename": "Sig_Sauer_P365_Armorer_Manual.pdf",
+        "size_mb": 9.95,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P365_Pistols/manuals/Sig_Sauer_P365_Armorer_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P365_Pistols/manuals/Sig_Sauer_P365_Armorer_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P365_Pistols/manuals/Sig_Sauer_P365_Armorer_Manual.pdf",
+        "local_url": "/api/manuals/Sig_P365_Pistols/Sig_Sauer_P365_Armorer_Manual.pdf"
       }
     ],
     "schematics": []
@@ -1750,6 +1770,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P320_M17_Pistols/manuals/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf",
         "local_url": "/api/manuals/Sig_P320_M17_Pistols/Armorer_Technical_Manual_Sig_P320_M17_Pistols.pdf"
+      },
+      {
+        "id": "Sig_M17_M18_US_Service_Evaluation_Manual.pdf",
+        "title": "Sig M17 M18 US Service Evaluation Manual",
+        "filename": "Sig_M17_M18_US_Service_Evaluation_Manual.pdf",
+        "size_mb": 9.31,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P320_M17_Pistols/manuals/Sig_M17_M18_US_Service_Evaluation_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Sig_P320_M17_Pistols/manuals/Sig_M17_M18_US_Service_Evaluation_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Sig_P320_M17_Pistols/manuals/Sig_M17_M18_US_Service_Evaluation_Manual.pdf",
+        "local_url": "/api/manuals/Sig_P320_M17_Pistols/Sig_M17_M18_US_Service_Evaluation_Manual.pdf"
       }
     ],
     "schematics": []
@@ -4167,6 +4197,26 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/Armorer_Technical_Manual_AR15_M4_Platform.pdf",
         "local_url": "/api/manuals/AR15_M4_Platform/Armorer_Technical_Manual_AR15_M4_Platform.pdf"
+      },
+      {
+        "id": "TM_9_1005_319_10_M16_M4_Operators_Manual.pdf",
+        "title": "TM 9 1005 319 10 M16 M4 Operators Manual",
+        "filename": "TM_9_1005_319_10_M16_M4_Operators_Manual.pdf",
+        "size_mb": 2.82,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/TM_9_1005_319_10_M16_M4_Operators_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AR15_M4_Platform/manuals/TM_9_1005_319_10_M16_M4_Operators_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/TM_9_1005_319_10_M16_M4_Operators_Manual.pdf",
+        "local_url": "/api/manuals/AR15_M4_Platform/TM_9_1005_319_10_M16_M4_Operators_Manual.pdf"
+      },
+      {
+        "id": "TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf",
+        "title": "TM 9 1005 319 23 M16A2 M4 Field Maintenance",
+        "filename": "TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf",
+        "size_mb": 2.52,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/AR15_M4_Platform/manuals/TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/AR15_M4_Platform/manuals/TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf",
+        "local_url": "/api/manuals/AR15_M4_Platform/TM_9_1005_319_23_M16A2_M4_Field_Maintenance.pdf"
       }
     ],
     "schematics": []
@@ -4427,6 +4477,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "local_url": "/api/manuals/Ruger_1022_Carbine/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf"
+      },
+      {
+        "id": "Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf",
+        "title": "Ruger 1022 Autoloading Rifle Armorer Manual",
+        "filename": "Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf",
+        "size_mb": 2.13,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_1022_Carbine/manuals/Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf",
+        "local_url": "/api/manuals/Ruger_1022_Carbine/Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf"
       }
     ],
     "schematics": []
@@ -5711,6 +5771,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mossberg_500_590_Shotgun/manuals/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf",
         "local_url": "/api/manuals/Mossberg_500_590_Shotgun/Armorer_Technical_Manual_Mossberg_500_590_Shotgun.pdf"
+      },
+      {
+        "id": "Mossberg_500_590_Military_Police_Manual.pdf",
+        "title": "Mossberg 500 590 Military Police Manual",
+        "filename": "Mossberg_500_590_Military_Police_Manual.pdf",
+        "size_mb": 2.73,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mossberg_500_590_Shotgun/manuals/Mossberg_500_590_Military_Police_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Mossberg_500_590_Shotgun/manuals/Mossberg_500_590_Military_Police_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Mossberg_500_590_Shotgun/manuals/Mossberg_500_590_Military_Police_Manual.pdf",
+        "local_url": "/api/manuals/Mossberg_500_590_Shotgun/Mossberg_500_590_Military_Police_Manual.pdf"
       }
     ],
     "schematics": []
@@ -5789,6 +5859,16 @@ window.STATIC_FIREARMS_DATA = {
         "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
         "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Benelli_M4_Shotgun/manuals/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf",
         "local_url": "/api/manuals/Benelli_M4_Shotgun/Armorer_Technical_Manual_Benelli_M4_Shotgun.pdf"
+      },
+      {
+        "id": "Benelli_M4_USMC_Technical_Manual.pdf",
+        "title": "Benelli M4 USMC Technical Manual",
+        "filename": "Benelli_M4_USMC_Technical_Manual.pdf",
+        "size_mb": 6.59,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Benelli_M4_Shotgun/manuals/Benelli_M4_USMC_Technical_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Benelli_M4_Shotgun/manuals/Benelli_M4_USMC_Technical_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Benelli_M4_Shotgun/manuals/Benelli_M4_USMC_Technical_Manual.pdf",
+        "local_url": "/api/manuals/Benelli_M4_Shotgun/Benelli_M4_USMC_Technical_Manual.pdf"
       }
     ],
     "schematics": []

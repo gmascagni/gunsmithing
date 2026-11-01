@@ -34,13 +34,21 @@
       </div>
     </div>
 
-    <!-- Global Live Search -->
+    <!-- Global Live Search with Action Button & Keyboard Enter Support -->
     <div class="header-search">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/>
         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" id="globalSearchInput" placeholder="Search manuals, stoppages, specs, repairs, schematics..." autocomplete="off">
+      <input type="text" id="globalSearchInput" placeholder="Search gun, model (e.g. Glock 17 Gen 4), manual, spec..." autocomplete="off">
+      <button type="button" id="btnGlobalSearchClear" class="search-clear-btn hidden" title="Clear Search">✕</button>
+      <button type="button" id="btnGlobalSearch" class="search-submit-btn" title="Search Armory Catalog (Press Enter)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span>Search</span>
+      </button>
       <div id="searchResultsPopup" class="search-popup hidden"></div>
     </div>
 
@@ -420,34 +428,193 @@
           </div>
         </div>
 
-        <!-- 3. Video Workshop Stage -->
+        <!-- 3. Video Workshop Stage & AI Malfunction Lab -->
         <div id="videoStage" class="stage hidden">
-          <div class="video-container">
-            <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-            <div id="videoPlaceholderBanner" class="video-placeholder-banner hidden">
-              <div class="video-banner-icon">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          <!-- Video Sub-Navigation Bar -->
+          <div class="video-subnav-bar">
+            <button id="btnSubnavCurated" class="video-subnav-btn active" title="Curated YouTube Disassembly & Servicing Guides">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <span>Curated Guides</span>
+            </button>
+            <button id="btnSubnavDiagnostics" class="video-subnav-btn diagnostics-tab-btn" title="AI Video Malfunction Diagnostics: Upload Stoppage Clip for Frame-by-Frame AI Analysis">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/></svg>
+              <span>📹 AI Malfunction Video Lab</span>
+              <span class="video-ai-badge">VISION AI</span>
+            </button>
+          </div>
+
+          <!-- View A: Curated YouTube Guides -->
+          <div id="videoCuratedView" class="video-subview">
+            <div class="video-container">
+              <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              <div id="videoPlaceholderBanner" class="video-placeholder-banner hidden">
+                <div class="video-banner-icon">
+                  <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </div>
+                <h4 id="videoBannerTitle">Armorer Reference Guide</h4>
+                <p id="videoBannerDesc">Curated technical workshop procedure. Watch directly on YouTube via the launch button below.</p>
+                <a id="btnBannerWatch" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn primary">
+                  <span>Launch Video on YouTube ↗</span>
+                </a>
               </div>
-              <h4 id="videoBannerTitle">Armorer Reference Guide</h4>
-              <p id="videoBannerDesc">Curated technical workshop procedure. Watch directly on YouTube via the launch button below.</p>
-              <a id="btnBannerWatch" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn primary">
-                <span>Launch Video on YouTube ↗</span>
-              </a>
+            </div>
+            <div class="video-meta-box" id="videoMetaBox">
+              <h3 id="videoMetaTitle">Video Title</h3>
+              <div class="video-meta-creator" id="videoMetaCreator">Creator</div>
+              <p id="videoMetaSummary" class="video-meta-summary">Summary of the procedure.</p>
+              <div class="video-actions-bar">
+                <a id="btnWatchOnYouTube" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn primary">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  <span>Watch Directly on YouTube</span>
+                </a>
+                <a id="btnSearchYouTubeAlternative" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn secondary">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span>Search YouTube for Workshop Guides</span>
+                </a>
+              </div>
             </div>
           </div>
-          <div class="video-meta-box" id="videoMetaBox">
-            <h3 id="videoMetaTitle">Video Title</h3>
-            <div class="video-meta-creator" id="videoMetaCreator">Creator</div>
-            <p id="videoMetaSummary" class="video-meta-summary">Summary of the procedure.</p>
-            <div class="video-actions-bar">
-              <a id="btnWatchOnYouTube" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn primary">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                <span>Watch Directly on YouTube</span>
-              </a>
-              <a id="btnSearchYouTubeAlternative" href="#" target="_blank" rel="noopener noreferrer" class="video-action-btn secondary">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <span>Search YouTube for Workshop Guides</span>
-              </a>
+
+          <!-- View B: AI Malfunction Diagnostics Lab -->
+          <div id="videoDiagnosticsView" class="video-subview hidden">
+            <div class="diag-header-banner">
+              <div class="diag-banner-text">
+                <h3>📹 Master Armorer Video Malfunction Diagnostics Lab</h3>
+                <p>Upload a slow-motion or field video clip of a stoppage, or run an authentic simulation. The Multimodal Vision AI decomposes the mechanical cycle of operations, identifies component failures, and formulates a gunsmith repair plan grounded in technical manuals.</p>
+              </div>
+            </div>
+
+            <!-- Pre-loaded Simulation Selector -->
+            <div class="diag-sim-section">
+              <div class="diag-section-label">⚡ INSTANT MALFUNCTION BENCHMARK SIMULATION:</div>
+              <div class="diag-chips-grid">
+                <button class="diag-chip-btn" data-sample="ar15_double_feed">
+                  <span class="chip-icon">🛑</span>
+                  <div class="chip-info">
+                    <span class="chip-title">AR-15 / M4: Double Feed Wedge</span>
+                    <span class="chip-sub">Type 3 Stoppage • Extraction Failure</span>
+                  </div>
+                </button>
+                <button class="diag-chip-btn" data-sample="glock_stovepipe">
+                  <span class="chip-icon">⚠️</span>
+                  <div class="chip-info">
+                    <span class="chip-title">Glock 19: Stovepipe / FTE</span>
+                    <span class="chip-sub">Type 2 Stoppage • Ejection Angle</span>
+                  </div>
+                </button>
+                <button class="diag-chip-btn" data-sample="benelli_out_of_battery">
+                  <span class="chip-icon">⚙️</span>
+                  <div class="chip-info">
+                    <span class="chip-title">Benelli M4: Out-of-Battery</span>
+                    <span class="chip-sub">Type 4 Stoppage • ARGO Gas Deficit</span>
+                  </div>
+                </button>
+                <button class="diag-chip-btn" data-sample="sig_p320_slide_lock_failure">
+                  <span class="chip-icon">🔄</span>
+                  <div class="chip-info">
+                    <span class="chip-title">Sig P320: Hold-Open Failure</span>
+                    <span class="chip-sub">Phase 8 • Slide Catch Over-Travel</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload Dropzone & Controls -->
+            <div class="diag-upload-section">
+              <div id="diagDropzone" class="diag-dropzone">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="dropzone-text">
+                  <span class="primary-text">Drag &amp; drop video here, or <span class="browse-link">browse files</span></span>
+                  <span class="sub-text">Supports .mp4, .mov, .webm, .avi • High-speed / slow-motion 60–240fps recommended</span>
+                </div>
+                <input type="file" id="diagFileInput" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/*" capture="environment" class="hidden">
+              </div>
+
+              <div class="diag-inputs-row">
+                <input type="text" id="diagUserNotes" class="diag-notes-input" placeholder="Operator notes (e.g. Failure occurred after 150 rounds, using steel case ammo, extractor feels loose)...">
+                <button id="btnRunVideoAnalysis" class="diag-analyze-btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                  <span>Analyze Malfunction</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Analysis Status / Spinner -->
+            <div id="diagLoadingSpinner" class="diag-loading-box hidden">
+              <div class="spinner"></div>
+              <div class="diag-loading-msg">
+                <h4>Decomposing Video Frame-by-Frame...</h4>
+                <p id="diagLoadingText">Extracting temporal cycles via ffmpeg • Computing motion vectors • Cross-referencing armorer manuals</p>
+              </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="diagResultsContainer" class="diag-results-box hidden">
+              <!-- Frame Timeline Strip -->
+              <div class="diag-frames-section">
+                <div class="diag-section-label">🎞️ EXTRACTED TEMPORAL DIAGNOSTIC FRAMES (FFMPEG):</div>
+                <div id="diagFramesStrip" class="diag-frames-strip">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </div>
+
+              <!-- Malfunction Report Card -->
+              <div class="diag-report-card" id="diagReportCard">
+                <div class="report-header">
+                  <div class="report-badge-row">
+                    <span id="reportStoppageBadge" class="report-stoppage-badge">🛑 TYPE 3: FAILURE TO EXTRACT</span>
+                    <span id="reportEngineBadge" class="report-engine-badge">Multimodal Vision AI</span>
+                  </div>
+                  <h3 id="reportTitle" class="report-title">Malfunction Title</h3>
+                  <div class="report-phase" id="reportPhase">Cycle of Operations Phase: Extraction</div>
+                </div>
+
+                <div class="report-body">
+                  <!-- Visual Observation -->
+                  <div class="report-block">
+                    <div class="report-block-title">👁️ OPTICAL OBSERVATION / SENSOR READOUT:</div>
+                    <p id="reportSymptom" class="report-symptom-text">Observation text</p>
+                  </div>
+
+                  <!-- Root Causes -->
+                  <div class="report-block">
+                    <div class="report-block-title">🔍 PROBABLE ROOT CAUSES (ORDERED BY ARMORER FREQUENCY):</div>
+                    <ul id="reportCausesList" class="report-list"></ul>
+                  </div>
+
+                  <!-- Immediate Action Drill -->
+                  <div class="report-block alert-box">
+                    <div class="report-block-title">⚡ IMMEDIATE ACTION CLEARING DRILL:</div>
+                    <p id="reportImmediateAction" class="report-action-text"></p>
+                  </div>
+
+                  <!-- Armorer Repair Plan -->
+                  <div class="report-block">
+                    <div class="report-block-title">🔧 STEP-BY-STEP GUNSMITH REPAIR PROCEDURE:</div>
+                    <ol id="reportChecklist" class="report-numbered-list"></ol>
+                  </div>
+
+                  <!-- Critical Parts & Tolerances -->
+                  <div class="report-block">
+                    <div class="report-block-title">📐 CRITICAL COMPONENTS TO INSPECT / REPLACE:</div>
+                    <div id="reportPartsGrid" class="report-parts-grid"></div>
+                  </div>
+
+                  <!-- Deep Manual Grounding Citations -->
+                  <div class="report-block citations-block">
+                    <div class="report-block-title">📚 GROUNDED TECHNICAL MANUAL REFERENCES (RAG):</div>
+                    <div id="reportCitationsList" class="report-citations-pills"></div>
+                  </div>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="report-footer">
+                  <button id="btnConsultAssistantOnVideo" class="report-consult-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Consult Master Armorer Assistant on This Malfunction</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -538,7 +705,43 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <h3>ARMORER ASSISTANT</h3>
         </div>
-        <button id="clearChatBtn" class="clear-btn" title="Clear Conversation">Clear</button>
+        <div class="assistant-header-actions">
+          <div class="local-llm-control-wrap">
+            <button id="btnStartLocalLLM" class="btn-start-local-llm" title="Start / Switch Local LLM AI (Ollama / Local Engine)">
+              <span class="llm-indicator-dot offline" id="llmAssistantDot"></span>
+              <span class="llm-power-icon" id="llmPowerIcon">⚡</span>
+              <span id="btnStartLocalLLMText">Start Local AI</span>
+              <span class="llm-dropdown-chevron">▾</span>
+            </button>
+            <!-- Quick Popover for Local AI Control -->
+            <div id="localLLMPopover" class="local-llm-popover hidden">
+              <div class="llm-popover-header">
+                <div class="popover-status-badge">
+                  <span class="status-indicator-dot" id="popoverStatusDot"></span>
+                  <span id="popoverStatusTitle">Local AI Engine</span>
+                </div>
+                <span id="popoverEndpoint" class="popover-endpoint">http://127.0.0.1:11434</span>
+              </div>
+              <div class="llm-popover-body">
+                <label for="popoverModelSelect" class="popover-label">ACTIVE LOCAL MODEL:</label>
+                <select id="popoverModelSelect" class="popover-model-select"></select>
+                <div class="popover-stats" id="popoverStats">
+                  <span>Engine: <strong id="popoverEngineName">Ollama Local</strong></span>
+                  <span id="popoverModelVram" class="popover-vram-pill">100% GPU</span>
+                </div>
+              </div>
+              <div class="llm-popover-actions">
+                <button id="btnPopoverStartStop" class="popover-btn primary" title="Start or Stop Local AI">
+                  ⚡ Start Local AI
+                </button>
+                <button id="btnPopoverConfig" class="popover-btn" title="Open Full AI Settings Modal">
+                  ⚙️ Settings
+                </button>
+              </div>
+            </div>
+          </div>
+          <button id="clearChatBtn" class="clear-btn" title="Clear Conversation">Clear</button>
+        </div>
       </div>
 
       <!-- Quick Prompt Suggestions -->
