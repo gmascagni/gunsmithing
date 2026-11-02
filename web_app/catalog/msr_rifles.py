@@ -199,6 +199,36 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                     "Wax and carbon buildup inside bolt extractor pocket."
                 ],
                 "action": "Gunsmith Action: Install Volquartsen Exact Edge tool-steel wire-EDM sharp extractor and heavy spring. Clean bolt face extractor pocket. Disassemble 10-round rotary magazine and retension rotor spring to 1-1/4 turns."
+            },
+            {
+                "position": "Stoppage 2: Failure to Extract (FTE) / Rim Sheared in Chamber",
+                "short_desc": "Fired casing remains jammed in chamber; extractor claw slips off or tears through copper rim",
+                "causes": [
+                    "Heavy carbon ring build-up directly ahead of chamber mouth from high round counts.",
+                    "Extractor plunger spring bound by powder fouling or grease.",
+                    "Rough or burred chamber walls from dry firing without snap caps (firing pin peening chamber mouth)."
+                ],
+                "action": "Gunsmith Action: Use bronze chamber brush with carbon remover; iron out firing pin chamber peening with Menck chamber iron tool; detail strip bolt and inspect extractor hook sharpness."
+            },
+            {
+                "position": "Stoppage 3: Light Primer Strike / Misfire",
+                "short_desc": "Hammer drops with audible click but cartridge does not fire; shallow firing pin indentation on rim",
+                "causes": [
+                    "Firing pin rebound spring packed with bullet wax / lube fouling.",
+                    "Bolt not in full battery due to barrel V-block overtightening causing barrel droop.",
+                    "Excessive headspace gap between bolt face rim recess (>0.0435 in) and cartridge rim."
+                ],
+                "action": "Gunsmith Action: Clean firing pin tunnel dry (do not oil); verify bolt closes fully against barrel shoulder; gauge bolt rim recess depth with depth micrometer."
+            },
+            {
+                "position": "Stoppage 4: Magazine Feeding Failure / Cartridge Nose-Dive",
+                "short_desc": "Round jams against lower feed ramp or nose dives into front magazine lip",
+                "causes": [
+                    "Rotary magazine clock spring lost pre-load tension (backing out from factory 1-1/4 turns).",
+                    "Wax build-up on metal feed lips of the BX-1 magazine.",
+                    "Magazine release plunger spring binding."
+                ],
+                "action": "Gunsmith Action: Disassemble 10/22 rotary magazine, degrease rotor and hex nut, pre-tension rotor spring 1-1/4 turns (450 deg) counter-clockwise and tighten central hex nut."
             }
         ],
         "videos": [
@@ -210,6 +240,24 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                 "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
                 "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
                 "summary": "Teardown of the Ruger 10/22 action: V-block removal, bolt disassembly, auto-bolt release modification, and installing the BX trigger."
+            },
+            {
+                "id": "r81022rotary",
+                "title": "10/22 Rotary Magazine Teardown, Cleaning & Spring Tensioning",
+                "creator": "MidwayUSA Gunsmithing",
+                "category": "Magazine Rebuild",
+                "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+rotary+magazine+rebuild+spring+tension+1-1%2F4+turns+gunsmithing",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+rotary+magazine+rebuild+spring+tension+1-1%2F4+turns+gunsmithing",
+                "summary": "Step-by-step disassembly and clock spring winding of the classic Ruger BX-1 rotary magazine to eliminate feeding jams."
+            },
+            {
+                "id": "r81022vblock",
+                "title": "10/22 Barrel V-Block Torque, Bedding & Anti-Droop Tuning",
+                "creator": "Tactical Armorer Bench",
+                "category": "Barrel & Action Tuning",
+                "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+barrel+v+block+torque+in+lbs+bedding+gunsmithing",
+                "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+barrel+v+block+torque+in+lbs+bedding+gunsmithing",
+                "summary": "Correct 10-15 in-lb alternating torquing sequence for the barrel V-block clamp to prevent receiver stripping and barrel droop."
             }
         ]
     },

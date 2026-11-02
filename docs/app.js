@@ -1136,8 +1136,27 @@ function renderQRCode() {
 // Load Firearm Data
 async function loadFirearm(firearmId) {
   try {
+    if (!firearmId) firearmId = "Lewis_Automatic_Machine_Gun";
+    // Normalize aliases for Ruger and common variants
+    if (firearmId === "Ruger_Firearms" || firearmId === "Ruger_10_22" || firearmId === "ruger_10_22" || firearmId === "1022" || firearmId === "10/22") {
+      firearmId = "Ruger_1022_Carbine";
+    }
+
     if (window.STATIC_FIREARMS_DATA && window.STATIC_FIREARMS_DATA[firearmId]) {
       firearmData = window.STATIC_FIREARMS_DATA[firearmId];
+    } else if (window.STATIC_FIREARMS_DATA && Object.keys(window.STATIC_FIREARMS_DATA).length > 0) {
+      // Find case-insensitive or partial match in static data
+      const matchKey = Object.keys(window.STATIC_FIREARMS_DATA).find(
+        k => k.toLowerCase() === firearmId.toLowerCase() || k.toLowerCase().includes(firearmId.toLowerCase())
+      );
+      if (matchKey) {
+        firearmId = matchKey;
+        firearmData = window.STATIC_FIREARMS_DATA[matchKey];
+      } else {
+        const res = await fetch(`/api/firearms/${firearmId}`);
+        if (!res.ok) throw new Error("Failed to load firearm data");
+        firearmData = await res.json();
+      }
     } else {
       const res = await fetch(`/api/firearms/${firearmId}`);
       if (!res.ok) throw new Error("Failed to load firearm data");
@@ -1542,6 +1561,7 @@ function resetCatalogFilters() {
 async function selectFirearmFromCatalog(firearmId) {
   const changed = firearmId !== currentFirearm;
   currentFirearm = firearmId;
+  resetSidebarFilters();
   if (changed || !firearmData || (manualsListView && manualsListView.children.length === 0)) {
     await loadFirearm(currentFirearm);
     if (changed && firearmData) {
@@ -1609,22 +1629,40 @@ function renderCatalogGrid(query = "", filterMfg = "all", filterCat = "all", fil
         videos_count: 8
       },
       {
-        id: "Ruger_Firearms",
-        name: "Ruger Firearms Technical Collection",
-        subtitle: "10/22 Carbine, Mark I–IV Target Pistols & GP100 Revolvers",
+        id: "Ruger_1022_Carbine",
+        name: "Ruger 10/22 Carbine & Takedown",
+        subtitle: "The World's Most Popular Semi-Automatic Rimfire Rifle (.22 LR)",
         manufacturer: "Ruger",
-        category: "Rifles / Pistols / Revolvers",
-        action_type: "Blowback Semi-Auto & DA Revolver",
-        operating_actions: ["Blowback Semi-Auto", "Double-Action Revolver", "DA Revolver", "Rimfire Semi-Auto"],
-        types: ["Rifles", "Pistols", "Revolvers", "Carbines"],
-        caliber_categories: [".22 LR", ".357 Magnum", ".38 Special", "Rimfire", "Revolver Calibers"],
-        era: "Sporting, Target & Defense (1949–Present)",
-        models: ["10/22 Carbine", "Mark I", "Mark II", "Mark III", "Mark IV", "GP100 Revolver"],
-        calibers: [".22 LR", ".357 Magnum", ".38 Special"],
-        key_tasks: ["10/22 V-Block Torque (25-30 in-lbs)", "Rotary Mag Tension (1-1/4 turns)", "Mark Series Hammer Strut Alignment", "GP100 Cylinder Gap (0.004\"-0.007\")", "Trigger Shimming"],
+        category: "Rifles & Carbines",
+        action_type: "Blowback Semi-Automatic Rimfire",
+        operating_actions: ["Blowback Semi-Auto", "Detachable Rotary Magazine", "V-Block Barrel Clamp"],
+        types: ["Rifles", "Carbines", "Rimfire Benchmark"],
+        caliber_categories: [".22 LR", "Rimfire"],
+        era: "American Rimfire Legend (1964–Present)",
+        models: ["10/22 Carbine", "10/22 Takedown", "10/22 Target", "10/22 Sporter", "Charger Pistol"],
+        calibers: [".22 LR (Long Rifle)"],
+        key_tasks: ["V-Block Clamp Torque (10–15 in-lbs)", "Rotary Magazine Pre-Tensioning (1-1/4 turns)", "Action Takedown Screw Torque (20 in-lbs)", "Auto-Bolt Release Modification"],
         manuals_count: 3,
-        schematics_count: 51,
-        videos_count: 9
+        schematics_count: 22,
+        videos_count: 3
+      },
+      {
+        id: "AR15_M4_Platform",
+        name: "AR-15 / M4 Carbine Platform",
+        subtitle: "Direct Impingement Semi-Automatic & Select-Fire (5.56x45mm / .223 Rem)",
+        manufacturer: "Colt / Eugene Stoner / Various",
+        category: "Rifles & Carbines",
+        action_type: "Direct Impingement Gas-Operated (Rotating Bolt)",
+        operating_actions: ["Direct Impingement", "Gas-Operated", "Rotating Bolt", "Semi-Auto"],
+        types: ["Rifles", "Carbines", "MSR"],
+        caliber_categories: ["5.56x45mm", ".223 Rem", "Rifle Calibers"],
+        era: "Modern Military & Defensive (1959–Present)",
+        models: ["AR-15", "M4 Carbine", "M16A1", "M16A2", "M16A4"],
+        calibers: ["5.56x45mm NATO", ".223 Remington"],
+        key_tasks: ["Carrier Key Torque & Staking (50-58 in-lbs)", "Castle Nut Staking (38-42 ft-lbs)", "Headspace Verification", "Gas Ring Staggering"],
+        manuals_count: 6,
+        schematics_count: 48,
+        videos_count: 6
       },
       {
         id: "Beretta_Pistols",
@@ -2227,7 +2265,7 @@ function selectManual(filename, title, switchToPreview = true, page = 1) {
   if (currentPreviewMode === "split") {
     const sTitle = schematicPlateSelect?.options[schematicPlateSelect.selectedIndex]?.text || "Schematic";
     previewTitle.textContent = `Bench Split: ${sTitle} | ${title}`;
-  } else {
+  } else if (switchToPreview || currentPreviewMode === "pdf" || !currentPreviewMode) {
     previewTitle.textContent = title;
     switchPreviewMode("pdf");
   }
@@ -2273,7 +2311,7 @@ function selectSchematic(url, title, switchToPreview = true) {
   if (currentPreviewMode === "split") {
     const mTitle = pdfDocName ? pdfDocName.textContent : "Technical Manual";
     previewTitle.textContent = `Bench Split: ${title} | ${mTitle}`;
-  } else {
+  } else if (switchToPreview || currentPreviewMode === "schematic") {
     previewTitle.textContent = "Schematic: " + title;
     switchPreviewMode("schematic");
   }

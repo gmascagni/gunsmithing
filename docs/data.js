@@ -3497,6 +3497,17 @@ window.STATIC_FIREARMS_DATA = {
     ],
     "manuals": [
       {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "title": "Ruger Mark I Standard Pistol Manual",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "size_mb": 1.58,
+        "is_summary": false,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Mark_Series/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/manuals/Ruger_Mark_I_Standard_Pistol_Manual.pdf",
+        "local_url": "/api/manuals/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual.pdf"
+      },
+      {
         "id": "Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
         "title": "Armorer Technical Manual Ruger Mark Series",
         "filename": "Armorer_Technical_Manual_Ruger_Mark_Series.pdf",
@@ -3508,7 +3519,85 @@ window.STATIC_FIREARMS_DATA = {
         "local_url": "/api/manuals/Ruger_Mark_Series/Armorer_Technical_Manual_Ruger_Mark_Series.pdf"
       }
     ],
-    "schematics": []
+    "schematics": [
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p001_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p001 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p001_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p001_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p001_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p002_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p002 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p002_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p002_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p002_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p003_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p003 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p003_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p003_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p003_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p004_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p004 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p004_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p004_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p004_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p005_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p005 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p005_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p005_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p005_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p006_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p006 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p006_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p006_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p006_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p007_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p007 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p007_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p007_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p007_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p008_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p008 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p008_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p008_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p008_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p009_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p009 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p009_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p009_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p009_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p010_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p010 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p010_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p010_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p010_01.png"
+      },
+      {
+        "id": "Ruger_Mark_I_Standard_Pistol_Manual_p011_01.png",
+        "title": "Ruger Mark I Standard Pistol Manual p011 01",
+        "filename": "Ruger_Mark_I_Standard_Pistol_Manual_p011_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Mark_Series/schematics/Ruger_Mark_I_Standard_Pistol_Manual_p011_01.png",
+        "local_url": "/api/schematics/Ruger_Mark_Series/Ruger_Mark_I_Standard_Pistol_Manual_p011_01.png"
+      }
+    ]
   },
   "Desert_Eagle_Pistols": {
     "id": "Desert_Eagle_Pistols",
@@ -3859,6 +3948,17 @@ window.STATIC_FIREARMS_DATA = {
     ],
     "manuals": [
       {
+        "id": "Ruger_GP100_Revolver_Manual.pdf",
+        "title": "Ruger GP100 Revolver Manual",
+        "filename": "Ruger_GP100_Revolver_Manual.pdf",
+        "size_mb": 1.77,
+        "is_summary": false,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/manuals/Ruger_GP100_Revolver_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_Revolvers_GP100/manuals/Ruger_GP100_Revolver_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/manuals/Ruger_GP100_Revolver_Manual.pdf",
+        "local_url": "/api/manuals/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual.pdf"
+      },
+      {
         "id": "Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
         "title": "Armorer Technical Manual Ruger Revolvers GP100",
         "filename": "Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf",
@@ -3870,7 +3970,134 @@ window.STATIC_FIREARMS_DATA = {
         "local_url": "/api/manuals/Ruger_Revolvers_GP100/Armorer_Technical_Manual_Ruger_Revolvers_GP100.pdf"
       }
     ],
-    "schematics": []
+    "schematics": [
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p011_01.png",
+        "title": "Ruger GP100 Revolver Manual p011 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p011_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p011_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p011_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p012_01.png",
+        "title": "Ruger GP100 Revolver Manual p012 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p012_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p012_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p012_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p014_01.png",
+        "title": "Ruger GP100 Revolver Manual p014 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p014_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p014_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p014_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p014_02.png",
+        "title": "Ruger GP100 Revolver Manual p014 02",
+        "filename": "Ruger_GP100_Revolver_Manual_p014_02.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p014_02.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p014_02.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p016_01.png",
+        "title": "Ruger GP100 Revolver Manual p016 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p016_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p016_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p016_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p016_02.png",
+        "title": "Ruger GP100 Revolver Manual p016 02",
+        "filename": "Ruger_GP100_Revolver_Manual_p016_02.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p016_02.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p016_02.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p016_03.png",
+        "title": "Ruger GP100 Revolver Manual p016 03",
+        "filename": "Ruger_GP100_Revolver_Manual_p016_03.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p016_03.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p016_03.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p016_04.png",
+        "title": "Ruger GP100 Revolver Manual p016 04",
+        "filename": "Ruger_GP100_Revolver_Manual_p016_04.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p016_04.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p016_04.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p017_01.png",
+        "title": "Ruger GP100 Revolver Manual p017 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p017_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p017_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p017_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p021_01.png",
+        "title": "Ruger GP100 Revolver Manual p021 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p021_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p021_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p021_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p021_03.png",
+        "title": "Ruger GP100 Revolver Manual p021 03",
+        "filename": "Ruger_GP100_Revolver_Manual_p021_03.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p021_03.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p021_03.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p030_01.png",
+        "title": "Ruger GP100 Revolver Manual p030 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p030_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p030_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p030_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p032_01.png",
+        "title": "Ruger GP100 Revolver Manual p032 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p032_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p032_01.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p032_01.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p034_03.png",
+        "title": "Ruger GP100 Revolver Manual p034 03",
+        "filename": "Ruger_GP100_Revolver_Manual_p034_03.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p034_03.png",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p034_03.png"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p001_02.jpeg",
+        "title": "Ruger GP100 Revolver Manual p001 02",
+        "filename": "Ruger_GP100_Revolver_Manual_p001_02.jpeg",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p001_02.jpeg",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p001_02.jpeg"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p008_01.jpeg",
+        "title": "Ruger GP100 Revolver Manual p008 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p008_01.jpeg",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p008_01.jpeg",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p008_01.jpeg"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p008_02.jpeg",
+        "title": "Ruger GP100 Revolver Manual p008 02",
+        "filename": "Ruger_GP100_Revolver_Manual_p008_02.jpeg",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p008_02.jpeg",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p008_02.jpeg"
+      },
+      {
+        "id": "Ruger_GP100_Revolver_Manual_p031_01.jpeg",
+        "title": "Ruger GP100 Revolver Manual p031 01",
+        "filename": "Ruger_GP100_Revolver_Manual_p031_01.jpeg",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_Revolvers_GP100/schematics/Ruger_GP100_Revolver_Manual_p031_01.jpeg",
+        "local_url": "/api/schematics/Ruger_Revolvers_GP100/Ruger_GP100_Revolver_Manual_p031_01.jpeg"
+      }
+    ]
   },
   "Colt_Single_Action_Army": {
     "id": "Colt_Single_Action_Army",
@@ -4489,6 +4716,36 @@ window.STATIC_FIREARMS_DATA = {
           "Wax and carbon buildup inside bolt extractor pocket."
         ],
         "action": "Gunsmith Action: Install Volquartsen Exact Edge tool-steel wire-EDM sharp extractor and heavy spring. Clean bolt face extractor pocket. Disassemble 10-round rotary magazine and retension rotor spring to 1-1/4 turns."
+      },
+      {
+        "position": "Stoppage 2: Failure to Extract (FTE) / Rim Sheared in Chamber",
+        "short_desc": "Fired casing remains jammed in chamber; extractor claw slips off or tears through copper rim",
+        "causes": [
+          "Heavy carbon ring build-up directly ahead of chamber mouth from high round counts.",
+          "Extractor plunger spring bound by powder fouling or grease.",
+          "Rough or burred chamber walls from dry firing without snap caps (firing pin peening chamber mouth)."
+        ],
+        "action": "Gunsmith Action: Use bronze chamber brush with carbon remover; iron out firing pin chamber peening with Menck chamber iron tool; detail strip bolt and inspect extractor hook sharpness."
+      },
+      {
+        "position": "Stoppage 3: Light Primer Strike / Misfire",
+        "short_desc": "Hammer drops with audible click but cartridge does not fire; shallow firing pin indentation on rim",
+        "causes": [
+          "Firing pin rebound spring packed with bullet wax / lube fouling.",
+          "Bolt not in full battery due to barrel V-block overtightening causing barrel droop.",
+          "Excessive headspace gap between bolt face rim recess (>0.0435 in) and cartridge rim."
+        ],
+        "action": "Gunsmith Action: Clean firing pin tunnel dry (do not oil); verify bolt closes fully against barrel shoulder; gauge bolt rim recess depth with depth micrometer."
+      },
+      {
+        "position": "Stoppage 4: Magazine Feeding Failure / Cartridge Nose-Dive",
+        "short_desc": "Round jams against lower feed ramp or nose dives into front magazine lip",
+        "causes": [
+          "Rotary magazine clock spring lost pre-load tension (backing out from factory 1-1/4 turns).",
+          "Wax build-up on metal feed lips of the BX-1 magazine.",
+          "Magazine release plunger spring binding."
+        ],
+        "action": "Gunsmith Action: Disassemble 10/22 rotary magazine, degrease rotor and hex nut, pre-tension rotor spring 1-1/4 turns (450 deg) counter-clockwise and tighten central hex nut."
       }
     ],
     "videos": [
@@ -4500,6 +4757,24 @@ window.STATIC_FIREARMS_DATA = {
         "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
         "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+Carbine+%26+Takedown+Ruger+10%2F22+Complete+Disassembly%2C+Cleaning+%26+Upgrades+gunsmithing+armorer",
         "summary": "Teardown of the Ruger 10/22 action: V-block removal, bolt disassembly, auto-bolt release modification, and installing the BX trigger."
+      },
+      {
+        "id": "r81022rotary",
+        "title": "10/22 Rotary Magazine Teardown, Cleaning & Spring Tensioning",
+        "creator": "MidwayUSA Gunsmithing",
+        "category": "Magazine Rebuild",
+        "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+rotary+magazine+rebuild+spring+tension+1-1%2F4+turns+gunsmithing",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+rotary+magazine+rebuild+spring+tension+1-1%2F4+turns+gunsmithing",
+        "summary": "Step-by-step disassembly and clock spring winding of the classic Ruger BX-1 rotary magazine to eliminate feeding jams."
+      },
+      {
+        "id": "r81022vblock",
+        "title": "10/22 Barrel V-Block Torque, Bedding & Anti-Droop Tuning",
+        "creator": "Tactical Armorer Bench",
+        "category": "Barrel & Action Tuning",
+        "url": "https://www.youtube.com/results?search_query=Ruger+10%2F22+barrel+v+block+torque+in+lbs+bedding+gunsmithing",
+        "embed_url": "https://www.youtube-nocookie.com/embed?listType=search&list=Ruger+10%2F22+barrel+v+block+torque+in+lbs+bedding+gunsmithing",
+        "summary": "Correct 10-15 in-lb alternating torquing sequence for the barrel V-block clamp to prevent receiver stripping and barrel droop."
       }
     ],
     "manuals": [
@@ -4515,6 +4790,17 @@ window.STATIC_FIREARMS_DATA = {
         "local_url": "/api/manuals/Ruger_1022_Carbine/Ruger_1022_Autoloading_Rifle_Armorer_Manual.pdf"
       },
       {
+        "id": "Ruger_10_22_Carbine_Manual.pdf",
+        "title": "Ruger 10 22 Carbine Manual",
+        "filename": "Ruger_10_22_Carbine_Manual.pdf",
+        "size_mb": 2.18,
+        "is_summary": false,
+        "raw_url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Ruger_10_22_Carbine_Manual.pdf",
+        "github_url": "https://github.com/gmascagni/gunsmithing/blob/main/Ruger_1022_Carbine/manuals/Ruger_10_22_Carbine_Manual.pdf",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/manuals/Ruger_10_22_Carbine_Manual.pdf",
+        "local_url": "/api/manuals/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual.pdf"
+      },
+      {
         "id": "Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
         "title": "Armorer Technical Manual Ruger 1022 Carbine",
         "filename": "Armorer_Technical_Manual_Ruger_1022_Carbine.pdf",
@@ -4526,7 +4812,162 @@ window.STATIC_FIREARMS_DATA = {
         "local_url": "/api/manuals/Ruger_1022_Carbine/Armorer_Technical_Manual_Ruger_1022_Carbine.pdf"
       }
     ],
-    "schematics": []
+    "schematics": [
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p001_01.png",
+        "title": "Ruger 10 22 Carbine Manual p001 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p001_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p001_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p001_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p002_01.png",
+        "title": "Ruger 10 22 Carbine Manual p002 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p002_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p002_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p002_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p003_01.png",
+        "title": "Ruger 10 22 Carbine Manual p003 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p003_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p003_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p003_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p004_01.png",
+        "title": "Ruger 10 22 Carbine Manual p004 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p004_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p004_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p004_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p005_01.png",
+        "title": "Ruger 10 22 Carbine Manual p005 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p005_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p005_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p005_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p006_01.png",
+        "title": "Ruger 10 22 Carbine Manual p006 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p006_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p006_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p006_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p007_01.png",
+        "title": "Ruger 10 22 Carbine Manual p007 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p007_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p007_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p007_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p008_01.png",
+        "title": "Ruger 10 22 Carbine Manual p008 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p008_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p008_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p008_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p009_01.png",
+        "title": "Ruger 10 22 Carbine Manual p009 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p009_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p009_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p009_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p010_01.png",
+        "title": "Ruger 10 22 Carbine Manual p010 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p010_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p010_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p010_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p011_01.png",
+        "title": "Ruger 10 22 Carbine Manual p011 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p011_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p011_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p011_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p012_01.png",
+        "title": "Ruger 10 22 Carbine Manual p012 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p012_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p012_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p012_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p013_01.png",
+        "title": "Ruger 10 22 Carbine Manual p013 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p013_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p013_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p013_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p014_01.png",
+        "title": "Ruger 10 22 Carbine Manual p014 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p014_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p014_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p014_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p015_01.png",
+        "title": "Ruger 10 22 Carbine Manual p015 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p015_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p015_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p015_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p016_01.png",
+        "title": "Ruger 10 22 Carbine Manual p016 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p016_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p016_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p016_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p017_01.png",
+        "title": "Ruger 10 22 Carbine Manual p017 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p017_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p017_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p017_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p018_01.png",
+        "title": "Ruger 10 22 Carbine Manual p018 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p018_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p018_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p018_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p019_01.png",
+        "title": "Ruger 10 22 Carbine Manual p019 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p019_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p019_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p019_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p020_01.png",
+        "title": "Ruger 10 22 Carbine Manual p020 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p020_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p020_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p020_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p021_01.png",
+        "title": "Ruger 10 22 Carbine Manual p021 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p021_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p021_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p021_01.png"
+      },
+      {
+        "id": "Ruger_10_22_Carbine_Manual_p022_01.png",
+        "title": "Ruger 10 22 Carbine Manual p022 01",
+        "filename": "Ruger_10_22_Carbine_Manual_p022_01.png",
+        "url": "https://raw.githubusercontent.com/gmascagni/gunsmithing/main/Ruger_1022_Carbine/schematics/Ruger_10_22_Carbine_Manual_p022_01.png",
+        "local_url": "/api/schematics/Ruger_1022_Carbine/Ruger_10_22_Carbine_Manual_p022_01.png"
+      }
+    ]
   },
   "Ruger_Mini14_Carbines": {
     "id": "Ruger_Mini14_Carbines",

@@ -102,6 +102,8 @@ data_js_content = (
     f"window.STATIC_VIDEO_SAMPLES = {json.dumps(SAMPLE_CASES, indent=2)};\n"
 )
 (docs_dir / "data.js").write_text(data_js_content, encoding="utf-8")
+(static_dir / "data.js").write_text(data_js_content, encoding="utf-8")
+print(f"Generated data.js ({len(all_data)} firearm platforms across static and docs)")
 
 # 4. Generate rag_data.js from rag_index.json
 cache_file = root / "web_app" / "cache" / "rag_index.json"
@@ -144,21 +146,23 @@ import hashlib
 css_hash = hashlib.md5((docs_dir / "app.css").read_bytes()).hexdigest()[:8]
 app_hash = hashlib.md5((docs_dir / "app.js").read_bytes()).hexdigest()[:8]
 data_hash = hashlib.md5((docs_dir / "data.js").read_bytes()).hexdigest()[:8]
+rag_hash = hashlib.md5((docs_dir / "rag_data.js").read_bytes()).hexdigest()[:8] if (docs_dir / "rag_data.js").exists() else data_hash
 
 index_html = (static_dir / "index.html").read_text(encoding="utf-8")
 index_html = index_html.replace('href="/static/app.css"', f'href="./app.css?v={css_hash}"')
 index_html = index_html.replace('href="/static/', 'href="./')
-index_html = index_html.replace('src="/static/rag_data.js"', f'src="./rag_data.js?v={data_hash}"')
+index_html = index_html.replace('src="/static/data.js"', f'src="./data.js?v={data_hash}"')
+index_html = index_html.replace('src="/static/rag_data.js"', f'src="./rag_data.js?v={rag_hash}"')
 index_html = index_html.replace('src="/static/app.js"', f'src="./app.js?v={app_hash}"')
 index_html = index_html.replace('src="/static/', 'src="./')
 
-if "data.js" not in index_html:
+if "./data.js" not in index_html and "data.js?v=" not in index_html:
     index_html = index_html.replace(
         f'<script defer src="./app.js?v={app_hash}"></script>',
         f'<script defer src="./data.js?v={data_hash}"></script>\n  <script defer src="./app.js?v={app_hash}"></script>'
     )
 
 (docs_dir / "index.html").write_text(index_html, encoding="utf-8")
-print(f"Built docs/index.html with cache-busting versions (app={app_hash}, css={css_hash}, data={data_hash})")
+print(f"Built docs/index.html with cache-busting versions (app={app_hash}, css={css_hash}, data={data_hash}, rag={rag_hash})")
 
 print("GitHub Pages docs/ directory built successfully!")
