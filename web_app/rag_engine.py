@@ -1,19 +1,23 @@
 """
-Armorer RAG Engine: High-Performance Grounding & Retrieval Engine.
+Armorer RAG Engine: Master Gunsmith Grounding & Retrieval Engine.
 Indexes and retrieves authentic technical manuals, military TMs, factory armorers guides,
-specifications, and stoppage matrices across all platforms.
+specifications, schematic component callouts, and stoppage matrices across all platforms.
 """
 
 import os
+import sys
 import re
 import json
 import math
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
-import fitz # PyMuPDF
+import fitz  # PyMuPDF
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 CACHE_DIR = BASE_DIR / "web_app" / "cache"
 CACHE_FILE = CACHE_DIR / "rag_index.json"
 
@@ -21,6 +25,54 @@ try:
     from web_app.firearms_data import FIREARMS_METADATA
 except ImportError:
     from firearms_data import FIREARMS_METADATA
+
+try:
+    from web_app.parts_data import PARTS_DATABASE
+except ImportError:
+    PARTS_DATABASE = {}
+
+# Universal Gunsmith Domain Ontology & Thesaurus
+GUNSMITH_ONTOLOGY = {
+    # Malfunctions & Diagnostics
+    "stovepipe": ["stovepipe", "ejection", "port", "casing", "sideways", "extractor", "claw", "ejector", "hook"],
+    "double_feed": ["double", "feed", "cartridges", "magazine", "lips", "follower", "ramp", "jam"],
+    "fte": ["extract", "extractor", "casing", "chamber", "carbon", "ring", "plunger", "hook", "burr", "stuck"],
+    "failure_to_extract": ["extract", "extractor", "casing", "chamber", "carbon", "ring", "plunger", "hook"],
+    "ftej": ["eject", "ejector", "nose", "angle", "clearance", "port", "stovepipe", "bar", "spring"],
+    "failure_to_eject": ["eject", "ejector", "nose", "clearance", "port", "stovepipe", "ejector", "bar"],
+    "misfire": ["light", "strike", "misfire", "primer", "protrusion", "striker", "firing", "pin", "spring", "carbon"],
+    "light_strike": ["light", "strike", "misfire", "primer", "protrusion", "striker", "firing", "pin", "indent"],
+    "slam_fire": ["slam", "fire", "premature", "percussion", "firing", "pin", "free", "floating", "inertia"],
+    "out_of_battery": ["battery", "locking", "lug", "rotation", "disconnector", "disconnect", "gap", "battery"],
+    "push_off": ["push", "off", "sear", "hammer", "notch", "engagement", "single", "action", "full", "cock"],
+    "barrel_droop": ["droop", "v-block", "clamp", "torque", "screws", "wedge", "cant", "elevation", "bedding"],
+    "keyholing": ["keyholing", "yaw", "tumbling", "rifling", "twist", "crown", "muzzle", "throat", "erosion"],
+    "squib": ["squib", "bore", "obstruction", "bullet", "lodged", "powder", "primer", "barrel"],
+    "cylinder_bind": ["cylinder", "bind", "endshake", "ejector", "rod", "crane", "ratchet", "expansion"],
+    "lead_spitting": ["cylinder", "gap", "forcing", "cone", "timing", "alignment", "revolver", "spitting"],
+    "pierced_primer": ["pierced", "primer", "firing", "pin", "protrusion", "cratering", "flow", "chamfer"],
+
+    # Common Operations, Tolerances & Assemblies
+    "headspace": ["headspace", "go", "no-go", "field", "gauge", "rimless", "rimmed", "datum", "breech", "closing"],
+    "v-block": ["v-block", "clamp", "torque", "screws", "10-15", "in-lbs", "barrel", "tenon", "droop"],
+    "torque": ["in-lbs", "ft-lbs", "torque", "inch-pounds", "wrench", "staking", "tighten", "specification"],
+    "gas_key": ["carrier", "key", "gas", "key", "staking", "torque", "50-58", "in-lbs", "carrier", "screws"],
+    "castle_nut": ["castle", "nut", "receiver", "extension", "buffer", "tube", "staking", "38-42", "ft-lbs"],
+    "cruciform": ["cruciform", "sear", "drop", "safety", "shelf", "66%", "engagement", "trigger", "bar", "plate"],
+    "rotary_magazine": ["rotary", "magazine", "clock", "spring", "1-1/4", "turns", "450", "degrees", "rotor", "hex"],
+    "locking_block": ["locking", "block", "wings", "d-spring", "dogbone", "pin", "falling", "block", "beretta"],
+    "cleaning": ["solvent", "carbon", "brush", "lube", "oil", "grease", "patches", "copper", "bore", "clean"],
+    "disassembly": ["field", "strip", "detail", "strip", "takedown", "pin", "punch", "unscrew", "drift", "remove"],
+}
+
+ARMORER_HEADER_KEYWORDS = re.compile(
+    r"\b(WARNING|CAUTION|DANGER|NOTE|IMPORTANT|DISASSEMBLY|ASSEMBLY|CLEANING|"
+    r"LUBRICATION|MAINTENANCE|INSPECTION|STOPPAGE|MALFUNCTION|SPECIFICATIONS|"
+    r"TOLERANCES|PARTS LIST|EXPLODED VIEW|TO LOAD|TO UNLOAD|UNJAMMING|"
+    r"SIGHT ADJUSTMENT|HEADSPACE|TRIGGER|BARREL|BOLT|RECEIVER|MAGAZINE|"
+    r"OPERATION|NOMENCLATURE|REPAIR|SAFETY|TORQUE|V-BLOCK)\b",
+    re.IGNORECASE
+)
 
 
 class ArmorerRAGEngine:
@@ -36,8 +88,129 @@ class ArmorerRAGEngine:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     def tokenize(self, text: str) -> List[str]:
-        """Simple clean tokenization for BM25 search."""
-        return [w.lower() for w in re.findall(r"\b[a-zA-Z0-9_\-\.]{2,}\b", text)]
+        """Tokenization preserving model numbers, calibers, and decimal tolerances."""
+        return [w.lower() for w in re.findall(r"\b[a-zA-Z0-9_\-\.\/]{2,}\b", text)]
+
+    def extract_pdf_chunks(self, pdf_path: Path, fid: str, fname: str, mfg: str) -> List[Dict[str, Any]]:
+        chunks = []
+        try:
+            doc = fitz.open(pdf_path)
+        except Exception as e:
+            print(f"[RAG] Warning reading {pdf_path.name}: {e}")
+            return []
+
+        doc_title = pdf_path.stem.replace("_", " ")
+        max_pages = min(len(doc), 150)
+        active_section = "General Description & Armorer Overview"
+        overlap_buffer = ""
+
+        for page_idx in range(max_pages):
+            page = doc[page_idx]
+            blocks = page.get_text("blocks")
+            if not blocks:
+                continue
+
+            page_text_blocks = []
+            for b in blocks:
+                if b[6] != 0:  # text blocks only
+                    continue
+                b_txt = b[4].strip()
+                if not b_txt or len(b_txt) < 3:
+                    continue
+
+                lines = [ln.strip() for ln in b_txt.splitlines() if ln.strip()]
+                if not lines:
+                    continue
+                first_line = lines[0]
+
+                # Detect armorer section headers
+                if len(first_line) < 80 and not first_line.isdigit():
+                    m = ARMORER_HEADER_KEYWORDS.search(first_line)
+                    if m:
+                        clean_h = re.sub(r"[\u2010-\u2015\u2022\u00ae\u2122\ufffd]", " ", first_line).strip()
+                        clean_h = " ".join(clean_h.split())
+                        if len(clean_h) >= 4 and not clean_h.lower().startswith("state-by-state"):
+                            active_section = clean_h
+
+                page_text_blocks.append(b_txt)
+
+            if not page_text_blocks:
+                continue
+
+            full_page_text = "\n\n".join(page_text_blocks)
+            if len(full_page_text) < 40:
+                continue
+
+            # If page text fits within standard single chunk, emit immediately
+            if len(full_page_text) <= 1500:
+                header_lead = f"Platform: {fname} ({mfg})\nDocument: {doc_title} (Page {page_idx + 1})\nSection: {active_section}\n\n"
+                content = (overlap_buffer + "\n" + full_page_text).strip() if overlap_buffer else full_page_text
+                chunk_body = (header_lead + content)[:2200]
+                chunks.append({
+                    "id": f"{fid}_{pdf_path.name}_p{page_idx+1}_c1",
+                    "firearm_id": fid,
+                    "manual_filename": pdf_path.name,
+                    "manual_title": doc_title,
+                    "page": page_idx + 1,
+                    "section": active_section,
+                    "text": chunk_body,
+                    "tokens": self.tokenize(chunk_body)
+                })
+                overlap_buffer = f"[Context: {active_section}] " + full_page_text[-180:]
+            else:
+                # Procedural multi-block chunking with 150-char sliding lookback window
+                paragraphs = full_page_text.split("\n\n")
+                current_chunk = []
+                curr_len = 0
+                sub_idx = 1
+
+                for p in paragraphs:
+                    p_clean = p.strip()
+                    if not p_clean:
+                        continue
+                    if curr_len + len(p_clean) > 1300 and current_chunk:
+                        body_text = "\n\n".join(current_chunk)
+                        if overlap_buffer:
+                            body_text = overlap_buffer + "\n\n" + body_text
+                        header_lead = f"Platform: {fname} ({mfg})\nDocument: {doc_title} (Page {page_idx + 1})\nSection: {active_section} [Part {sub_idx}]\n\n"
+                        full_body = (header_lead + body_text)[:2200]
+                        chunks.append({
+                            "id": f"{fid}_{pdf_path.name}_p{page_idx+1}_c{sub_idx}",
+                            "firearm_id": fid,
+                            "manual_filename": pdf_path.name,
+                            "manual_title": doc_title,
+                            "page": page_idx + 1,
+                            "section": f"{active_section} [Part {sub_idx}]",
+                            "text": full_body,
+                            "tokens": self.tokenize(full_body)
+                        })
+                        overlap_buffer = f"[Context: {active_section}] " + body_text[-180:]
+                        current_chunk = [p_clean]
+                        curr_len = len(p_clean)
+                        sub_idx += 1
+                    else:
+                        current_chunk.append(p_clean)
+                        curr_len += len(p_clean)
+
+                if current_chunk:
+                    body_text = "\n\n".join(current_chunk)
+                    if overlap_buffer:
+                        body_text = overlap_buffer + "\n\n" + body_text
+                    header_lead = f"Platform: {fname} ({mfg})\nDocument: {doc_title} (Page {page_idx + 1})\nSection: {active_section} [Part {sub_idx}]\n\n"
+                    full_body = (header_lead + body_text)[:2200]
+                    chunks.append({
+                        "id": f"{fid}_{pdf_path.name}_p{page_idx+1}_c{sub_idx}",
+                        "firearm_id": fid,
+                        "manual_filename": pdf_path.name,
+                        "manual_title": doc_title,
+                        "page": page_idx + 1,
+                        "section": f"{active_section} [Part {sub_idx}]",
+                        "text": full_body,
+                        "tokens": self.tokenize(full_body)
+                    })
+                    overlap_buffer = f"[Context: {active_section}] " + body_text[-180:]
+
+        return chunks
 
     def index_all(self, force_rebuild: bool = False):
         """Builds or loads the indexed technical chunks from cache or PDFs."""
@@ -50,116 +223,116 @@ class ArmorerRAGEngine:
                     self.total_docs = len(self.chunks)
                     self.avg_doc_len = data.get("avg_doc_len", 50.0)
                     self.initialized = True
-                    print(f"[RAG] Loaded {self.total_docs} technical chunks from cache.")
+                    print(f"[RAG] Loaded {self.total_docs} Master Armorer chunks from cache.")
                     return
             except Exception as e:
-                print(f"[RAG] Failed to load cache: {e}. Rebuilding index...")
+                print(f"[RAG] Cache load failed: {e}. Rebuilding index...")
 
-        print("[RAG] Building technical manual index across all platforms...")
+        print("[RAG] Building Master Gunsmith technical index across all 53 platforms...")
         self.chunks = []
 
-        # 1. Index curated specs, stoppages, and assemblies from FIREARMS_METADATA
+        # 1. Curated Specifications & Factory Tolerances
         for fid, meta in FIREARMS_METADATA.items():
             fname = meta.get("name", fid)
-            mfg = meta.get("manufacturer", "")
+            mfg = meta.get("manufacturer", "Workshop")
             sub = meta.get("subtitle", "")
-
-            # Index Specifications
             specs = meta.get("specs", {})
             if specs:
-                specs_text = f"Platform: {fname} ({mfg})\nSubtitle: {sub}\nKey Armorer Tolerances & Specifications:\n"
+                lines = [f"Platform: {fname} ({mfg}) Factory Armorer Specifications & Tolerances"]
+                lines.append(f"Subtitle: {sub}")
+                lines.append("Bench Tolerances & Critical Dimensions:")
                 for k, v in specs.items():
-                    specs_text += f"- {k.replace('_', ' ').title()}: {v}\n"
+                    label = k.replace("_", " ").title()
+                    lines.append(f"- {label}: {v}")
+                text_block = "\n".join(lines)
                 self.chunks.append({
                     "id": f"{fid}_specs",
                     "firearm_id": fid,
                     "manual_filename": "Factory_Armorer_Dossier",
-                    "manual_title": f"{fname} Technical Specifications & Tolerances",
+                    "manual_title": f"{fname} Factory Specifications & Tolerances",
                     "page": 1,
                     "section": "Specifications & Tolerances",
-                    "text": specs_text,
-                    "tokens": self.tokenize(specs_text)
+                    "text": text_block,
+                    "tokens": self.tokenize(text_block)
                 })
 
-            # Index Stoppages
+        # 2. Curated Diagnostic Stoppage Matrices
+        for fid, meta in FIREARMS_METADATA.items():
+            fname = meta.get("name", fid)
             stoppages = meta.get("stoppages", [])
             for s_idx, s in enumerate(stoppages):
-                pos = s.get("position", "")
+                pos = s.get("position", f"Stoppage {s_idx+1}")
                 s_desc = s.get("short_desc", "")
                 remedy = s.get("action", "") or s.get("remedy", "")
                 raw_causes = s.get("causes", "") or s.get("root_causes", "")
                 causes = "; ".join(raw_causes) if isinstance(raw_causes, list) else str(raw_causes)
-                stop_text = (
-                    f"Platform: {fname} Malfunction Diagnostic\n"
+                text_block = (
+                    f"Platform: {fname} Malfunction Diagnostic Matrix\n"
                     f"Stoppage Position: {pos}\n"
-                    f"Immediate Indicator: {s_desc}\n"
-                    f"Probable Causes: {causes}\n"
-                    f"Immediate Armorer Remedy: {remedy}\n"
+                    f"Symptom / Indicator: {s_desc}\n"
+                    f"Probable Mechanical Causes: {causes}\n"
+                    f"Armorer Corrective Action: {remedy}\n"
                 )
                 self.chunks.append({
-                    "id": f"{fid}_stop_{s_idx}",
+                    "id": f"{fid}_stop_{s_idx+1}",
                     "firearm_id": fid,
                     "manual_filename": "Factory_Stoppage_Matrix",
-                    "manual_title": f"{fname} Malfunction & Diagnostic Matrix",
+                    "manual_title": f"{fname} Malfunction Diagnostics ({pos})",
                     "page": s_idx + 1,
-                    "section": f"Stoppage: {pos}",
-                    "text": stop_text,
-                    "tokens": self.tokenize(stop_text)
+                    "section": f"Diagnostic: {pos}",
+                    "text": text_block,
+                    "tokens": self.tokenize(text_block)
                 })
 
-        # 2. Extract and index PDF pages from each platform's manuals folder
-        for firearm_dir in sorted(BASE_DIR.iterdir()):
-            if not firearm_dir.is_dir() or firearm_dir.name.startswith((".", "_")) or firearm_dir.name in ["web_app", "docs"]:
+        # 3. Schematic Component Callouts & Maintenance Protocols (PARTS_DATABASE)
+        for fid, parts_list in PARTS_DATABASE.items():
+            fname = FIREARMS_METADATA.get(fid, {}).get("name", fid.replace("_", " "))
+            for p in parts_list:
+                c_name = p.get("name", "Component")
+                c_num = p.get("callout_num", "")
+                c_oem = p.get("oem_number", "")
+                c_ass = p.get("assembly", "Subassembly")
+                c_tol = p.get("tolerances", "")
+                c_mal = p.get("malfunctions", "")
+                c_mnt = p.get("maintenance", "")
+                part_text = (
+                    f"Platform: {fname} Component Specification & Schematic Callout\n"
+                    f"Component Name: {c_name} ({c_num})\n"
+                    f"OEM Part Number: {c_oem}\n"
+                    f"Subassembly Group: {c_ass}\n"
+                    f"Critical Tolerances & Fitting: {c_tol}\n"
+                    f"Associated Malfunctions: {c_mal}\n"
+                    f"Master Armorer Maintenance Protocol: {c_mnt}\n"
+                )
+                self.chunks.append({
+                    "id": f"{fid}_{p.get('id', c_num)}",
+                    "firearm_id": fid,
+                    "manual_filename": "Schematic_Parts_Directory",
+                    "manual_title": f"{fname} Component Guide: {c_name}",
+                    "page": 1,
+                    "section": f"Schematic Callout: {c_num} ({c_name})",
+                    "text": part_text,
+                    "tokens": self.tokenize(part_text)
+                })
+
+        # 4. Ingest and Procedurally Chunk All Manual PDFs
+        for platform_dir in sorted(BASE_DIR.iterdir()):
+            if not platform_dir.is_dir() or platform_dir.name.startswith((".", "_")) or platform_dir.name in ["web_app", "docs", "node_modules"]:
                 continue
-            manuals_dir = firearm_dir / "manuals"
+            manuals_dir = platform_dir / "manuals"
             if not manuals_dir.exists():
                 continue
 
-            fid = firearm_dir.name
-            fname = FIREARMS_METADATA.get(fid, {}).get("name", fid.replace("_", " "))
+            fid = platform_dir.name
+            meta = FIREARMS_METADATA.get(fid, {})
+            fname = meta.get("name", fid.replace("_", " "))
+            mfg = meta.get("manufacturer", "Workshop")
 
             for pdf_path in sorted(manuals_dir.glob("*.pdf")):
-                try:
-                    doc = fitz.open(pdf_path)
-                    doc_title = pdf_path.stem.replace("_", " ")
-                    # Extract up to 100 pages per manual to balance depth and memory
-                    max_pages = min(len(doc), 120)
-                    for page_idx in range(max_pages):
-                        page = doc[page_idx]
-                        raw_text = page.get_text().strip()
-                        if not raw_text or len(raw_text) < 40:
-                            continue
+                pdf_chunks = self.extract_pdf_chunks(pdf_path, fid, fname, mfg)
+                self.chunks.extend(pdf_chunks)
 
-                        # Clean up text
-                        clean_lines = [ln.strip() for ln in raw_text.splitlines() if ln.strip()]
-                        clean_text = "\n".join(clean_lines)
-
-                        # Check for section headers (capitalized first line)
-                        header = clean_lines[0] if clean_lines else f"Page {page_idx + 1}"
-                        if len(header) > 60:
-                            header = header[:60] + "..."
-
-                        chunk_text = (
-                            f"Document: {doc_title} (Page {page_idx + 1})\n"
-                            f"Platform: {fname}\n"
-                            f"Section: {header}\n\n"
-                            f"{clean_text}"
-                        )
-
-                        self.chunks.append({
-                            "id": f"{fid}_{pdf_path.name}_{page_idx+1}",
-                            "firearm_id": fid,
-                            "manual_filename": pdf_path.name,
-                            "manual_title": doc_title,
-                            "page": page_idx + 1,
-                            "section": header,
-                            "text": chunk_text[:2500], # Cap chunk length
-                            "tokens": self.tokenize(chunk_text[:2500])
-                        })
-                except Exception as e:
-                    print(f"[RAG] Error reading {pdf_path.name}: {e}")
-
-        # Compute document frequencies and average length for BM25
+        # Compute BM25 statistics
         self.total_docs = len(self.chunks)
         total_len = 0
         self.doc_freq = {}
@@ -172,7 +345,7 @@ class ArmorerRAGEngine:
         self.avg_doc_len = (total_len / self.total_docs) if self.total_docs > 0 else 50.0
         self.initialized = True
 
-        # Save to cache file (without tokens to keep JSON lean)
+        # Cache index
         try:
             cache_payload = {
                 "total_docs": self.total_docs,
@@ -185,12 +358,12 @@ class ArmorerRAGEngine:
             }
             with open(CACHE_FILE, "w", encoding="utf-8") as f:
                 json.dump(cache_payload, f)
-            print(f"[RAG] Successfully built and cached index ({self.total_docs} chunks).")
+            print(f"[RAG] Successfully built and cached Master index ({self.total_docs} chunks).")
         except Exception as e:
             print(f"[RAG] Warning: could not write cache file: {e}")
 
     def score_bm25(self, query_tokens: List[str], chunk_tokens: List[str], k1: float = 1.2, b: float = 0.75) -> float:
-        """Standard BM25 scoring function."""
+        """Standard BM25 scoring function with length normalization."""
         score = 0.0
         doc_len = len(chunk_tokens)
         if doc_len == 0 or self.total_docs == 0:
@@ -200,12 +373,12 @@ class ArmorerRAGEngine:
             if q not in self.doc_freq:
                 continue
             df = self.doc_freq[q]
-            # IDF formula with smoothing
-            idf = math.log((self.total_docs - df + 0.5) / (df + 0.5) + 1.0)
+            idf = 1.0 + (self.total_docs - df + 0.5) / (df + 0.5)
+            idf_val = math.log(max(1.0, idf))
             tf = chunk_tokens.count(q)
             numerator = tf * (k1 + 1.0)
             denominator = tf + k1 * (1.0 - b + b * (doc_len / (self.avg_doc_len or 1.0)))
-            score += idf * (numerator / denominator)
+            score += idf_val * (numerator / denominator)
 
         return score
 
@@ -215,7 +388,7 @@ class ArmorerRAGEngine:
         firearm_id: Optional[str] = None,
         top_k: int = 4
     ) -> List[Dict[str, Any]]:
-        """Searches indexed manuals and dossiers with BM25 and firearm platform boosting."""
+        """Searches indexed manuals and dossiers using BM25, ontology expansion, and platform affinity."""
         if not self.initialized:
             self.index_all()
 
@@ -223,34 +396,17 @@ class ArmorerRAGEngine:
         if not query_tokens:
             return []
 
-        # Platform domain synonym expansion
+        # Universal Gunsmith Ontology Query Expansion
         expanded_tokens = list(query_tokens)
-        fid_lower = (firearm_id or "").lower()
-        if "lewis" in fid_lower:
-            if any(w in query_tokens for w in ["shield", "shroud", "casing"]):
-                expanded_tokens.extend(["radiator", "casing", "mouthpiece", "clamp"])
-            if any(w in query_tokens for w in ["barrel", "front"]):
-                expanded_tokens.extend(["radiator", "mouthpiece", "cylinder", "gland"])
-            if any(w in query_tokens for w in ["spring", "tension", "clock"]):
-                expanded_tokens.extend(["mainspring", "pinion", "casing", "collet"])
-            if any(w in query_tokens for w in ["strip", "remove", "takedown", "disassemble", "take", "off"]):
-                expanded_tokens.extend(["unscrew", "casing", "clamp", "spanner"])
-        elif "glock" in fid_lower:
-            if any(w in query_tokens for w in ["clean", "cleaning", "deep", "lube", "oil"]):
-                expanded_tokens.extend(["drops", "lubricat", "rail", "connector", "solvent"])
-            if any(w in query_tokens for w in ["sear", "drop", "safety"]):
-                expanded_tokens.extend(["cruciform", "engagement", "plate", "inspection"])
-            if any(w in query_tokens for w in ["trigger", "polish"]):
-                expanded_tokens.extend(["connector", "cruciform", "plunger", "ramp"])
-        elif "ar15" in fid_lower or "m4" in fid_lower:
-            if any(w in query_tokens for w in ["key", "gas"]):
-                expanded_tokens.extend(["staking", "carrier", "screws", "torque"])
-            if any(w in query_tokens for w in ["buffer", "recoil", "weight"]):
-                expanded_tokens.extend(["carbine", "h2", "spring", "extension"])
+        for q in query_tokens:
+            if q in GUNSMITH_ONTOLOGY:
+                expanded_tokens.extend(GUNSMITH_ONTOLOGY[q])
+            for k, v in GUNSMITH_ONTOLOGY.items():
+                if k in q:
+                    expanded_tokens.extend(v)
 
         results = []
         for c in self.chunks:
-            # Reconstruct tokens if loaded from cache without 'tokens' field
             c_tokens = c.get("tokens")
             if c_tokens is None:
                 c_tokens = self.tokenize(c["text"])
@@ -260,23 +416,23 @@ class ArmorerRAGEngine:
             if base_score <= 0.0:
                 continue
 
-            # Platform affinity boost: heavily prioritize active firearm
+            # Platform affinity boost: prioritize active firearm
             final_score = base_score
             if firearm_id:
                 if c["firearm_id"] == firearm_id:
-                    final_score *= 3.5 # Heavy boost for matching platform
+                    final_score *= 3.5
                 elif c["firearm_id"] in ["General_Gunsmithing"]:
-                    final_score *= 1.2 # Moderate boost for general gunsmithing manuals
+                    final_score *= 1.2
                 else:
-                    final_score *= 0.25 # Downweight non-matching platforms
+                    final_score *= 0.25
 
-            # Bonus for exact multi-token substring matches in text
+            # Multi-token exact phrase match bonus
             lower_text = c["text"].lower()
             if query.lower() in lower_text:
-                final_score += 15.0
+                final_score += 25.0
             for t in query_tokens:
                 if len(t) >= 4 and t in lower_text:
-                    final_score += 1.5
+                    final_score += 2.0
 
             snippet_lines = [ln.strip() for ln in c["text"].splitlines() if ln.strip() and not ln.startswith("Document:")]
             snippet = " ".join(snippet_lines[:5])
@@ -300,7 +456,7 @@ class ArmorerRAGEngine:
         return results[:top_k]
 
     def get_grounding_prompt(self, query: str, firearm_id: str, top_k: int = 3) -> Tuple[str, List[Dict[str, Any]]]:
-        """Builds a formatted Markdown citation block for direct LLM system prompt injection."""
+        """Builds formatted Markdown citation block for LLM system prompt injection."""
         matches = self.search(query=query, firearm_id=firearm_id, top_k=top_k)
         if not matches:
             return "", []

@@ -4673,36 +4673,62 @@ function searchClientRAG(query, activeFid, topK = 4) {
   const tokens = rawTokens.filter(t => !STOP_WORDS.has(t));
   const queryTokens = tokens.length > 0 ? tokens : rawTokens;
 
-  // Domain synonym expansion
+  // Universal Gunsmith Domain Ontology & Query Expansion Engine
+  const GUNSMITH_ONTOLOGY = {
+    // Malfunctions & Diagnostics
+    "stovepipe": ["stovepipe", "ejection", "port", "casing", "sideways", "extractor", "claw", "ejector", "hook"],
+    "double_feed": ["double", "feed", "cartridges", "magazine", "lips", "follower", "ramp", "jam"],
+    "fte": ["extract", "extractor", "casing", "chamber", "carbon", "ring", "plunger", "hook", "burr", "stuck"],
+    "failure_to_extract": ["extract", "extractor", "casing", "chamber", "carbon", "ring", "plunger", "hook"],
+    "ftej": ["eject", "ejector", "nose", "angle", "clearance", "port", "stovepipe", "bar", "spring"],
+    "failure_to_eject": ["eject", "ejector", "nose", "clearance", "port", "stovepipe", "ejector", "bar"],
+    "misfire": ["light", "strike", "misfire", "primer", "protrusion", "striker", "firing", "pin", "spring", "carbon"],
+    "light_strike": ["light", "strike", "misfire", "primer", "protrusion", "striker", "firing", "pin", "indent"],
+    "slam_fire": ["slam", "fire", "premature", "percussion", "firing", "pin", "free", "floating", "inertia"],
+    "out_of_battery": ["battery", "locking", "lug", "rotation", "disconnector", "disconnect", "gap", "battery"],
+    "push_off": ["push", "off", "sear", "hammer", "notch", "engagement", "single", "action", "full", "cock"],
+    "barrel_droop": ["droop", "v-block", "clamp", "torque", "screws", "wedge", "cant", "elevation", "bedding"],
+    "keyholing": ["keyholing", "yaw", "tumbling", "rifling", "twist", "crown", "muzzle", "throat", "erosion"],
+    "squib": ["squib", "bore", "obstruction", "bullet", "lodged", "powder", "primer", "barrel"],
+    "cylinder_bind": ["cylinder", "bind", "endshake", "ejector", "rod", "crane", "ratchet", "expansion"],
+    "lead_spitting": ["cylinder", "gap", "forcing", "cone", "timing", "alignment", "revolver", "spitting"],
+    "pierced_primer": ["pierced", "primer", "firing", "pin", "protrusion", "cratering", "flow", "chamfer"],
+
+    // Common Operations, Tolerances & Assemblies
+    "headspace": ["headspace", "go", "no-go", "field", "gauge", "rimless", "rimmed", "datum", "breech", "closing"],
+    "v-block": ["v-block", "clamp", "torque", "screws", "10-15", "in-lbs", "barrel", "tenon", "droop"],
+    "torque": ["in-lbs", "ft-lbs", "torque", "inch-pounds", "wrench", "staking", "tighten", "specification"],
+    "gas_key": ["carrier", "key", "gas", "key", "staking", "torque", "50-58", "in-lbs", "carrier", "screws"],
+    "castle_nut": ["castle", "nut", "receiver", "extension", "buffer", "tube", "staking", "38-42", "ft-lbs"],
+    "cruciform": ["cruciform", "sear", "drop", "safety", "shelf", "66%", "engagement", "trigger", "bar", "plate"],
+    "rotary_magazine": ["rotary", "magazine", "clock", "spring", "1-1/4", "turns", "450", "degrees", "rotor", "hex"],
+    "locking_block": ["locking", "block", "wings", "d-spring", "dogbone", "pin", "falling", "block", "beretta"],
+    "cleaning": ["solvent", "carbon", "brush", "lube", "oil", "grease", "patches", "copper", "bore", "clean"],
+    "disassembly": ["field", "strip", "detail", "strip", "takedown", "pin", "punch", "unscrew", "drift", "remove"]
+  };
+
   const expandedTokens = [...queryTokens];
+  queryTokens.forEach(t => {
+    if (GUNSMITH_ONTOLOGY[t]) {
+      expandedTokens.push(...GUNSMITH_ONTOLOGY[t]);
+    }
+    for (const [k, syns] of Object.entries(GUNSMITH_ONTOLOGY)) {
+      if (k.includes(t) || t.includes(k)) {
+        expandedTokens.push(...syns);
+      }
+    }
+  });
+
+  // Platform-specific additions
   const fidLower = (activeFid || "").toLowerCase();
   if (fidLower.includes("lewis")) {
-    if (queryTokens.some(t => ["shield", "shroud", "casing", "barrel", "mouthpiece", "front"].includes(t))) {
-      expandedTokens.push("radiator", "casing", "mouthpiece", "clamp", "cylinder", "spanner", "gland");
-    }
-    if (queryTokens.some(t => ["spring", "tension", "clock", "gear"].includes(t))) {
-      expandedTokens.push("mainspring", "pinion", "casing", "collet");
-    }
-    if (queryTokens.some(t => ["clean", "carbon", "oil", "gas"].includes(t))) {
-      expandedTokens.push("cylinder", "piston", "powder", "solvent");
-    }
+    expandedTokens.push("radiator", "casing", "mouthpiece", "pinion", "mainspring", "gas", "regulator", "spanner");
+  } else if (fidLower.includes("1022")) {
+    expandedTokens.push("v-block", "screws", "10-15", "rotary", "magazine", "rotor", "1-1/4", "bx-trigger");
   } else if (fidLower.includes("glock")) {
-    if (queryTokens.some(t => ["clean", "cleaning", "lube", "oil", "deep"].includes(t))) {
-      expandedTokens.push("drops", "lubricat", "rail", "connector", "solvent");
-    }
-    if (queryTokens.some(t => ["sear", "drop", "safety", "orange"].includes(t))) {
-      expandedTokens.push("cruciform", "engagement", "plate", "inspection");
-    }
-    if (queryTokens.some(t => ["trigger", "polish"].includes(t))) {
-      expandedTokens.push("connector", "cruciform", "plunger", "ramp");
-    }
+    expandedTokens.push("cruciform", "sear", "66%", "drop", "safety", "connector", "striker", "30274");
   } else if (fidLower.includes("ar15") || fidLower.includes("m4")) {
-    if (queryTokens.some(t => ["key", "gas"].includes(t))) {
-      expandedTokens.push("staking", "carrier", "screws", "torque");
-    }
-    if (queryTokens.some(t => ["buffer", "weight"].includes(t))) {
-      expandedTokens.push("carbine", "h2", "spring", "extension");
-    }
+    expandedTokens.push("carrier", "key", "staking", "50-58", "gas", "rings", "castle", "nut", "headspace");
   }
 
   const results = [];
