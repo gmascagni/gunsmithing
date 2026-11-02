@@ -70,7 +70,7 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
             "spring_tension": "12 to 14 lbs pull measured at cocking handle (approx 2 to 2.5 full turns of gear casing from slack)",
             "striker_protrusion": "0.050\" to 0.060\" through bolt face at full battery",
             "gas_regulator": "Two-orifice cup: 'S' (Small - normal operation) / 'L' (Large - foul/cold conditions)",
-            "headspace_303": "Rimmed: GO = 0.058\", NO-GO = 0.064\", FIELD = 0.070\"",
+            "headspace_303": "British War Office .303 Rimmed: GO = 0.064\", NO-GO = 0.070\", FIELD (War Emergency) = 0.074\"",
             "cooling_system": "Aluminum longitudinal fluted radiator enclosed in steel jacket with muzzle blast venturi cowl"
         },
         "stoppages": [
@@ -249,7 +249,7 @@ BATTLE_HISTORIC: Dict[str, Dict[str, Any]] = {
         "key_tasks": ["Numbered Bolt Head Swapping (0, 1, 2, 3 Headspace)", "Striker Collar & Firing Pin Removal Tool", "Forend Stock Draw Block Bedding", "Magazine Feed Lip Bending Tool", "Two-Stage Military Trigger Tuning"],
         "specs": {
             "headspace_adjustment": "Set by unscrewing and swapping numbered bolt heads: Size 0 (standard), Size 1 (+0.003\"), Size 2 (+0.006\"), Size 3 (+0.009\")",
-            "headspace_limits": "GO = 0.058\" / NO-GO = 0.064\" / FIELD (Military Service Limit) = 0.070\"",
+            "headspace_limits": "British War Office .303 Rimmed: GO = 0.064\" / NO-GO = 0.070\" / FIELD (Military Service Limit) = 0.074\"",
             "cock_on_closing": "Bolt cocks on the forward stroke (allowing the famous 'Mad Minute' 30+ aimed shots in 60 seconds)",
             "rear_locking_lugs": "Dual locking lugs at rear of bolt body; produces natural micro-flex in receiver, requiring exact forend draw block bedding"
         },

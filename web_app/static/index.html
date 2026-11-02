@@ -65,7 +65,9 @@
             <option value="Beretta_Pistols">Beretta 92 / M9 Series (9mm)</option>
           </optgroup>
           <optgroup label="── RIFLES, RIMFIRE &amp; REVOLVERS ──">
-            <option value="Ruger_Firearms">Ruger Collection (10/22, Mark I–IV, GP100)</option>
+            <option value="AR15_M4_Platform">AR-15 / M4 / M16 Service Platform</option>
+            <option value="Ruger_1022_Carbine">Ruger 10/22 Rimfire Carbine (.22 LR)</option>
+            <option value="Remington_700_Rifles">Remington Model 700 Bolt-Action</option>
           </optgroup>
           <optgroup label="── AUTOMATIC WEAPONS ──">
             <option value="Lewis_Automatic_Machine_Gun" selected>Lewis Light Machine Gun (.303 / .30-06)</option>
@@ -76,9 +78,9 @@
         </select>
       </div>
 
-      <button id="openGunCatalogBtn" class="bench-firearm-btn" title="Open Full Armory Catalog with Multi-Filter Search">
+      <button id="openGunCatalogBtn" class="bench-firearm-btn" title="Open Full Armory Catalog (53 Firearms &amp; Shop Disciplines)">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        <span class="bench-switch-pill">🗂️ Armory Catalog</span>
+        <span class="bench-btn-label">Armory Catalog</span>
       </button>
 
       <button id="mobileConnectBtn" class="mobile-connect-btn" title="Connect Phone / Tablet via Wi-Fi">
@@ -89,9 +91,9 @@
         <span class="btn-text">Mobile Link</span>
       </button>
 
-      <button id="llmStatusPill" class="llm-pill" title="Click to configure Local LLM settings">
-        <span class="status-dot pulsing"></span>
-        <span id="llmStatusText">Detecting LLM...</span>
+      <button id="llmStatusPill" class="llm-pill" title="Click to configure Local or Cloud AI settings">
+        <span class="status-dot"></span>
+        <span id="llmStatusText">⚡ Armorer AI</span>
         <svg class="pill-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -112,9 +114,13 @@
       <!-- Quick Platform Categorizer & Switcher Bar -->
       <div class="platform-quick-bar" id="platformQuickBar">
         <div class="strip-header">
-          <span class="strip-label">SELECT &amp; FILTER PLATFORM:</span>
-          <button id="sidebarOpenCatalogLink" class="catalog-link-btn" title="Open Full Armory Catalog">🗂️ Catalog</button>
+          <button type="button" id="toggleQuickBarBtn" class="strip-toggle-btn" aria-expanded="false" title="Expand or collapse quick platform filter">
+            <span id="quickBarChevron">▸</span>
+            <span class="strip-label">QUICK FILTER PLATFORMS</span>
+          </button>
+          <button type="button" id="sidebarOpenCatalogLink" class="catalog-link-btn" title="Open Full Armory Catalog">🗂️ Catalog</button>
         </div>
+        <div class="platform-quick-collapsible collapsed" id="platformQuickCollapsible">
         
         <!-- Manufacturer Quick Pills -->
         <div class="quick-filter-row">
@@ -145,6 +151,7 @@
         <!-- Dynamic Quick-Switch Cards List -->
         <div class="platform-quick-list" id="platformQuickList">
           <!-- Populated dynamically via JS: each platform has icon, name, mfg tag, specs and click-to-switch -->
+        </div>
         </div>
       </div>
 
@@ -196,7 +203,7 @@
         </button>
         <button class="lib-tab" data-tab="stoppages">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Stoppages <span class="count-badge">4</span>
+          Stoppages <span id="stoppagesCount" class="count-badge">4</span>
         </button>
       </nav>
 
@@ -249,19 +256,35 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             <span class="mode-label">Specs</span>
           </button>
+          <button type="button" id="openBenchCalcBtn" class="bench-calc-trigger-btn" title="Open Master Gunsmith Torque Matrix, Unit Converter, Crow's-Foot Offset &amp; Headspace Calculator">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <span class="mode-label">Torque &amp; Calc</span>
+          </button>
         </div>
 
         <div class="preview-status" id="previewTitle">
-          Savage Arms Lewis Machine Gun Hand-Book (1917/18)
+          Loading Armorer Technical Repository...
         </div>
 
         <div class="preview-actions">
           <button id="btnSwapPanes" class="action-icon-btn hidden" title="Swap Schematic & Manual Sides in Split View">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
           </button>
-          <a id="btnExternalLink" href="#" target="_blank" class="action-icon-btn" title="Open in New Tab / Download">
+          <a id="btnExternalLink" href="#" target="_blank" rel="noopener" class="action-icon-btn" title="Open in New Tab / Download">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
+        </div>
+      </div>
+
+      <!-- Master Gunsmith Bench Safety & Mechanical Trap Interlock Strip -->
+      <div class="bench-safety-banner" id="benchSafetyBanner">
+        <button type="button" id="btnVerifyChamberClear" class="safety-interlock-btn" aria-pressed="false" title="Click to confirm physical &amp; visual chamber and magazine clearance before disassembly">
+          <span class="safety-check-box" id="safetyCheckBox">☐</span>
+          <span id="safetyCheckLabel">VERIFY CHAMBER &amp; FEEDWAY CLEAR</span>
+        </button>
+        <div class="safety-hazards-strip" id="benchHazardBadges">
+          <span class="hazard-pill">⚠️ Ease Return Clock-Spring Before Strip</span>
+          <span class="hazard-pill">⚠️ LH Reverse Threads: Mouthpiece &amp; Gland</span>
         </div>
       </div>
 
@@ -648,8 +671,8 @@
 
               <div class="dossier-card">
                 <h3>Headspace Tolerances (.303 British)</h3>
-                <div class="spec-highlight">0.058" GO / 0.064" NO-GO</div>
-                <p>Gauged from the barrel breech face to the bolt recess face. Maximum allowable FIELD headspace is <strong>0.070"</strong>.</p>
+                <div class="spec-highlight">0.064" GO / 0.070" NO-GO</div>
+                <p>British War Office rimmed headspace gauged from breech face to bolt recess. Maximum FIELD (War Emergency) limit is <strong>0.074"</strong>.</p>
               </div>
             </div>
 
@@ -710,8 +733,8 @@
             <button id="btnStartLocalLLM" class="btn-start-local-llm" title="Start / Switch Local LLM AI (Ollama / Local Engine)">
               <span class="llm-indicator-dot offline" id="llmAssistantDot"></span>
               <span class="llm-power-icon" id="llmPowerIcon">⚡</span>
-              <span id="btnStartLocalLLMText">Start Local AI</span>
-              <span class="llm-dropdown-chevron">▾</span>
+              <span id="btnStartLocalLLMText">Local AI</span>
+              <span class="llm-dropdown-chevron" id="btnLocalLLMChevron">▾</span>
             </button>
             <!-- Quick Popover for Local AI Control -->
             <div id="localLLMPopover" class="local-llm-popover hidden">
@@ -745,7 +768,7 @@
       </div>
 
       <!-- Quick Prompt Suggestions -->
-      <div class="quick-prompts">
+      <div class="quick-prompts" id="quickPromptsBar">
         <button class="prompt-chip" data-query="What is the exact return spring tension and how is it adjusted?">Spring Tension</button>
         <button class="prompt-chip" data-query="How do I troubleshoot a Position 2 stoppage?">Pos 2 Stoppage</button>
         <button class="prompt-chip" data-query="Explain the striker replacement and protrusion tolerance.">Striker Repair</button>
@@ -759,7 +782,7 @@
           <div class="msg-avatar">AI</div>
           <div class="msg-content">
             <p><strong>Master Armorer Assistant Ready.</strong></p>
-            <p>Connected to technical manuals, schematics, and armorer tolerances for the <strong>Lewis Light Machine Gun</strong>. Ask any question about servicing, field stripping, troubleshooting stoppages, or parts machining.</p>
+            <p>Connected to technical manuals, schematics, and armorer tolerances for the <strong id="welcomePlatformName">Lewis Automatic Machine Gun</strong>. Ask any question about servicing, field stripping, troubleshooting stoppages, scopes, torque specs, or parts machining.</p>
           </div>
         </div>
       </div>
@@ -809,7 +832,7 @@
             <option value="lmstudio">Local AI Machine: LM Studio (http://127.0.0.1:1234/v1 or LAN IP)</option>
           </optgroup>
           <optgroup label="Web-Based Cloud LLMs">
-            <option value="gemini">Google Gemini Web (1.5 Flash / 1.5 Pro / 2.0 Flash)</option>
+            <option value="gemini">Google Gemini Web (2.5 Flash / 2.5 Pro / 2.0 Flash)</option>
             <option value="openai">OpenAI ChatGPT Web (GPT-4o-mini / GPT-4o)</option>
             <option value="custom_web">OpenRouter / Groq / DeepSeek / Cloud Endpoint</option>
           </optgroup>
@@ -1011,8 +1034,174 @@
     </div>
   </dialog>
 
-  <script src="/static/vendor/pdf.min.js"></script>
-  <script src="/static/rag_data.js"></script>
-  <script src="/static/app.js"></script>
+  <!-- Connect Local Ollama / Workstation AI Modal (LNA Loopback Bridge & Setup) -->
+  <dialog id="localAISetupDialog" class="settings-modal local-ai-modal">
+    <div class="modal-header">
+      <h3>⚡ CONNECT LOCAL WORKSTATION AI (OLLAMA / LM STUDIO)</h3>
+      <button type="button" id="closeLocalAISetupBtn" class="modal-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="local-ai-status-box" id="localAIProbeReadout">
+        <span class="status-indicator-dot" id="localAIModalDot"></span>
+        <div class="local-ai-status-copy">
+          <strong id="localAIModalTitle">Checking Local Loopback Status...</strong>
+          <small id="localAIModalSub">Probing 127.0.0.1:8055 (FastAPI Bridge) &amp; 127.0.0.1:11434 (Ollama) with Local Network Access</small>
+        </div>
+      </div>
+
+      <div class="local-ai-steps">
+        <div class="local-ai-step-card">
+          <div class="step-card-title">Option A — Full Local Python + GPU Workbench (Recommended)</div>
+          <p>Runs FastAPI + PyMuPDF + FFmpeg Video Lab + 1-click Ollama launcher directly on your machine with zero browser restrictions:</p>
+          <div class="cmd-copy-row">
+            <code id="cmdRunWorkbench">run_workbench.bat</code>
+            <button type="button" class="btn-secondary copy-cmd-btn" data-copy="run_workbench.bat">Copy</button>
+          </div>
+          <small class="field-hint">Double-click in your <code>Gun Manuals</code> folder, then open <a href="http://127.0.0.1:8055" target="_blank" rel="noopener" style="color:var(--brass-accent);">http://127.0.0.1:8055</a>.</small>
+        </div>
+
+        <div class="local-ai-step-card">
+          <div class="step-card-title">Option B — Bridge Hosted HTTPS Directly to Local Ollama</div>
+          <p>Allow GitHub Pages to reach your local Ollama GPU over loopback (grant Chrome's Local Network Access prompt when asked):</p>
+          <div class="cmd-copy-row">
+            <code id="cmdOllamaCors">$env:OLLAMA_ORIGINS="https://gmascagni.github.io,*"; ollama serve</code>
+            <button type="button" class="btn-secondary copy-cmd-btn" data-copy='$env:OLLAMA_ORIGINS="https://gmascagni.github.io,*"; ollama serve'>Copy PS</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="local-ai-modal-actions">
+        <button type="button" id="btnRetryLocalProbe" class="btn-primary">🔄 Retry Local AI Probe</button>
+        <button type="button" id="btnOpenCloudSettingsFromLocal" class="btn-secondary">☁️ Configure Cloud API Key</button>
+        <button type="button" id="btnUseBuiltinRAGFromLocal" class="btn-secondary">⚡ Use Built-in RAG AI</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Master Gunsmith Torque, Thread-Prep & Bench Calculators Modal -->
+  <dialog id="benchCalcDialog" class="settings-modal bench-calc-modal">
+    <div class="modal-header">
+      <h3>🔧 MASTER GUNSMITH TORQUE, FLUIDS &amp; BENCH CALCULATORS</h3>
+      <button type="button" id="closeBenchCalcBtn" class="modal-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body bench-calc-body">
+      <div class="calc-tabs-bar">
+        <button type="button" class="calc-tab-btn active" data-calctab="torque">🔩 Torque &amp; Thread-Prep Matrix</button>
+        <button type="button" class="calc-tab-btn" data-calctab="crowsfoot">📐 Crow's-Foot Offset</button>
+        <button type="button" class="calc-tab-btn" data-calctab="headspace">🎯 Headspace &amp; Sight Drift</button>
+      </div>
+
+      <!-- Tab 1: Torque & Thread-Prep Matrix -->
+      <div class="calc-tab-panel active" id="calcPanelTorque">
+        <div class="calc-unit-bar">
+          <span>Active Platform: <strong id="calcActivePlatformLabel" style="color:var(--brass-accent);">Lewis Automatic Machine Gun</strong></span>
+          <div class="unit-toggle-group" id="torqueUnitSwitcher">
+            <button type="button" class="unit-btn active" data-unit="in-lbs">in-lbs</button>
+            <button type="button" class="unit-btn" data-unit="ft-lbs">ft-lbs</button>
+            <button type="button" class="unit-btn" data-unit="nm">N·m</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="stoppage-table torque-ref-table">
+            <thead>
+              <tr>
+                <th>Fastener / Assembly</th>
+                <th>Torque Spec</th>
+                <th>Thread Prep / Staking</th>
+              </tr>
+            </thead>
+            <tbody id="torqueMatrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Crow's-Foot / Armorer Wrench Extension Offset -->
+      <div class="calc-tab-panel hidden" id="calcPanelCrowsfoot">
+        <p class="field-hint" style="margin-bottom:8px;">When an armorer barrel-nut wrench or crow's-foot adapter extends straight forward (0°) from the torque wrench drive square, dial down your wrench setting so true fastener torque is not exceeded:</p>
+        <div class="calc-grid-inputs">
+          <div class="form-group">
+            <label for="cfTargetTorque">Target Fastener Torque (ft-lbs or in-lbs):</label>
+            <input type="number" id="cfTargetTorque" value="40" min="1" step="0.5">
+          </div>
+          <div class="form-group">
+            <label for="cfWrenchLength">Torque Wrench Effective Length <em>L</em> (in):</label>
+            <input type="number" id="cfWrenchLength" value="14" min="4" step="0.25">
+          </div>
+          <div class="form-group">
+            <label for="cfExtensionLength">Adapter Center-to-Center Offset <em>E</em> (in):</label>
+            <input type="number" id="cfExtensionLength" value="2.0" min="0" step="0.125">
+          </div>
+          <div class="form-group">
+            <label for="cfAngleSelect">Adapter Orientation:</label>
+            <select id="cfAngleSelect">
+              <option value="0">0° Inline Extension (L + E)</option>
+              <option value="90">90° Perpendicular — Zero Offset (Set = Target)</option>
+            </select>
+          </div>
+        </div>
+        <div class="calc-readout-card" id="cfResultReadout">
+          Dial Torque Wrench To: <strong>35.0</strong> (Formula: T_dial = T_target × L / (L + E))
+        </div>
+      </div>
+
+      <!-- Tab 3: Headspace Pass/Fail & Sight Drift Calculator -->
+      <div class="calc-tab-panel hidden" id="calcPanelHeadspace">
+        <div class="calc-sub-section">
+          <h4 class="calc-sub-title">1. Headspace Gauge Pass / Fail Evaluator</h4>
+          <div class="calc-grid-inputs">
+            <div class="form-group">
+              <label for="hsGoSelect">GO Gauge (Min Spec):</label>
+              <select id="hsGoSelect">
+                <option value="closes">Bolt Closes Smoothly</option>
+                <option value="blocks">Bolt Does NOT Close</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="hsNoGoSelect">NO-GO Gauge (New Build Max):</label>
+              <select id="hsNoGoSelect">
+                <option value="blocks">Bolt Does NOT Close</option>
+                <option value="closes">Bolt Closes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="hsFieldSelect">FIELD / REJECT Gauge (Service Safety Max):</label>
+              <select id="hsFieldSelect">
+                <option value="blocks">Bolt Does NOT Close</option>
+                <option value="closes">Bolt Closes (Reject)</option>
+              </select>
+            </div>
+          </div>
+          <div class="calc-readout-card" id="hsResultReadout"></div>
+        </div>
+
+        <div class="calc-sub-section" style="margin-top:14px;">
+          <h4 class="calc-sub-title">2. Dovetail Iron Sight Drift Calculator (FORS Rule)</h4>
+          <div class="calc-grid-inputs">
+            <div class="form-group">
+              <label for="sdSightRadius">Sight Radius (in):</label>
+              <input type="number" id="sdSightRadius" value="6.5" min="2" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="sdTargetDist">Target Distance (yards):</label>
+              <input type="number" id="sdTargetDist" value="25" min="5" step="5">
+            </div>
+            <div class="form-group">
+              <label for="sdPoiShift">Desired POI Shift on Target (in):</label>
+              <input type="number" id="sdPoiShift" value="2.0" min="0.1" step="0.1">
+            </div>
+          </div>
+          <div class="calc-readout-card" id="sdResultReadout"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="closeBenchCalcBtn2" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script defer src="/static/vendor/pdf.min.js"></script>
+  <script async fetchpriority="low" src="/static/rag_data.js"></script>
+  <script defer src="/static/app.js"></script>
 </body>
 </html>

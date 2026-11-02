@@ -86,8 +86,9 @@ class ArmorerRAGEngine:
             for s_idx, s in enumerate(stoppages):
                 pos = s.get("position", "")
                 s_desc = s.get("short_desc", "")
-                remedy = s.get("remedy", "")
-                causes = s.get("root_causes", "")
+                remedy = s.get("action", "") or s.get("remedy", "")
+                raw_causes = s.get("causes", "") or s.get("root_causes", "")
+                causes = "; ".join(raw_causes) if isinstance(raw_causes, list) else str(raw_causes)
                 stop_text = (
                     f"Platform: {fname} Malfunction Diagnostic\n"
                     f"Stoppage Position: {pos}\n"

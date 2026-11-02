@@ -51,7 +51,7 @@ SAMPLE_CASES = {
             "1. Gauging: Check chamber headspace with 1.4646\" GO and 1.4706\" NO-GO gauges.",
             "2. Extractor Inspection: Measure extractor hook depth (min 0.035\"). Replace worn claw (OEM Colt/Mil-Spec 9330030).",
             "3. Spring Upgrade: Install 5-coil copper-coated high-reliability extractor spring with silicone insert and Viton #006 O-ring (provides 15+ lbs claw tension).",
-            "4. Gas Mitigation: Check carrier key screws staked to 50–55 in-lbs; test gas rings stagger; consider H2/H3 buffer to delay unlock timing."
+            "4. Gas Mitigation: Check carrier key screws staked to 50–58 in-lbs (Permatex #3 under deck, MOACKS side-staked); test gas rings stagger; consider H2/H3 buffer to delay unlock timing."
         ],
         "parts_to_inspect": [
             {"name": "Bolt Assembly Extractor", "oem": "Mil-Spec 9330030", "spec": "15–18 lbs grip force; 0.035\" hook depth"},
@@ -256,7 +256,7 @@ async def analyze_frames_with_gemini(
     firearm_name: str,
     user_notes: str,
     api_key: str,
-    model: str = "gemini-1.5-flash"
+    model: str = "gemini-2.5-flash"
 ) -> Optional[Dict[str, Any]]:
     """Invokes Gemini Multimodal Vision API to diagnose weapon malfunction from frames."""
     import httpx
@@ -420,7 +420,7 @@ async def analyze_malfunction_video(
         gemini_key = cfg.get("api_key") or os.environ.get("GEMINI_API_KEY", "")
         vision_result = None
         if gemini_key:
-            mod = cfg.get("model") if cfg.get("model") and "gemini" in cfg.get("model") else "gemini-1.5-flash"
+            mod = cfg.get("model") if cfg.get("model") and "gemini" in cfg.get("model") else "gemini-2.5-flash"
             vision_result = await analyze_frames_with_gemini(
                 frames=frames,
                 firearm_name=fname,

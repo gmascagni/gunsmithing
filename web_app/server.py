@@ -40,10 +40,27 @@ app = FastAPI(title="Armorer's Workbench", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_private_network_access_headers(request, call_next):
+    if request.method == "OPTIONS" and request.headers.get("access-control-request-private-network") == "true":
+        from fastapi.responses import Response
+        return Response(
+            status_code=204,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Private-Network": "true",
+            },
+        )
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
 
 # Mount static folder
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -117,18 +134,25 @@ def get_firearm_path(firearm_id: str) -> Path:
 def load_firearm_data(firearm_id: str) -> Dict[str, Any]:
     fpath = get_firearm_path(firearm_id)
     
-    # 1. Manuals
+    # 1. Manuals (sort full OEM/military manuals ahead of 1-page quick reference sheets)
     manuals_dir = fpath / "manuals"
     manuals = []
     if manuals_dir.exists():
-        for mf in sorted(manuals_dir.glob("*.pdf")):
-            size_mb = round(mf.stat().st_size / (1024 * 1024), 2)
+        pdf_files = sorted(
+            manuals_dir.glob("*.pdf"),
+            key=lambda p: (1 if p.name.startswith("Armorer_Technical_Manual_") or p.stat().st_size < 55000 else 0, p.name.lower())
+        )
+        for mf in pdf_files:
+            raw_mb = mf.stat().st_size / (1024 * 1024)
+            size_mb = max(0.01, round(raw_mb, 2))
             name_clean = mf.stem.replace("_", " ")
+            is_sum = mf.name.startswith("Armorer_Technical_Manual_") or mf.stat().st_size < 55000
             manuals.append({
                 "id": mf.name,
                 "title": name_clean,
                 "filename": mf.name,
                 "size_mb": size_mb,
+                "is_summary": is_sum,
                 "url": f"/api/manuals/{firearm_id}/{mf.name}"
             })
             
@@ -277,7 +301,7 @@ async def test_llm_connection(req: Dict[str, Any]):
         key = api_key or os.environ.get("GEMINI_API_KEY", "")
         if not key:
             return {"success": False, "error": "No Gemini API key provided."}
-        mod = model if model and model != "auto" else "gemini-1.5-flash"
+        mod = model if model and model != "auto" else "gemini-2.5-flash"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={key}"
         try:
             async with httpx.AsyncClient(timeout=8.0) as client:
@@ -367,7 +391,7 @@ async def start_local_llm(req: Optional[LLMStartRequest] = None):
                 candidate_paths = [
                     Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Ollama" / "ollama.exe",
                     Path(os.environ.get("PROGRAMFILES", "")) / "Ollama" / "ollama.exe",
-                    Path(r"C:\Users\gmasc\AppData\Local\Programs\Ollama\ollama.exe"),
+                    Path.home() / "AppData" / "Local" / "Programs" / "Ollama" / "ollama.exe",
                 ]
                 for cp in candidate_paths:
                     if cp.exists():
@@ -463,8 +487,10 @@ async def start_local_llm(req: Optional[LLMStartRequest] = None):
             async with httpx.AsyncClient(timeout=2.0) as client:
                 res = await client.get(f"{ep.rstrip('/')}/models")
                 if res.status_code == 200:
-                    models = [m["id"] for m in res.json().get("data", [])]
-                    active_model = models[0] if models else "local-model"
+                    all_models = [m["id"] for m in res.json().get("data", [])]
+                    chat_models = [m for m in all_models if not any(x in m.lower() for x in ["embed", "bge", "bert", "minilm"])]
+                    models = chat_models if chat_models else all_models
+                    active_model = desired_model if (desired_model and desired_model != "auto" and desired_model in models) else (models[0] if models else "local-model")
                     cfg["backend"] = "lmstudio"
                     cfg["model"] = active_model
                     cfg["endpoint"] = ep
@@ -525,27 +551,36 @@ async def switch_model(req: SwitchModelRequest):
 
 @app.get("/api/llm/backends")
 async def check_llm_backends():
-    backends = []
     cfg = get_saved_config()
-    
-    # 1. Local AI Machine: Ollama (localhost or custom host)
     ollama_ep = cfg.get("endpoint") if cfg.get("backend") == "ollama" and cfg.get("endpoint") else "http://127.0.0.1:11434"
-    try:
-        async with httpx.AsyncClient(timeout=1.5) as client:
-            resp = await client.get(f"{ollama_ep.rstrip('/')}/api/tags")
-            if resp.status_code == 200:
-                models = [m["name"] for m in resp.json().get("models", [])]
-                backends.append({
-                    "id": "ollama",
-                    "name": "Local AI Machine (Ollama)",
-                    "endpoint": ollama_ep,
-                    "status": "online",
-                    "type": "local",
-                    "models": models,
-                    "default_model": models[0] if models else "qwen3.5:4b"
-                })
-    except Exception:
-        backends.append({
+    lm_ep = cfg.get("endpoint") if cfg.get("backend") == "lmstudio" and cfg.get("endpoint") else "http://127.0.0.1:1234/v1"
+    probe_timeout = httpx.Timeout(1.5, connect=1.0)
+
+    def _filter_chat_models(raw_models: List[str], fallback: str) -> tuple:
+        chat_only = [m for m in raw_models if not any(x in m.lower() for x in ["embed", "bge", "bert", "minilm"])]
+        usable = chat_only if chat_only else raw_models
+        def_mod = "qwen3.5:4b" if "qwen3.5:4b" in usable else (usable[0] if usable else fallback)
+        return usable, def_mod
+
+    async def probe_ollama():
+        try:
+            async with httpx.AsyncClient(timeout=probe_timeout) as client:
+                resp = await client.get(f"{ollama_ep.rstrip('/')}/api/tags")
+                if resp.status_code == 200:
+                    raw_models = [m["name"] for m in resp.json().get("models", [])]
+                    models, def_mod = _filter_chat_models(raw_models, "qwen3.5:4b")
+                    return {
+                        "id": "ollama",
+                        "name": "Local AI Machine (Ollama)",
+                        "endpoint": ollama_ep,
+                        "status": "online",
+                        "type": "local",
+                        "models": models,
+                        "default_model": def_mod
+                    }
+        except Exception:
+            pass
+        return {
             "id": "ollama",
             "name": "Local AI Machine (Ollama)",
             "endpoint": ollama_ep,
@@ -553,26 +588,27 @@ async def check_llm_backends():
             "type": "local",
             "models": [],
             "default_model": "qwen3.5:4b"
-        })
+        }
 
-    # 2. Local AI Machine: LM Studio (localhost or custom host)
-    lm_ep = cfg.get("endpoint") if cfg.get("backend") == "lmstudio" and cfg.get("endpoint") else "http://127.0.0.1:1234/v1"
-    try:
-        async with httpx.AsyncClient(timeout=1.5) as client:
-            resp = await client.get(f"{lm_ep.rstrip('/')}/models")
-            if resp.status_code == 200:
-                models = [m["id"] for m in resp.json().get("data", [])]
-                backends.append({
-                    "id": "lmstudio",
-                    "name": "Local AI Machine (LM Studio)",
-                    "endpoint": lm_ep,
-                    "status": "online",
-                    "type": "local",
-                    "models": models,
-                    "default_model": models[0] if models else "local-model"
-                })
-    except Exception:
-        backends.append({
+    async def probe_lmstudio():
+        try:
+            async with httpx.AsyncClient(timeout=probe_timeout) as client:
+                resp = await client.get(f"{lm_ep.rstrip('/')}/models")
+                if resp.status_code == 200:
+                    raw_models = [m["id"] for m in resp.json().get("data", [])]
+                    models, def_mod = _filter_chat_models(raw_models, "local-model")
+                    return {
+                        "id": "lmstudio",
+                        "name": "Local AI Machine (LM Studio)",
+                        "endpoint": lm_ep,
+                        "status": "online",
+                        "type": "local",
+                        "models": models,
+                        "default_model": def_mod
+                    }
+        except Exception:
+            pass
+        return {
             "id": "lmstudio",
             "name": "Local AI Machine (LM Studio)",
             "endpoint": lm_ep,
@@ -580,7 +616,10 @@ async def check_llm_backends():
             "type": "local",
             "models": [],
             "default_model": "local-model"
-        })
+        }
+
+    ollama_info, lm_info = await asyncio.gather(probe_ollama(), probe_lmstudio())
+    backends = [ollama_info, lm_info]
 
     # 3. Web-Based Cloud: Google Gemini
     has_gemini_key = bool(cfg.get("api_key") or os.environ.get("GEMINI_API_KEY"))
@@ -590,8 +629,8 @@ async def check_llm_backends():
         "endpoint": "https://generativelanguage.googleapis.com",
         "status": "configured" if has_gemini_key else "needs_key",
         "type": "web",
-        "models": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
-        "default_model": "gemini-1.5-flash"
+        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+        "default_model": "gemini-2.5-flash"
     })
 
     # 4. Web-Based Cloud: OpenAI
@@ -946,8 +985,8 @@ def generate_fallback_expert_response(query: str, firearm_data: Dict[str, Any]) 
             return (
                 "### Ruger 10/22 Factory Torque Specifications\n\n"
                 "* **Takedown Action Screw:** **15 to 20 in-lbs** for wood/synthetic stocks; up to **25 in-lbs** for metal pillar-bedded stocks.\n"
-                "* **Barrel V-Block Clamp Screws:** **25 to 30 in-lbs** tightening evenly in alternating 5 in-lb increments.\n"
-                "* **⚠️ Armorer Precaution:** Never overtighten the V-block beyond 30 in-lbs, as this causes barrel tenon droop and destroys accuracy.\n"
+                "* **Barrel V-Block Clamp Screws:** **10 to 15 in-lbs** (18 in-lbs max) tightening evenly in alternating 5 in-lb increments.\n"
+                "* **⚠️ Armorer Precaution:** Never overtighten the V-block beyond 18 in-lbs, as this strips cast aluminum receiver threads and causes barrel tenon droop.\n"
                 "* **Bolt Headspace (Rim Recess):** Factory rim recess is 0.0425\" to 0.0435\" depth."
             )
         elif any(k in q for k in ["magazine", "rotary", "rotary mag", "tension", "spool"]):
@@ -1193,7 +1232,7 @@ async def chat_handler(req: ChatRequest):
     if backend == "gemini" or (backend == "auto" and (api_key or os.environ.get("GEMINI_API_KEY")) and (model and "gemini" in model)):
         key = api_key or os.environ.get("GEMINI_API_KEY", "")
         if key:
-            mod = model if model and model != "auto" else "gemini-1.5-flash"
+            mod = model if model and model != "auto" else "gemini-2.5-flash"
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={key}"
             payload = {
                 "system_instruction": {"parts": [{"text": system_prompt}]},
@@ -1415,7 +1454,10 @@ async def search_repository(q: str = Query(..., min_length=2), firearm_id: str =
 
     # Search stoppages
     for s in data.get("stoppages", []):
-        s_text = f"{s.get('position', '')} {s.get('short_desc', '')} {s.get('root_causes', '')} {s.get('remedy', '')}".lower()
+        raw_c = s.get("causes", "") or s.get("root_causes", "")
+        c_str = " ".join(raw_c) if isinstance(raw_c, list) else str(raw_c)
+        rem_str = s.get("action", "") or s.get("remedy", "")
+        s_text = f"{s.get('position', '')} {s.get('short_desc', '')} {c_str} {rem_str}".lower()
         if any(t in s_text for t in tokens_to_match) or query in s_text:
             results.append({
                 "type": "stoppage",
@@ -1505,9 +1547,12 @@ async def analyze_video_endpoint(
 async def get_parts(firearm_id: str):
     if firearm_id in PARTS_DATABASE:
         return {"firearm_id": firearm_id, "parts": PARTS_DATABASE[firearm_id]}
+    target_cat = FIREARMS_METADATA.get(firearm_id, {}).get("category", "").lower()
     for cat_name, parts in DEFAULT_CATEGORY_PARTS.items():
-        return {"firearm_id": firearm_id, "category": cat_name, "parts": parts}
-    return {"firearm_id": firearm_id, "parts": []}
+        if cat_name.lower() in target_cat or target_cat in cat_name.lower():
+            return {"firearm_id": firearm_id, "category": cat_name, "parts": parts}
+    first_cat = next(iter(DEFAULT_CATEGORY_PARTS.keys()), "General")
+    return {"firearm_id": firearm_id, "category": first_cat, "parts": DEFAULT_CATEGORY_PARTS.get(first_cat, [])}
 
 def enrich_part_with_rag(firearm_id: str, part: Dict[str, Any]) -> Dict[str, Any]:
     """Cross-references identified component with firearm technical dossier, stoppages, and armorer specs."""
@@ -1518,10 +1563,13 @@ def enrich_part_with_rag(firearm_id: str, part: Dict[str, Any]) -> Dict[str, Any
     stoppages = meta.get("stoppages", [])
     matching_stoppages = []
     for s in stoppages:
-        combined = (s.get("position", "") + " " + s.get("short_desc", "") + " " + s.get("root_causes", "") + " " + s.get("remedy", "")).lower()
+        raw_c = s.get("causes", "") or s.get("root_causes", "")
+        c_str = " ".join(raw_c) if isinstance(raw_c, list) else str(raw_c)
+        rem_str = s.get("action", "") or s.get("remedy", "")
+        combined = (s.get("position", "") + " " + s.get("short_desc", "") + " " + c_str + " " + rem_str).lower()
         words = [w for w in re.split(r"\W+", part_text) if len(w) > 3]
         if any(w in combined for w in words):
-            matching_stoppages.append(f"{s.get('position', '')}: {s.get('short_desc', '')} — {s.get('remedy', '')}")
+            matching_stoppages.append(f"{s.get('position', '')}: {s.get('short_desc', '')} — {rem_str}")
 
     if matching_stoppages and not part.get("malfunctions"):
         part["malfunctions"] = " • ".join(matching_stoppages[:2])

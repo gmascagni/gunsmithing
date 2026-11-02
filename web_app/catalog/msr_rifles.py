@@ -18,12 +18,12 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
         "era": "American Standard Service Rifle (1962–Present)",
         "models": ["M4 / M4A1 Carbine (14.5\")", "M16A2 / M16A4 (20\")", "AR-15 Carbine (16\")", "Mk18 CQBR (10.3\")", "Mk12 SPR"],
         "calibers": ["5.56x45mm NATO", ".223 Remington", "300 AAC Blackout", "6.5 Grendel"],
-        "key_tasks": ["Gas Key Screws MO Staking (35–40 in-lbs)", "Barrel Nut Torque (30–80 ft-lbs)", "Castle Nut Staking (38–42 ft-lbs)", "Headspace Verification (GO / NO-GO / FIELD)", "Gas Tube Port Alignment"],
+        "key_tasks": ["Gas Key Screws MOACKS Staking (50–58 in-lbs)", "Barrel Nut Torque (30–80 ft-lbs)", "Castle Nut Staking (38–42 ft-lbs)", "Headspace Verification (5.56 NATO vs .223 SAAMI)", "Gas Tube Port Alignment"],
         "specs": {
             "barrel_nut_torque": "Initial torque 30 ft-lbs, then tighten to align gas tube notch; DO NOT exceed 80 ft-lbs (apply Aeroshell 64 / Mil-G-21164D grease to threads)",
-            "gas_key_screws": "Torque to 35 to 40 in-lbs; stake carrier metal into screw head counterbores with dedicated MO carrier staking tool",
+            "gas_key_screws": "Torque new Grade 8 / ASTM A574 screws to 50 to 58 in-lbs (TM 9-1005-319-23&P Change 8); seal mating deck with thin film of Permatex #3 (NO Loctite on threads); stake carrier key metal into screw serrations (MOACKS)",
             "castle_nut_torque": "38 to 42 ft-lbs; stake receiver end plate into castle nut notch in two locations",
-            "headspace_556_nato": "GO = 1.4636\", NO-GO = 1.4670\", FIELD = 1.4730\" (measured with stripped bolt without ejector/extractor)",
+            "headspace_556_vs_223": "5.56x45mm NATO USGI: GO = 1.4646\", NO-GO = 1.4706\", FIELD = 1.4736\" | .223 Rem SAAMI: GO = 1.4636\", NO-GO = 1.4666\" (gauged with stripped bolt)",
             "firing_pin_protrusion": "0.028\" minimum to 0.036\" maximum through bolt face",
             "bolt_tail_carbon": "Clean carbon off bolt tail; excess carbon creates friction and short stroking",
             "gas_rings": "Three staggered split gas rings; bolt assembly must support carrier weight when stood vertically on bolt face (no collapsing under own weight)"
@@ -38,7 +38,7 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
                     "Worn or broken bolt gas rings (rings aligned or failed stand test).",
                     "Excessive buffer weight (running H3 buffer on under-gassed carbine)."
                 ],
-                "action": "Immediate Action: TAP magazine floorplate, RACK charging handle aggressively, ASSESS feedway. Gunsmith Action: Inspect carrier gas key. If loose, clean threads, apply Loctite 271, torque to 40 in-lbs and stake metal into screw notches. Check gas tube alignment into carrier key (tube must slide smoothly into key with zero resistance)."
+                "action": "Immediate Action: TAP magazine floorplate, RACK charging handle aggressively, ASSESS feedway. Gunsmith Action: Inspect carrier gas key. If loose, install new Grade 8 screws, seal underside deck with Permatex #3 (do NOT use Loctite on gas key threads), torque to 50–58 in-lbs, and stake metal into screw notches. Check gas tube alignment into carrier key."
             },
             {
                 "position": "Stoppage 2: Failure to Extract (Spent Casing Stuck in Chamber)",
@@ -53,12 +53,12 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
         ],
         "videos": [
             {
-                "id": "v0yCq9yO2-g",
+                "id": "ar15_armorer_search_1",
                 "title": "AR-15 / M4 Armorer Maintenance: Complete Disassembly",
                 "creator": "Brownells Gunsmithing Bench",
                 "category": "Armorer Detail Strip",
-                "url": "https://www.youtube.com/watch?v=v0yCq9yO2-g",
-                "embed_url": "https://www.youtube-nocookie.com/embed/v0yCq9yO2-g",
+                "url": "https://www.youtube.com/results?search_query=School+of+the+American+Rifle+AR-15+BCG+physical+autopsy+armorer+inspection",
+                "embed_url": "",
                 "summary": "Full armorer teardown of the AR-15 upper and lower receiver, bolt carrier group disassembly, gas rings inspection, and trigger group service."
             },
             {
@@ -181,9 +181,9 @@ MSR_RIFLES: Dict[str, Dict[str, Any]] = {
         "era": "American Rimfire Legend (1964–Present)",
         "models": ["10/22 Carbine", "10/22 Takedown", "10/22 Target", "10/22 Sporter", "Charger Pistol"],
         "calibers": [".22 LR (Long Rifle)"],
-        "key_tasks": ["V-Block Clamp Torque (25–30 in-lbs)", "Rotary Magazine Pre-Tensioning (1-1/4 turns)", "Action Screw Torque (15–20 in-lbs)", "Auto-Bolt Release Modification", "Rim Recess Headspace Stoning (0.0425\")"],
+        "key_tasks": ["V-Block Clamp Torque (10–15 in-lbs)", "Rotary Magazine Pre-Tensioning (1-1/4 turns)", "Action Takedown Screw Torque (20 in-lbs)", "Auto-Bolt Release Modification", "Rim Recess Headspace Stoning (0.0425\")"],
         "specs": {
-            "v_block_screws": "25 to 30 in-lbs tightened in even alternating increments; overtightening causes barrel droop and accuracy loss",
+            "v_block_screws": "10 to 15 in-lbs (18 in-lbs max) tightened in even 5 in-lb alternating increments; exceeding 20 in-lbs strips cast aluminum receiver threads and induces barrel droop",
             "action_screw_torque": "15 to 20 in-lbs (wood/synthetic stock) / 25 in-lbs (aluminum pillar bedding)",
             "bolt_rim_headspace": "0.0425\" to 0.0435\" true headspace cut into bolt face recess for match accuracy",
             "magazine_tension": "Rotor clock spring pre-loaded exactly 1-1/4 full turns (450°) counter-clockwise before closing nut",

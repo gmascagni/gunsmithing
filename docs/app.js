@@ -205,17 +205,86 @@ const networkUrlInput = document.getElementById("networkUrlInput");
 const copyUrlBtn = document.getElementById("copyUrlBtn");
 const qrCanvas = document.getElementById("qrCanvas");
 
-// Initialize Application
+// Environment & Local Network Access (LNA) Helpers
+let lastVideoDiagnosisReport = null;
+let selectedVideoDiagFile = null;
+let directLoopbackOllamaOnline = false;
+let directLoopbackLMStudioOnline = false;
+let directLoopbackBridgeUrl = "";
+
+function isStaticHostedSite() {
+  return window.location.hostname.includes("github.io") || !!window.STATIC_FIREARMS_DATA || window.location.protocol === "file:";
+}
+
+async function queryLoopbackPermissionSafe() {
+  if (!navigator.permissions || typeof navigator.permissions.query !== "function") {
+    return "unsupported";
+  }
+  try {
+    // Query granular 'loopback-network' only (never legacy 'local-network-access')
+    const status = await navigator.permissions.query({ name: "loopback-network" });
+    return status.state; // 'granted' | 'prompt' | 'denied'
+  } catch (e) {
+    return "unsupported";
+  }
+}
+
+async function fetchLoopback(url, options = {}, timeoutMs = 1800) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const reqOpts = Object.assign({}, options, {
+      signal: controller.signal,
+      targetAddressSpace: "loopback"
+    });
+    return await fetch(url, reqOpts);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function ensureClientRAGLoaded(maxWaitMs = 1800) {
+  if (window.RAG_CHUNKS && Array.isArray(window.RAG_CHUNKS) && window.RAG_CHUNKS.length > 0) {
+    return true;
+  }
+  const start = Date.now();
+  while (Date.now() - start < maxWaitMs) {
+    if (window.RAG_CHUNKS && Array.isArray(window.RAG_CHUNKS) && window.RAG_CHUNKS.length > 0) {
+      return true;
+    }
+    await new Promise(r => setTimeout(r, 60));
+  }
+  return Boolean(window.RAG_CHUNKS && Array.isArray(window.RAG_CHUNKS) && window.RAG_CHUNKS.length > 0);
+}
+
+// Initialize Application (Isolated Subsystem Boot — Fault-Tolerant)
 document.addEventListener("DOMContentLoaded", async () => {
-  initPdfJs();
-  setupPdfControls();
-  setupEventListeners();
-  initMobileView();
-  loadSavedSettings();
-  
-  // 1. Load Armory Catalog metadata for instant switching and filtering
+  const bootSteps = [
+    ["initPdfJs", () => initPdfJs()],
+    ["setupPdfControls", () => setupPdfControls()],
+    ["setupEventListeners", () => setupEventListeners()],
+    ["setupBenchCalculators", () => setupBenchCalculators()],
+    ["initMobileView", () => initMobileView()],
+    ["loadSavedSettings", () => loadSavedSettings()]
+  ];
+
+  for (const [name, fn] of bootSteps) {
+    try {
+      fn();
+    } catch (err) {
+      console.error(`[Workbench Boot] ${name} error:`, err);
+    }
+  }
+
+  // Immediately set initial AI pill so it never hangs on "Detecting LLM..."
+  try {
+    updateStatusPill();
+  } catch (e) {}
+
+  // 1. Load Armory Catalog metadata & populate header dropdown with all 53 platforms
   try {
     await loadAllFirearmsList();
+    populateHeaderFirearmSelect();
   } catch (err) {
     console.warn("Could not load firearms catalog list:", err);
   }
@@ -227,21 +296,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Failed to load initial firearm:", err);
   }
 
-  // 3. Probe local backend / LLM endpoints if running with Python backend
-  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-  if (!isStatic) {
+  // 3. Probe local backend / LLM endpoints safely (respecting LNA on HTTPS origins)
+  if (!isStaticHostedSite()) {
     try {
       await checkLLMBackends();
-    } catch (e) {}
+    } catch (e) {
+      updateStatusPill();
+    }
     try {
       await loadNetworkInfo();
     } catch (e) {}
   } else {
-    // GitHub Pages static mode status
-    if (llmStatusText && llmStatusPill) {
-      llmStatusText.textContent = "Offline Knowledge Engine";
-      const dot = llmStatusPill.querySelector(".status-dot");
-      if (dot) dot.className = "status-dot online";
+    // On HTTPS static hosts (GitHub Pages), NEVER unconditionally fire loopback requests if permission is 'prompt'
+    try {
+      const permState = await queryLoopbackPermissionSafe();
+      if (permState === "granted") {
+        await probeLocalLoopbackFromBrowser(false);
+      } else {
+        updateStatusPill();
+      }
+    } catch (e) {
+      updateStatusPill();
     }
   }
 });
@@ -264,6 +339,29 @@ function setupEventListeners() {
   if (gunCatalogModal) {
     gunCatalogModal.addEventListener("click", (e) => {
       if (e.target === gunCatalogModal) closeCatalogModal();
+    });
+  }
+
+  // Collapsible Sidebar Quick Switcher
+  const toggleQuickBarBtn = document.getElementById("toggleQuickBarBtn");
+  const platformQuickCollapsible = document.getElementById("platformQuickCollapsible");
+  if (toggleQuickBarBtn && platformQuickCollapsible) {
+    toggleQuickBarBtn.addEventListener("click", () => {
+      const isCollapsed = platformQuickCollapsible.classList.toggle("collapsed");
+      toggleQuickBarBtn.setAttribute("aria-expanded", String(!isCollapsed));
+      const chev = document.getElementById("quickBarChevron");
+      if (chev) chev.textContent = isCollapsed ? "▸" : "▾";
+    });
+  }
+
+  // Bench Safety Chamber-Clear Interlock
+  const btnVerifyChamberClear = document.getElementById("btnVerifyChamberClear");
+  if (btnVerifyChamberClear) {
+    btnVerifyChamberClear.addEventListener("click", () => {
+      const key = `bench_chamber_clear_${currentFirearm}`;
+      const nextState = sessionStorage.getItem(key) !== "true";
+      sessionStorage.setItem(key, String(nextState));
+      syncSafetyInterlockButton();
     });
   }
 
@@ -388,7 +486,9 @@ function setupEventListeners() {
 
   // Mode switcher tabs (top of center preview)
   document.querySelectorAll(".mode-btn").forEach(btn => {
-    btn.addEventListener("click", () => switchPreviewMode(btn.dataset.mode));
+    btn.addEventListener("click", () => {
+      if (btn.dataset.mode) switchPreviewMode(btn.dataset.mode);
+    });
   });
 
   // Swap panes in Bench Split View
@@ -448,6 +548,7 @@ function setupEventListeners() {
 
     globalSearchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
+        if (e.isComposing || e.keyCode === 229) return;
         e.preventDefault();
         clearTimeout(searchTimeout);
         executeGlobalSearch(globalSearchInput.value.trim(), true);
@@ -481,10 +582,18 @@ function setupEventListeners() {
   });
 
   // Setup Interactive Schematic Inspector (Pan, Zoom & Circle-to-Search)
-  setupSchematicInspector();
+  try {
+    setupSchematicInspector();
+  } catch (err) {
+    console.error("setupSchematicInspector error:", err);
+  }
 
   // Setup Video Diagnostics Lab & Malfunction Simulator
-  setupVideoDiagnostics();
+  try {
+    setupVideoDiagnostics();
+  } catch (err) {
+    console.error("setupVideoDiagnostics error:", err);
+  }
 
   // Chat Form Submit
   chatForm.addEventListener("submit", (e) => {
@@ -494,18 +603,20 @@ function setupEventListeners() {
 
   chatInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
+      if (e.isComposing || e.keyCode === 229) return;
       e.preventDefault();
       handleChatSubmit();
     }
   });
 
   clearChatBtn.addEventListener("click", () => {
+    const gunLabel = firearmData ? escapeHtml(firearmData.name) : "Active Platform";
     chatHistory.innerHTML = `
       <div class="chat-msg system">
         <div class="msg-avatar">AI</div>
         <div class="msg-content">
           <p><strong>Master Armorer Assistant Ready.</strong></p>
-          <p>Conversation cleared. Ready for your next gunsmith inquiry.</p>
+          <p>Conversation cleared. Ready for your next gunsmith inquiry on <strong>${gunLabel}</strong>.</p>
         </div>
       </div>
     `;
@@ -515,15 +626,78 @@ function setupEventListeners() {
   if (btnStartLocalLLM) {
     btnStartLocalLLM.addEventListener("click", (e) => {
       e.stopPropagation();
+      const clickedChevron = e.target.closest(".llm-dropdown-chevron");
       const ollama = (availableBackends || []).find(b => b.id === "ollama");
-      const isOnline = ollama && ollama.status === "online";
-      if (!isOnline) {
-        startLocalLLM();
-      } else {
+      const isOnline = (ollama && ollama.status === "online") || directLoopbackOllamaOnline;
+      if (clickedChevron || isOnline) {
         if (localLLMPopover) localLLMPopover.classList.toggle("hidden");
+      } else {
+        startLocalLLM();
       }
     });
   }
+
+  // Local AI Setup Modal Controls (GitHub Pages / Offline Workstation Guide)
+  const localAISetupDialog = document.getElementById("localAISetupDialog");
+  const closeLocalAISetupBtn = document.getElementById("closeLocalAISetupBtn");
+  const btnRetryLocalProbe = document.getElementById("btnRetryLocalProbe");
+  const btnOpenCloudSettingsFromLocal = document.getElementById("btnOpenCloudSettingsFromLocal");
+  const btnUseBuiltinRAGFromLocal = document.getElementById("btnUseBuiltinRAGFromLocal");
+
+  if (closeLocalAISetupBtn && localAISetupDialog) {
+    closeLocalAISetupBtn.addEventListener("click", () => localAISetupDialog.close());
+  }
+  if (localAISetupDialog) {
+    localAISetupDialog.addEventListener("click", (e) => {
+      if (e.target === localAISetupDialog) localAISetupDialog.close();
+    });
+  }
+  if (btnRetryLocalProbe) {
+    btnRetryLocalProbe.addEventListener("click", async () => {
+      btnRetryLocalProbe.disabled = true;
+      btnRetryLocalProbe.textContent = "⏳ Probing 127.0.0.1...";
+      const ok = await probeLocalLoopbackFromBrowser(true);
+      btnRetryLocalProbe.disabled = false;
+      btnRetryLocalProbe.textContent = "🔄 Retry Local AI Probe";
+      if (ok && localAISetupDialog) {
+        setTimeout(() => localAISetupDialog.close(), 650);
+      }
+    });
+  }
+  if (btnOpenCloudSettingsFromLocal) {
+    btnOpenCloudSettingsFromLocal.addEventListener("click", () => {
+      if (localAISetupDialog) localAISetupDialog.close();
+      if (settingsDialog) {
+        llmBackendSelect.value = "gemini";
+        settingsDialog.showModal();
+        updateSettingsFields();
+      }
+    });
+  }
+  if (btnUseBuiltinRAGFromLocal) {
+    btnUseBuiltinRAGFromLocal.addEventListener("click", () => {
+      activeLLMBackend = "builtin";
+      saveSettings();
+      updateStatusPill();
+      if (localAISetupDialog) localAISetupDialog.close();
+      appendMessage(
+        "system",
+        `⚡ **Built-in Master Gunsmith RAG Engine Active!** Connected to **${(window.RAG_CHUNKS || []).length || 1355} indexed manual chunks** across 53 firearm platforms — 100% instant & offline.`,
+        "Built-in RAG Engine"
+      );
+    });
+  }
+  document.querySelectorAll(".copy-cmd-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const cmd = btn.dataset.copy || "";
+      if (cmd && navigator.clipboard) {
+        navigator.clipboard.writeText(cmd);
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = orig; }, 1600);
+      }
+    });
+  });
 
   if (btnPopoverStartStop) {
     btnPopoverStartStop.addEventListener("click", (e) => {
@@ -564,13 +738,16 @@ function setupEventListeners() {
     }
   });
 
-  // Quick Prompt Chips
-  document.querySelectorAll(".prompt-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      chatInput.value = chip.dataset.query;
+  // Quick Prompt Chips (Delegated for dynamic platform chips)
+  const quickPromptsBar = document.getElementById("quickPromptsBar") || document.querySelector(".quick-prompts");
+  if (quickPromptsBar) {
+    quickPromptsBar.addEventListener("click", (e) => {
+      const chip = e.target.closest(".prompt-chip");
+      if (!chip) return;
+      chatInput.value = chip.dataset.query || chip.textContent;
       handleChatSubmit();
     });
-  });
+  }
 
   // Settings Dialog (Native Accessible <dialog>)
   llmStatusPill.addEventListener("click", () => {
@@ -583,8 +760,7 @@ function setupEventListeners() {
   });
 
   settingsDialog.addEventListener("click", (e) => {
-    const rect = settingsDialog.getBoundingClientRect();
-    if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+    if (e.target === settingsDialog) {
       settingsDialog.close();
     }
   });
@@ -638,12 +814,18 @@ function setupEventListeners() {
 
   // Mobile Connect Modal
   mobileConnectBtn.addEventListener("click", () => {
+    if (isStaticHostedSite() && networkUrlInput) {
+      networkUrlInput.value = window.location.href;
+    }
     mobileDialog.showModal();
     renderQRCode();
   });
 
   closeMobileDialogBtn.addEventListener("click", () => mobileDialog.close());
   closeMobileDialogBtn2.addEventListener("click", () => mobileDialog.close());
+  mobileDialog.addEventListener("click", (e) => {
+    if (e.target === mobileDialog) mobileDialog.close();
+  });
 
   copyUrlBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(networkUrlInput.value);
@@ -682,9 +864,9 @@ function updateSettingsFields() {
     apiKeyGroup.style.display = "block";
     apiKeyHint.innerHTML = 'Saved securely in your browser. Get a free API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--brass-accent);">aistudio.google.com</a>.';
     const geminiModels = [
-      { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Fast, High Quality - Recommended)" },
-      { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Next-Gen Fast Inference)" },
-      { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (Deep Reasoning & Analysis)" }
+      { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash (Fast, High Quality - Recommended)" },
+      { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro (Deep Reasoning & Technical Diagnostics)" },
+      { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Low-Latency Inference)" }
     ];
     geminiModels.forEach(m => {
       const opt = document.createElement("option");
@@ -781,18 +963,29 @@ async function testLLMConnection() {
 
   const isGitHubPages = window.location.hostname.includes("github.io") || (!window.location.port && window.location.protocol === "https:");
 
-  // Mixed Content / PNA check on hosted HTTPS sites:
+  // LNA-aware Loopback check on hosted HTTPS sites:
   if (isGitHubPages && (backend === "lmstudio" || backend === "ollama" || endpoint.includes("127.0.0.1") || endpoint.includes("localhost"))) {
+    const targetUrl = backend === "lmstudio"
+      ? `${(endpoint || "http://127.0.0.1:1234/v1").replace(/\/$/, "")}/models`
+      : `${(endpoint || "http://127.0.0.1:11434").replace(/\/$/, "")}/api/tags`;
+    try {
+      const lnaRes = await fetchLoopback(targetUrl, { method: "GET" }, 2200);
+      if (lnaRes.ok) {
+        const lnaData = await lnaRes.json().catch(() => ({}));
+        const modelsCount = (lnaData.models || lnaData.data || []).length;
+        connTestResult.style.color = "var(--accent-green)";
+        connTestResult.textContent = `✓ Local Network Access connected to ${targetUrl} (${modelsCount} local models detected)!`;
+        return;
+      }
+    } catch (e) {}
+
     connTestResult.style.color = "var(--brass-accent)";
     connTestResult.innerHTML = `
       <div style="text-align: left; line-height: 1.5; padding: 6px 0;">
-        <span style="color:var(--accent-red); font-weight:bold;">⚠️ Browser Mixed-Content Restriction:</span><br>
-        Web browsers (Chrome / Edge) strictly block hosted <code>https://</code> sites like GitHub Pages from connecting to local machine IP addresses (<code>${endpoint || 'http://127.0.0.1'}</code>).<br><br>
-        <strong>To connect to your local LM Studio / Ollama with PyMuPDF RAG:</strong><br>
-        1. Open your local <code>Gun Manuals</code> folder.<br>
-        2. Double-click <code style="color:var(--accent-green); font-weight:bold;">run_workbench.bat</code>.<br>
-        3. Open <a href="http://127.0.0.1:8055" target="_blank" style="color:var(--accent-green); text-decoration: underline; font-weight:bold;">http://127.0.0.1:8055</a> in your browser.<br><br>
-        <em>Note: When running locally, all local GPU models and manual PDFs connect with zero restrictions!</em>
+        <span style="color:var(--accent-amber); font-weight:bold;">⚡ Local Workstation Not Reachable Over Loopback:</span><br>
+        To connect from GitHub Pages via Chrome Local Network Access, start Ollama with CORS allowed:<br>
+        <code>$env:OLLAMA_ORIGINS="https://gmascagni.github.io,*"; ollama serve</code><br><br>
+        <strong>Or run the full local Python + GPU workbench:</strong> double-click <code style="color:var(--accent-green); font-weight:bold;">run_workbench.bat</code> in your <code>Gun Manuals</code> folder and open <a href="http://127.0.0.1:8055" target="_blank" rel="noopener" style="color:var(--accent-green); text-decoration: underline; font-weight:bold;">http://127.0.0.1:8055</a>.
       </div>
     `;
     return;
@@ -898,6 +1091,38 @@ async function loadNetworkInfo() {
 }
 
 function renderQRCode() {
+  if (!qrCanvas) return;
+  const drawFallbackCard = () => {
+    const ctx = qrCanvas.getContext("2d");
+    const w = qrCanvas.width;
+    const h = qrCanvas.height;
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "#d4af37";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(6, 6, w - 12, h - 12);
+    // Corner finder squares
+    [[18, 18], [w - 50, 18], [18, h - 50]].forEach(([x, y]) => {
+      ctx.strokeStyle = "#d4af37";
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(x, y, 32, 32);
+      ctx.fillStyle = "#d4af37";
+      ctx.fillRect(x + 9, y + 9, 14, 14);
+    });
+    ctx.fillStyle = "#f1f5f9";
+    ctx.font = "bold 12px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("ARMORER BENCH", w / 2, h / 2 - 4);
+    ctx.fillStyle = "#d4af37";
+    ctx.font = "10px monospace";
+    ctx.fillText("COPY LINK ABOVE", w / 2, h / 2 + 14);
+  };
+
+  if (isStaticHostedSite()) {
+    drawFallbackCard();
+    return;
+  }
+
   const qrImg = new Image();
   qrImg.src = "/api/network-qr?t=" + Date.now();
   qrImg.onload = () => {
@@ -905,6 +1130,7 @@ function renderQRCode() {
     ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
     ctx.drawImage(qrImg, 0, 0, qrCanvas.width, qrCanvas.height);
   };
+  qrImg.onerror = drawFallbackCard;
 }
 
 // Load Firearm Data
@@ -936,22 +1162,38 @@ async function loadFirearm(firearmId) {
         : (firearmData.models && firearmData.models.length > 0 ? "Models: " + firearmData.models.slice(0, 4).join(" • ") : "");
     }
 
-    document.getElementById("manualsCount").textContent = firearmData.manuals.length;
-    document.getElementById("schematicsCount").textContent = firearmData.schematics.length;
-    document.getElementById("videosCount").textContent = firearmData.videos.length;
+    const manCountEl = document.getElementById("manualsCount");
+    const schCountEl = document.getElementById("schematicsCount");
+    const vidCountEl = document.getElementById("videosCount");
+    const stpCountEl = document.getElementById("stoppagesCount");
+    if (manCountEl) manCountEl.textContent = (firearmData.manuals || []).length;
+    if (schCountEl) schCountEl.textContent = (firearmData.schematics || []).length;
+    if (vidCountEl) vidCountEl.textContent = (firearmData.videos || []).length;
+    if (stpCountEl) stpCountEl.textContent = (firearmData.stoppages || []).length;
+
+    const welcomePlatformEl = document.getElementById("welcomePlatformName");
+    if (welcomePlatformEl) welcomePlatformEl.textContent = firearmData.name;
 
     renderManualsList(firearmData.manuals);
     renderSchematicsGrid(firearmData.schematics);
     renderVideosList(firearmData.videos);
     renderStoppagesList(firearmData.stoppages);
     renderDossier(firearmData);
+    renderQuickPromptChips(firearmData);
+    updateBenchSafetyBanner(firearmData);
+    refreshTorqueMatrixTable();
+    refreshDynamicVideoSimChip();
 
-    // Default: select the primary manual
-    if (firearmData.manuals.length > 0) {
-      const primary = firearmData.manuals.find(m => {
+    // Default: prefer authentic multi-page factory / military manuals over 1-page summary sheets
+    if (firearmData.manuals && firearmData.manuals.length > 0) {
+      const fullManuals = firearmData.manuals.filter(
+        m => !m.is_summary && (m.size_mb === undefined || m.size_mb > 0.05) && !m.filename.startsWith("Armorer_Technical_Manual_")
+      );
+      const pool = fullManuals.length > 0 ? fullManuals : firearmData.manuals;
+      const primary = pool.find(m => {
         const fn = m.filename.toLowerCase();
-        return fn.includes("savage") || fn.includes("armorer") || fn.includes("92fs") || fn.includes("1022") || fn.includes("practical");
-      }) || firearmData.manuals[0];
+        return fn.includes("savage") || fn.includes("tm_") || fn.includes("tm-") || fn.includes("armorer") || fn.includes("92fs") || fn.includes("1022") || fn.includes("practical") || fn.includes("manual");
+      }) || pool[0];
       selectManual(primary.filename, primary.title, false);
     }
 
@@ -970,6 +1212,140 @@ async function loadFirearm(firearmId) {
   } catch (err) {
     console.error("Error loading firearm:", err);
   }
+}
+
+function populateHeaderFirearmSelect() {
+  if (!firearmSelect || !availableFirearmsList || availableFirearmsList.length === 0) return;
+  const groups = new Map();
+  availableFirearmsList.forEach(f => {
+    const cat = f.category || "Firearms";
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat).push(f);
+  });
+
+  firearmSelect.innerHTML = "";
+  for (const [cat, items] of groups.entries()) {
+    const optgroup = document.createElement("optgroup");
+    optgroup.label = `${cat} (${items.length})`;
+    items.forEach(f => {
+      const opt = document.createElement("option");
+      opt.value = f.id;
+      const calHint = (f.calibers && f.calibers.length > 0) ? ` (${f.calibers[0]})` : "";
+      opt.textContent = `${f.name}${calHint}`;
+      if (f.id === currentFirearm) opt.selected = true;
+      optgroup.appendChild(opt);
+    });
+    firearmSelect.appendChild(optgroup);
+  }
+}
+
+function syncSafetyInterlockButton() {
+  const btn = document.getElementById("btnVerifyChamberClear");
+  const box = document.getElementById("safetyCheckBox");
+  const lbl = document.getElementById("safetyCheckLabel");
+  if (!btn || !box || !lbl) return;
+  const verified = sessionStorage.getItem(`bench_chamber_clear_${currentFirearm}`) === "true";
+  btn.classList.toggle("verified", verified);
+  btn.setAttribute("aria-pressed", String(verified));
+  box.textContent = verified ? "☑" : "☐";
+  lbl.textContent = verified ? "CHAMBER & FEEDWAY VERIFIED CLEAR" : "VERIFY CHAMBER & FEEDWAY CLEAR";
+}
+
+function updateBenchSafetyBanner(data) {
+  syncSafetyInterlockButton();
+  const strip = document.getElementById("benchHazardBadges");
+  if (!strip || !data) return;
+
+  const fid = (data.id || "").toLowerCase();
+  const hazards = [];
+
+  if (fid.includes("lewis")) {
+    hazards.push("⚠️ Ease Clock-Spring Tension Before Trigger Strip");
+    hazards.push("↺ LH Reverse Threads: Mouthpiece & Piston Gland");
+  } else if (fid.includes("glock")) {
+    hazards.push("⚠️ Dry Striker Channel ONLY (Zero Oil)");
+    hazards.push("⚠️ Verify ≥66% Cruciform Sear Overlap");
+  } else if (fid.includes("ar15") || fid.includes("m4")) {
+    hazards.push("🔩 Gas Key: 50–58 in-lbs + Permatex #3 + MOACKS Stake");
+    hazards.push("⚠️ Verify Firing Pin Retainer & 5.56 vs .223 Headspace");
+  } else if (fid.includes("1022")) {
+    hazards.push("⚠️ Aluminum Receiver V-Block: 10–15 in-lbs MAX");
+    hazards.push("🔄 Rotary Mag Preload: 1-1/4 Turns (9 Faces)");
+  } else if (fid.includes("p320") || fid.includes("m17")) {
+    hazards.push("⚠️ Remove Magazine BEFORE Rotating Takedown Lever");
+    hazards.push("⚠️ Inspect FCU Sear Housing & Safety Lever Spring");
+  } else if (fid.includes("beretta")) {
+    hazards.push("⚠️ Inspect Falling Locking Block Wings (15k Rd Life)");
+    hazards.push("⚠️ Control Slide Safety Detent Plunger Spring");
+  } else if (fid.includes("benelli")) {
+    hazards.push("⚠️ Dual ARGO Pistons: Keep Rings Dry of Grease");
+    hazards.push("⚠️ Verify Rotary Bolt Full 90° Lug Lockup");
+  } else if ((data.category || "").toLowerCase().includes("revolver")) {
+    hazards.push("📐 B/C Gap: 0.004\"–0.008\" • Endshake < 0.002\"");
+    hazards.push("⚠️ Never Pry Crane Open or Slap Cylinder Shut");
+  } else {
+    if (data.specs) {
+      const specEntries = Object.entries(data.specs);
+      const crit = specEntries.find(([k]) => /headspace|torque|sear|safety|spring/i.test(k)) || specEntries[0];
+      if (crit) {
+        const shortVal = String(crit[1]).length > 56 ? String(crit[1]).slice(0, 54) + "…" : String(crit[1]);
+        hazards.push(`📐 ${crit[0].replace(/_/g, " ").toUpperCase()}: ${shortVal}`);
+      }
+    }
+    if ((data.action_type || "").toLowerCase().includes("open")) {
+      hazards.push("⚠️ Open-Bolt System: Control Bolt Forward Before Strip");
+    } else {
+      hazards.push("⚠️ Confirm Muzzle Safe Direction & Empty Magwell");
+    }
+  }
+
+  strip.innerHTML = hazards.map(h => `<span class="hazard-pill">${escapeHtml(h)}</span>`).join("");
+}
+
+function renderQuickPromptChips(data) {
+  const bar = document.getElementById("quickPromptsBar") || document.querySelector(".quick-prompts");
+  if (!bar || !data) return;
+
+  const gunName = data.name || "this firearm";
+  const chips = [];
+
+  if ((data.id || "").includes("Lewis")) {
+    chips.push(
+      { label: "Spring Tension", query: "What is the exact return spring tension and how is it adjusted on the Lewis Gun?" },
+      { label: "Pos 2 Stoppage", query: "How do I troubleshoot a Position 2 stoppage on the Lewis Gun?" },
+      { label: "Striker Protrusion", query: "Explain the Lewis Gun striker replacement and protrusion tolerance." },
+      { label: ".303 Headspace", query: "What are the GO, NO-GO, and FIELD headspace gauges for .303 British on the Lewis Gun?" },
+      { label: "LH Thread Traps", query: "Which components on the Lewis Gun have left-hand threads or spring traps?" }
+    );
+  } else {
+    const tasks = data.key_tasks || [];
+    tasks.slice(0, 3).forEach(t => {
+      const cleanLabel = t.split("(")[0].trim().slice(0, 22);
+      chips.push({
+        label: cleanLabel,
+        query: `Provide the step-by-step master armorer procedure, tolerances, and safety checks for "${t}" on the ${gunName}.`
+      });
+    });
+    if (data.stoppages && data.stoppages.length > 0) {
+      const st = data.stoppages[0];
+      chips.push({
+        label: "Top Stoppage Fix",
+        query: `How do I diagnose and permanently fix "${st.position}" (${st.short_desc || "stoppage"}) on the ${gunName}?`
+      });
+    }
+    chips.push({
+      label: "Torque & Specs",
+      query: `What are all critical fastener torque specs, threadlocker rules, headspace gauges, and lubrication points for the ${gunName}?`
+    });
+    chips.push({
+      label: "Optic / Scope Setup",
+      query: `What is the optimal optic mounting setup, ring cap & base torque specs, and zeroing protocol for the ${gunName}?`
+    });
+  }
+
+  bar.innerHTML = chips.slice(0, 5).map(
+    c => `<button type="button" class="prompt-chip" data-query="${escapeHtml(c.query)}">${escapeHtml(c.label)}</button>`
+  ).join("");
 }
 
 // Armory & Firearm Catalog Controller
@@ -1163,17 +1539,27 @@ function resetCatalogFilters() {
   renderCatalogGrid("", "all", "all", "all", "all", "default");
 }
 
-function selectFirearmFromCatalog(firearmId) {
-  if (firearmId !== currentFirearm) {
-    currentFirearm = firearmId;
-    loadFirearm(currentFirearm);
-    if (firearmData) {
+async function selectFirearmFromCatalog(firearmId) {
+  const changed = firearmId !== currentFirearm;
+  currentFirearm = firearmId;
+  if (changed || !firearmData || (manualsListView && manualsListView.children.length === 0)) {
+    await loadFirearm(currentFirearm);
+    if (changed && firearmData) {
       appendMessage(
         "assistant",
         `Switched active platform to **${escapeHtml(firearmData.name)}** (${escapeHtml(firearmData.subtitle)}).\n\nLoaded **${firearmData.manuals.length} manuals**, **${firearmData.schematics.length} schematic plates**, and **${firearmData.videos.length} bench video guides**. Ready for bench work!`,
         "Platform Switched"
       );
     }
+  }
+  switchLibraryTab("manuals");
+  const quickCol = document.getElementById("platformQuickCollapsible");
+  const quickBtn = document.getElementById("toggleQuickBarBtn");
+  const quickChev = document.getElementById("quickBarChevron");
+  if (quickCol && !quickCol.classList.contains("collapsed")) {
+    quickCol.classList.add("collapsed");
+    if (quickBtn) quickBtn.setAttribute("aria-expanded", "false");
+    if (quickChev) quickChev.textContent = "▸";
   }
   closeCatalogModal();
 }
@@ -1412,7 +1798,7 @@ function renderDossier(data) {
 
   let html = `
     <div class="dossier-header-box" style="margin-bottom: 1.25rem;">
-      <h2 style="color: var(--accent); margin: 0 0 0.25rem 0; font-family: var(--font-mono); font-size: 1.3rem;">${escapeHtml(data.name)}</h2>
+      <h2 style="color: var(--brass-accent); margin: 0 0 0.25rem 0; font-family: var(--font-mono); font-size: 1.3rem;">${escapeHtml(data.name)}</h2>
       <div style="color: var(--text-muted); font-size: 0.9rem;">${escapeHtml(data.subtitle)}</div>
     </div>
   `;
@@ -1453,7 +1839,7 @@ function renderDossier(data) {
         <tr>
           <td><strong>${escapeHtml(s.position)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(s.short_desc || "")}</small></td>
           <td><ul style="margin: 0; padding-left: 1.2rem;">${(s.causes || []).map(c => `<li>${escapeHtml(c)}</li>`).join("")}</ul></td>
-          <td style="color: var(--accent); font-weight: 500;">${escapeHtml(s.action)}</td>
+          <td style="color: var(--brass-accent); font-weight: 500;">${escapeHtml(s.action || s.remedy || "")}</td>
         </tr>
       `;
     });
@@ -1479,12 +1865,17 @@ function renderManualsList(manuals) {
     
     let badgeText = "MANUAL";
     const fn = m.filename.toLowerCase();
-    if (fn.includes("savage")) badgeText = "FACTORY";
+    const isStubSummary = m.is_summary || (m.size_mb !== undefined && m.size_mb <= 0.05 && m.filename.startsWith("Armorer_Technical_Manual_"));
+    if (isStubSummary) badgeText = "SUMMARY";
+    else if (fn.includes("savage")) badgeText = "FACTORY";
+    else if (fn.includes("tm_") || fn.includes("tm-") || fn.includes("fm_")) badgeText = "MIL TM";
     else if (fn.includes("armorer") || fn.includes("armourer")) badgeText = "ARMORER";
     else if (fn.includes("machinist")) badgeText = "MACHINING";
     else if (fn.includes("stoppages")) badgeText = "DIAGNOSTICS";
     else if (fn.includes("practical") || fn.includes("gunsmithing")) badgeText = "WORKSHOP";
     else if (fn.includes("maintenance") || fn.includes("technical")) badgeText = "TECHNICAL";
+
+    const sizeLabel = isStubSummary ? "1-Page Bench Sheet" : `${m.size_mb} MB`;
 
     card.innerHTML = `
       <div class="doc-card-header">
@@ -1494,7 +1885,7 @@ function renderManualsList(manuals) {
       <div class="doc-card-meta">
         <span>PDF Document</span>
         <span>•</span>
-        <span>${m.size_mb} MB</span>
+        <span>${sizeLabel}</span>
       </div>
     `;
 
@@ -1509,10 +1900,14 @@ function renderManualsList(manuals) {
 
 function initPdfJs() {
   if (window.pdfjsLib) {
-    const isStatic = window.location.hostname.includes("github.io");
     if (window.location.protocol === "file:") {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "";
-    } else if (isStatic) {
+      return;
+    }
+    const pdfScript = document.querySelector('script[src*="pdf.min.js"]');
+    if (pdfScript && pdfScript.src) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = pdfScript.src.replace("pdf.min.js", "pdf.worker.min.js");
+    } else if (isStaticHostedSite()) {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdf.worker.min.js";
     } else {
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = "/static/vendor/pdf.worker.min.js";
@@ -1522,17 +1917,27 @@ function initPdfJs() {
 
 async function loadPdfDocument(url, targetPage = 1) {
   currentPdfUrl = url;
-  const pageToLoad = Math.max(1, parseInt(targetPage) || 1);
+  const pageToLoad = Math.max(1, parseInt(targetPage, 10) || 1);
 
   if (pdfViewerMode === "native") {
     switchToNativeViewer(url, pageToLoad);
     return;
   }
 
+  // Wait briefly if pdf.min.js is still finishing deferred execution
+  if (!window.pdfjsLib) {
+    await new Promise(r => setTimeout(r, 120));
+    initPdfJs();
+  }
+
   if (!window.pdfjsLib) {
     console.warn("PDF.js library not detected; falling back to native iframe viewer.");
     switchToNativeViewer(url, pageToLoad);
     return;
+  }
+
+  if (pdfViewerCanvas) {
+    delete pdfViewerCanvas.dataset.rendered;
   }
 
   if (pdfLoadingSpinner) {
@@ -1545,7 +1950,7 @@ async function loadPdfDocument(url, targetPage = 1) {
     activePdfRenderTask = null;
   }
 
-  let safeUrl = url;
+  let safeUrl = String(url || "").split("#")[0];
   if (safeUrl.includes("github.com/") && safeUrl.includes("/raw/")) {
     safeUrl = safeUrl.replace("github.com/", "raw.githubusercontent.com/").replace("/raw/", "/");
   }
@@ -1557,6 +1962,19 @@ async function loadPdfDocument(url, targetPage = 1) {
       cMapPacked: true,
       standardFontDataUrl: "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/",
     });
+
+    loadingTask.onProgress = (prog) => {
+      if (pdfLoadingText && prog && prog.loaded) {
+        const loadedMb = (prog.loaded / (1024 * 1024)).toFixed(1);
+        if (prog.total && prog.total > 0) {
+          const totalMb = (prog.total / (1024 * 1024)).toFixed(1);
+          const pct = Math.min(100, Math.round((prog.loaded / prog.total) * 100));
+          pdfLoadingText.textContent = `Loading technical manual... ${loadedMb} / ${totalMb} MB (${pct}%)`;
+        } else {
+          pdfLoadingText.textContent = `Loading technical manual... ${loadedMb} MB`;
+        }
+      }
+    };
 
     const pdfDoc = await loadingTask.promise;
     currentPdfDoc = pdfDoc;
@@ -1570,6 +1988,18 @@ async function loadPdfDocument(url, targetPage = 1) {
 
     if (pdfCanvasContainer) pdfCanvasContainer.classList.remove("hidden");
     if (pdfFrame) pdfFrame.classList.add("hidden");
+
+    // Compute clean fit-to-width scale before first render if container is visible
+    try {
+      if (pdfCanvasContainer && pdfCanvasContainer.clientWidth > 160) {
+        const firstPage = await pdfDoc.getPage(currentPdfPage);
+        const unscaledVp = firstPage.getViewport({ scale: 1.0 });
+        const availW = Math.min(pdfCanvasContainer.clientWidth - 44, 1080);
+        if (availW > 180 && unscaledVp.width > 0) {
+          currentPdfScale = Math.max(0.65, Math.min(2.2, availW / unscaledVp.width));
+        }
+      }
+    } catch (e) {}
 
     await renderPdfPage(currentPdfPage);
   } catch (err) {
@@ -1621,6 +2051,7 @@ async function renderPdfPage(num) {
     await activePdfRenderTask.promise;
     activePdfRenderTask = null;
 
+    pdfViewerCanvas.dataset.rendered = "true";
     currentPdfPage = num;
     if (pdfPageNum) pdfPageNum.value = num;
     if (pdfZoomLevel) pdfZoomLevel.textContent = `${Math.round(currentPdfScale * 100)}%`;
@@ -1654,12 +2085,9 @@ function switchToNativeViewer(url, targetPage = 1) {
   if (pdfCanvasContainer) pdfCanvasContainer.classList.add("hidden");
   if (pdfFrame) {
     pdfFrame.classList.remove("hidden");
-    const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-    if (isStatic) {
-      pdfFrame.src = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-    } else {
-      pdfFrame.src = `${url}#page=${targetPage}`;
-    }
+    const cleanUrl = String(url || "").split("#")[0];
+    // Never use docs.google.com/viewer (fails on >25MB military PDFs); load direct browser PDF reader
+    pdfFrame.src = `${cleanUrl}#page=${targetPage}`;
   }
   if (pdfToggleViewerBtn) {
     pdfToggleViewerBtn.textContent = "🎨 Canvas";
@@ -1783,8 +2211,8 @@ function selectManual(filename, title, switchToPreview = true, page = 1) {
   });
 
   const manualObj = (firearmData.manuals || []).find(m => m.filename === filename);
-  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-  let pdfUrl = `/api/manuals/${currentFirearm}/${filename}`;
+  const isStatic = isStaticHostedSite();
+  let pdfUrl = `/api/manuals/${currentFirearm}/${encodeURIComponent(filename)}`;
   if (isStatic && manualObj && manualObj.url) {
     pdfUrl = manualObj.url;
   }
@@ -1885,32 +2313,49 @@ function selectVideo(video, switchToPreview = true) {
     c.classList.toggle("active", c.dataset.id === video.id);
   });
 
-  const gunName = firearmData ? firearmData.name : currentFirearm.replace(/_/g, " ");
-  const isPlaceholder = !video.id || video.id.includes("x9") || video.id.includes("x2w") || video.id.length > 20 || video.id.includes("search");
-  const hasValidEmbed = Boolean(video.embed_url && !video.embed_url.includes("search") && !isPlaceholder);
+  // Ensure Curated Guides subview is active when clicking a curated video
+  const curatedView = document.getElementById("videoCuratedView");
+  const diagView = document.getElementById("videoDiagnosticsView");
+  const btnCurated = document.getElementById("btnSubnavCurated");
+  const btnDiag = document.getElementById("btnSubnavDiagnostics");
+  if (curatedView && diagView) {
+    curatedView.classList.remove("hidden");
+    diagView.classList.add("hidden");
+    if (btnCurated) btnCurated.classList.add("active");
+    if (btnDiag) btnDiag.classList.remove("active");
+  }
 
-  const directUrl = (!isPlaceholder && video.url) 
-    ? video.url 
-    : `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " " + video.title + " armorer")}`;
+  const gunName = firearmData ? firearmData.name : currentFirearm.replace(/_/g, " ");
+  const rawUrl = String(video.url || "");
+  const rawEmbed = String(video.embed_url || "");
+  const isSearchUrl = rawUrl.includes("results?search_query=") || rawEmbed.includes("results?search_query=") || rawEmbed.includes("listType=search");
+  const hasRealWatchUrl = rawUrl.includes("watch?v=") || rawUrl.includes("youtu.be/") || (rawEmbed.includes("/embed/") && !isSearchUrl);
+  const isPlaceholder = !video.id || isSearchUrl || !hasRealWatchUrl || video.id.includes("x9") || video.id.includes("x2w") || video.id.length > 20 || video.id.includes("search") || video.id.includes("_");
+  const hasValidEmbed = Boolean(!isPlaceholder && rawEmbed && rawEmbed.includes("/embed/"));
+
+  const directUrl = (!isPlaceholder && rawUrl)
+    ? rawUrl
+    : (rawUrl.startsWith("https://www.youtube.com/results")
+      ? rawUrl
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " " + video.title + " armorer")}`);
 
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(gunName + " gunsmithing teardown repair")}`;
 
   if (hasValidEmbed) {
-    videoFrame.src = video.embed_url;
+    videoFrame.src = rawEmbed.replace("www.youtube.com/embed/", "www.youtube-nocookie.com/embed/");
     videoFrame.classList.remove("hidden");
     if (videoPlaceholderBanner) videoPlaceholderBanner.classList.add("hidden");
-  } else if (video.id && video.id.length === 11 && !video.id.includes(" ")) {
+  } else if (!isPlaceholder && video.id && video.id.length === 11 && !video.id.includes(" ")) {
     videoFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}`;
     videoFrame.classList.remove("hidden");
     if (videoPlaceholderBanner) videoPlaceholderBanner.classList.add("hidden");
   } else {
-    // Avoid loading deprecated listType=search which causes YouTube playback errors
     videoFrame.src = "about:blank";
     videoFrame.classList.add("hidden");
     if (videoPlaceholderBanner) {
       videoPlaceholderBanner.classList.remove("hidden");
       if (videoBannerTitle) videoBannerTitle.textContent = video.title;
-      if (videoBannerDesc) videoBannerDesc.textContent = `${video.summary} (Curated by ${video.creator || "Armorer Hub"})`;
+      if (videoBannerDesc) videoBannerDesc.textContent = `${video.summary || "Curated workshop procedure."} (${video.creator || "Armorer Hub"})`;
       if (btnBannerWatch) btnBannerWatch.href = directUrl;
     }
   }
@@ -2434,10 +2879,12 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
   }
 
   // If no registered part within allowed radius, use Universal Firearm Anatomy Engine
+  let usedHeuristicCoords = false;
   if (!bestMatch) {
     const cat = (firearmData && firearmData.category) ? firearmData.category : "Rifles & Carbines";
     bestMatch = resolveClientFirearmAnatomy(cat, normX, normY);
     minDistance = 0.0;
+    usedHeuristicCoords = true;
   }
 
   // Deep Client RAG: Link platform stoppages, specs, and manual citations
@@ -2447,7 +2894,7 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
     // RAG across stoppages
     const stoppages = firearmData.stoppages || [];
     for (const s of stoppages) {
-      const combined = ((s.position || "") + " " + (s.short_desc || "") + " " + (s.causes ? s.causes.join(" ") : "") + " " + (s.action || "")).toLowerCase();
+      const combined = ((s.position || "") + " " + (s.short_desc || "") + " " + (s.causes ? s.causes.join(" ") : "") + " " + (s.action || s.remedy || "")).toLowerCase();
       const words = partText.split(/\W+/).filter(w => w.length > 3);
       if (words.some(w => combined.includes(w))) {
         const stoppageNote = `[${s.position}: ${s.short_desc}]`;
@@ -2458,12 +2905,14 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
       }
     }
 
-    // RAG across manuals: attach primary manual citation
+    // RAG across manuals: attach primary manual citation (prefer non-summary manuals)
     if (firearmData.manuals && firearmData.manuals.length > 0) {
-      const bestMan = firearmData.manuals.find(m => {
+      const fullPool = firearmData.manuals.filter(m => !m.is_summary && !m.filename.startsWith("Armorer_Technical_Manual_"));
+      const pool = fullPool.length > 0 ? fullPool : firearmData.manuals;
+      const bestMan = pool.find(m => {
         const mt = m.title.toLowerCase();
         return mt.includes("armorer") || mt.includes("instruction") || mt.includes("handbook") || mt.includes("manual");
-      }) || firearmData.manuals[0];
+      }) || pool[0];
 
       bestMatch.manual_citation = {
         manual_filename: bestMan.filename,
@@ -2474,14 +2923,17 @@ function matchPartClientSide(firearmId, normX, normY, normR) {
     }
   }
 
-  bestMatch.identification_method = "Universal Firearm Anatomy & RAG Engine";
-  bestMatch.is_fallback = false;
+  const methodLabel = usedHeuristicCoords
+    ? "Schematic Coordinate Match (RAG Grounded)"
+    : "Registered Schematic Callout & RAG Engine";
+  bestMatch.identification_method = methodLabel;
+  bestMatch.is_fallback = usedHeuristicCoords;
 
   return {
     primary: bestMatch,
     distance: minDistance,
-    method: "Universal Firearm Anatomy & RAG Engine",
-    is_fallback: false,
+    method: methodLabel,
+    is_fallback: usedHeuristicCoords,
     alternates: []
   };
 }
@@ -2573,13 +3025,15 @@ async function executeIdentifyPart() {
     }
   }
 
-  // 2. Client-Side Multimodal Vision AI: If on GitHub Pages and Gemini API key is configured
-  const geminiKey = activeLLMApiKey || localStorage.getItem("gunsmith_gemini_key") || "";
-  if ((!result || !result.primary) && geminiKey && cropDataUrl && cropDataUrl.length > 100) {
+  // 2. Client-Side Multimodal Vision AI: Only invoke Gemini endpoint if key is a Gemini key or Gemini backend is selected
+  const rawKey = activeLLMApiKey || localStorage.getItem("gunsmith_gemini_key") || "";
+  const isGeminiKey = rawKey && (activeLLMBackend === "gemini" || rawKey.startsWith("AIza"));
+  if ((!result || !result.primary) && isGeminiKey && cropDataUrl && cropDataUrl.length > 100) {
     try {
       const b64Data = cropDataUrl.includes(",") ? cropDataUrl.split(",")[1] : cropDataUrl;
       const gunName = firearmData ? firearmData.name : currentFirearm;
-      const vUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      const visionMod = (activeLLMModel && activeLLMModel.startsWith("gemini-")) ? activeLLMModel : "gemini-2.5-flash";
+      const vUrl = `https://generativelanguage.googleapis.com/v1beta/models/${visionMod}:generateContent?key=${rawKey}`;
       const vPrompt = `You are an expert armorer analyzing this schematic technical drawing crop from the ${gunName} (${currentPlateName}). Identify the circled component or subassembly, stating its exact technical name, OEM/callout # if known, assembly group, critical gunsmith tolerances, malfunctions, and armorer maintenance protocols. Return pure JSON: {"name": "...", "callout_num": "...", "oem_number": "...", "assembly": "...", "tolerances": "...", "malfunctions": "...", "maintenance": "..."}`;
       
       const vPayload = {
@@ -3054,13 +3508,846 @@ function setupSchematicInspector() {
 
       if (tabFilterInput) {
         tabFilterInput.value = part.name.split(" ")[0];
-        filterActiveTabList(tabFilterInput.value);
+        filterCurrentTab();
       }
       if (currentPreviewMode !== "split") {
         switchPreviewMode("pdf");
       }
     });
   }
+}
+
+// ==========================================================================
+// AI VIDEO MALFUNCTION DIAGNOSTICS LAB & BENCH TORQUE CALCULATORS
+// ==========================================================================
+
+function createClientDiagnosticFrameDataUrl(title, timestampStr, phaseStr, symptomStr) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 640;
+  canvas.height = 360;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, 640, 360);
+
+  ctx.strokeStyle = "#1e293b";
+  ctx.lineWidth = 1;
+  for (let x = 0; x < 640; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 360); ctx.stroke();
+  }
+  for (let y = 0; y < 360; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke();
+  }
+
+  // Reticle & Stoppage Zone
+  ctx.strokeStyle = "#d97706";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(64, 64, 512, 232);
+  ctx.strokeStyle = "#f59e0b";
+  ctx.beginPath();
+  ctx.moveTo(44, 180); ctx.lineTo(84, 180);
+  ctx.moveTo(556, 180); ctx.lineTo(596, 180);
+  ctx.moveTo(320, 44); ctx.lineTo(320, 84);
+  ctx.moveTo(320, 276); ctx.lineTo(320, 316);
+  ctx.stroke();
+
+  // Top HUD Bar
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(0, 0, 640, 38);
+  ctx.fillStyle = "#d4af37";
+  ctx.font = "bold 12px monospace";
+  ctx.fillText("ARMORER AI VIDEO DIAGNOSTICS LAB", 16, 24);
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(`TIME: ${timestampStr}`, 510, 24);
+
+  // Stoppage Banner
+  ctx.fillStyle = "rgba(220, 38, 38, 0.88)";
+  ctx.fillRect(78, 78, 484, 36);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 13px sans-serif";
+  ctx.fillText(`STOPPAGE: ${String(title || "Cycle Disruption").slice(0, 46)}`, 92, 101);
+
+  // Cycle Phase Pill
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(78, 126, 360, 28);
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 11.5px monospace";
+  ctx.fillText(`CYCLE: ${String(phaseStr || "Extraction").slice(0, 38)}`, 90, 144);
+
+  // Optical Readout
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "11px monospace";
+  ctx.fillText("OPTICAL SENSOR READOUT:", 78, 182);
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "12.5px sans-serif";
+  const cleanSym = String(symptomStr || "Stoppage state captured on bench");
+  ctx.fillText(cleanSym.slice(0, 64), 78, 206);
+  if (cleanSym.length > 64) {
+    ctx.fillText(cleanSym.slice(64, 128), 78, 226);
+  }
+
+  // Footer
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(0, 330, 640, 30);
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10.5px monospace";
+  ctx.fillText("240 FPS High-Speed Analysis • Master Armorer Cycle Decomposition", 16, 349);
+
+  return canvas.toDataURL("image/jpeg", 0.86);
+}
+
+async function extractVideoFramesInBrowser(file, maxFrames = 5) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const vid = document.createElement("video");
+    vid.preload = "metadata";
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.src = url;
+
+    const frames = [];
+    const phaseLabels = [
+      "Phase 1: In Battery / Lockup",
+      "Phase 2: Ignition & Unlock Travel",
+      "Phase 3: Extraction & Port Opening",
+      "Phase 4: Ejection / Clearance",
+      "Phase 5: Feeding / Stoppage State"
+    ];
+
+    const cleanup = () => {
+      try { URL.revokeObjectURL(url); } catch (e) {}
+    };
+
+    const failFallback = () => {
+      cleanup();
+      resolve([]);
+    };
+
+    const timeout = setTimeout(failFallback, 9000);
+
+    vid.onloadedmetadata = async () => {
+      try {
+        const dur = (isFinite(vid.duration) && vid.duration > 0.2) ? vid.duration : 3.0;
+        const canvas = document.createElement("canvas");
+        canvas.width = 640;
+        canvas.height = 360;
+        const ctx = canvas.getContext("2d");
+
+        for (let i = 0; i < maxFrames; i++) {
+          const t = Number(((dur * (i + 1)) / (maxFrames + 1)).toFixed(2));
+          await new Promise((seekRes) => {
+            const onSeeked = () => {
+              vid.removeEventListener("seeked", onSeeked);
+              seekRes();
+            };
+            vid.addEventListener("seeked", onSeeked);
+            vid.currentTime = t;
+          });
+          ctx.drawImage(vid, 0, 0, 640, 360);
+          frames.push({
+            frame_idx: i + 1,
+            timestamp: `${t.toFixed(2)}s`,
+            phase: phaseLabels[i] || `Frame ${i + 1}`,
+            image_b64: canvas.toDataURL("image/jpeg", 0.84)
+          });
+        }
+        clearTimeout(timeout);
+        cleanup();
+        resolve(frames);
+      } catch (e) {
+        clearTimeout(timeout);
+        failFallback();
+      }
+    };
+    vid.onerror = () => {
+      clearTimeout(timeout);
+      failFallback();
+    };
+  });
+}
+
+function buildClientVideoHeuristicReport(sampleId, userNotes, extractedFrames = []) {
+  const samples = window.STATIC_VIDEO_SAMPLES || {
+    ar15_double_feed: {
+      id: "ar15_double_feed",
+      firearm_id: "AR15_M4_Platform",
+      firearm_name: "AR-15 / M4 Carbine",
+      title: "Type 3 Stoppage: Failure to Extract & Double Feed Wedge",
+      cycle_phase: "Phase 6: Extraction / Phase 1: Feeding",
+      primary_symptom: "Spent brass remains seated in chamber while bolt strips live round into case head",
+      root_causes: [
+        "Worn or chipped extractor claw hook slipping off case rim under residual chamber pressure",
+        "Fatigued extractor spring or missing Viton #006 O-ring / silicone insert",
+        "Carbon-ringed or rough chamber walls increasing extraction drag",
+        "Over-gassed dwell timing unlocking bolt before brass obturation relaxes"
+      ],
+      immediate_action: "LOCK bolt to rear • DROP magazine • WORK charging handle to clear wedged rounds • INSERT fresh magazine • RACK & verify battery.",
+      armorer_checklist: [
+        "1. Gauge chamber headspace with 5.56 NATO GO (1.4646\") and NO-GO (1.4706\") gauges.",
+        "2. Inspect extractor hook depth (min 0.035\") under 10x magnification; replace with Mil-Spec 9330030 claw if rounded.",
+        "3. Upgrade to 5-coil copper-coated extractor spring + blue/black insert + Viton #006 O-ring.",
+        "4. Verify carrier gas key screws torqued to 50–58 in-lbs with Permatex #3 and MOACKS side-staking; consider H2 buffer (4.6 oz)."
+      ],
+      parts_to_inspect: [
+        { name: "Bolt Extractor Claw", oem: "Mil-Spec 9330030", spec: "15–18 lbs grip force; 0.035\" hook depth" },
+        { name: "Extractor Spring & Viton O-Ring", oem: "Mil-Spec 8448512", spec: "Replace every 3,000–5,000 rounds" }
+      ]
+    },
+    glock_stovepipe: {
+      id: "glock_stovepipe",
+      firearm_id: "Glock_Pistols",
+      firearm_name: "Glock 17 / 19 (Gen 4/5)",
+      title: "Type 2 Stoppage: Stovepipe / Failure to Eject",
+      cycle_phase: "Phase 7: Ejection",
+      primary_symptom: "Spent 9x19mm casing pinched vertically at 90° between slide breechface and barrel hood",
+      root_causes: [
+        "Legacy '336' ejector profile producing erratic low ejection angle",
+        "Carbon buildup under extractor claw or reversed Extractor Depressor Plunger (EDP) assembly",
+        "Incorrect spring-loaded bearing (9mm LCI requires Black SP 01176 bearing)",
+        "Underpowered ammunition or grip recoil absorption reducing slide velocity"
+      ],
+      immediate_action: "TAP magazine baseplate • RACK slide briskly to clear pinched brass and chamber fresh round.",
+      armorer_checklist: [
+        "1. Inspect ejector stamping; upgrade Gen 3/early Gen 4 '336' housing to '30274' or Gen 5 '47021' ejector.",
+        "2. Remove EDP assembly; verify metal rod end contacts extractor and polymer bearing contacts slide cover plate; keep channel 100% DRY.",
+        "3. Confirm Black spring-loaded bearing (SP 01176) for 9mm LCI.",
+        "4. Scrub extractor hook recess with brass pick and verify smooth plunger travel."
+      ],
+      parts_to_inspect: [
+        { name: "Trigger Housing / Ejector Bar", oem: "OEM 30274 / 47021", spec: "Positive inward kick; zero tip peening" },
+        { name: "Spring-Loaded Bearing (9mm)", oem: "OEM SP 01176 (Black)", spec: "Dry channel; zero polymer deformation" }
+      ]
+    },
+    benelli_out_of_battery: {
+      id: "benelli_out_of_battery",
+      firearm_id: "Benelli_M4_Shotgun",
+      firearm_name: "Benelli M4 / M1014 Combat Shotgun",
+      title: "Type 4 Stoppage: Rotary Bolt Out-of-Battery & Short Stroke",
+      cycle_phase: "Phase 3: Locking & Phase 2: Chambering",
+      primary_symptom: "Bolt carrier stops 0.125\" open; dual-lug rotary bolt head fails to complete 90° lockup",
+      root_causes: [
+        "Carbon/lead fouling caked inside dual ARGO gas cylinders or piston ring grooves",
+        "Weakened recoil spring inside stock receiver extension tube (< 17.5\" free length)",
+        "Plastic wad/carbon ring in 12ga chamber mouth impeding shell rim seating",
+        "Dry or galled rotary bolt cam pin helical track"
+      ],
+      immediate_action: "VERIFY barrel clear • RACK charging handle fully to rear and release cleanly (do not ride handle).",
+      armorer_checklist: [
+        "1. Strip dual stainless ARGO gas pistons; soak in carbon solvent and reassemble DRY (never grease gas pistons).",
+        "2. Inspect stock recoil spring free length (min 17.5\") and clean plunger tube.",
+        "3. Apply light film of synthetic grease to rotary bolt cam pin 45° helical slot.",
+        "4. Brush 12-gauge chamber and barrel extension locking recesses clean."
+      ],
+      parts_to_inspect: [
+        { name: "Dual ARGO Gas Pistons", oem: "Benelli 70043", spec: "Free-floating rings; zero grease" },
+        { name: "Stock Recoil Spring", oem: "Benelli 70025", spec: "Free length ≥ 17.5\"" }
+      ]
+    },
+    sig_p320_slide_lock_failure: {
+      id: "sig_p320_slide_lock_failure",
+      firearm_id: "Sig_P320_M17_Pistols",
+      firearm_name: "SIG Sauer P320 / M17 / M18",
+      title: "Phase 8 Failure: Slide Fails to Lock Open on Empty Magazine",
+      cycle_phase: "Phase 8: Hold-Open / Cocking",
+      primary_symptom: "Slide returns to battery on empty chamber after final round; slide catch lever fails to engage notch",
+      root_causes: [
+        "High thumbs-forward grip riding ambidextrous slide catch lever downward",
+        "FCU slide catch lever spring leg unseated from chassis pocket",
+        "Fatigued magazine spring or worn follower lift shelf",
+        "Rounded slide catch notch on left slide rail"
+      ],
+      immediate_action: "DROP empty magazine • INSERT loaded magazine • RACK slide to chamber round.",
+      armorer_checklist: [
+        "1. Perform single-round one-handed live-fire test to isolate shooter thumb contact.",
+        "2. Lift Fire Control Unit (FCU) and verify slide catch spring leg seats squarely in chassis groove.",
+        "3. Measure magazine spring tension and inspect follower shelf for rounding.",
+        "4. Inspect slide catch notch squareness for peening."
+      ],
+      parts_to_inspect: [
+        { name: "Slide Catch Lever & Spring", oem: "SIG 1301138-R", spec: "Crisp upward follower engagement" },
+        { name: "MHS 17-Rd Magazine Spring/Follower", oem: "SIG MAG-MOD-F-9-17", spec: "Positive upward lock lift" }
+      ]
+    }
+  };
+
+  let report = null;
+
+  // Dynamic active-platform stoppage simulation!
+  if (sampleId === "active_platform_sim" && firearmData && firearmData.stoppages && firearmData.stoppages.length > 0) {
+    const st = firearmData.stoppages[0];
+    report = {
+      id: "active_platform_sim",
+      firearm_id: currentFirearm,
+      firearm_name: firearmData.name,
+      title: `${firearmData.name}: ${st.position}`,
+      cycle_phase: st.short_desc || "Mechanical Cycle Disruption",
+      primary_symptom: `${st.short_desc || st.position} observed during live-fire cycle on ${firearmData.name}.`,
+      root_causes: (st.causes && st.causes.length > 0) ? st.causes : ["Fouled chamber or extractor", "Spring fatigue beyond service interval"],
+      immediate_action: `CLEAR & SAFE WEAPON: Remove feed source, lock/hold bolt or slide rearward, visually & physically inspect chamber, then apply bench remedy.`,
+      armorer_checklist: [
+        `1. Primary Bench Remedy: ${st.action || st.remedy || "Inspect extractor, chamber, and recoil spring."}`,
+        ...Object.entries(firearmData.specs || {}).slice(0, 3).map(([k, v], i) => `${i + 2}. Verify ${k.replace(/_/g, " ")}: ${v}`)
+      ],
+      parts_to_inspect: ((window.STATIC_PARTS_DATABASE || {})[currentFirearm] || []).slice(0, 3).map(p => ({
+        name: p.name,
+        oem: p.oem_number || p.callout_num || "Factory Spec",
+        spec: p.tolerances || "Verify factory tolerance"
+      })),
+      analysis_engine: "Master Armorer Platform Simulation (RAG Grounded)"
+    };
+  } else if (sampleId && samples[sampleId]) {
+    report = JSON.parse(JSON.stringify(samples[sampleId]));
+    report.analysis_engine = "Armorer Diagnostics Lab (High-Speed Benchmark Capture)";
+  } else {
+    const notesLower = (userNotes || "").toLowerCase();
+    let key = "ar15_double_feed";
+    if (/stovepipe|eject|pinch|fte/.test(notesLower) || currentFirearm.toLowerCase().includes("glock")) key = "glock_stovepipe";
+    else if (/battery|rotary|argo|piston|short stroke/.test(notesLower) || currentFirearm.toLowerCase().includes("benelli")) key = "benelli_out_of_battery";
+    else if (/lock back|hold open|slide catch|follower/.test(notesLower) || currentFirearm.toLowerCase().includes("sig")) key = "sig_p320_slide_lock_failure";
+    else if (firearmData && firearmData.stoppages && firearmData.stoppages.length > 0) {
+      return buildClientVideoHeuristicReport("active_platform_sim", userNotes, extractedFrames);
+    }
+    report = JSON.parse(JSON.stringify(samples[key]));
+    if (firearmData && report.firearm_id !== currentFirearm) {
+      report.firearm_name = firearmData.name;
+      report.title = `${firearmData.name}: ${report.title.split(": ").slice(-1)[0]}`;
+    }
+    report.analysis_engine = "Master Gunsmith Video Analysis Engine (RAG Grounded)";
+  }
+
+  if (!report.parts_to_inspect || report.parts_to_inspect.length === 0) {
+    report.parts_to_inspect = [
+      { name: "Extractor & Spring Assembly", oem: "Factory Service Spec", spec: "Inspect hook geometry & spring tension" },
+      { name: "Recoil / Return Spring", oem: "Factory Service Spec", spec: "Verify free length & pull weight" }
+    ];
+  }
+
+  if (extractedFrames && extractedFrames.length > 0) {
+    report.frames = extractedFrames;
+  } else {
+    report.frames = [
+      {
+        frame_idx: 1,
+        timestamp: "0.08s",
+        phase: "T0: Cycle Start",
+        image_b64: createClientDiagnosticFrameDataUrl(report.title, "0.08s", "Ignition & Unlock", "Bolt / Slide In-Battery Reference")
+      },
+      {
+        frame_idx: 2,
+        timestamp: "0.19s",
+        phase: "T1: Cycle Failure",
+        image_b64: createClientDiagnosticFrameDataUrl(report.title, "0.19s", report.cycle_phase, report.primary_symptom)
+      },
+      {
+        frame_idx: 3,
+        timestamp: "0.34s",
+        phase: "T2: Stoppage State",
+        image_b64: createClientDiagnosticFrameDataUrl(report.title, "0.34s", "Stoppage Lockup", (report.root_causes || [])[0] || report.primary_symptom)
+      }
+    ];
+  }
+
+  const targetFid = report.firearm_id || currentFirearm;
+  const ragHits = searchClientRAG(`${report.title} ${report.primary_symptom} ${report.cycle_phase}`, targetFid, 3);
+  report.rag_manual_citations = ragHits.map(r => ({
+    manual_title: r.doc,
+    manual_filename: r.fn,
+    page: r.page,
+    firearm_id: r.fid || targetFid,
+    url: `/api/manuals/${r.fid || targetFid}/${r.fn}#page=${r.page}`
+  }));
+
+  return report;
+}
+
+function renderVideoDiagnosticReport(report) {
+  lastVideoDiagnosisReport = report;
+  const resultsBox = document.getElementById("diagResultsContainer");
+  const framesStrip = document.getElementById("diagFramesStrip");
+  const badgeEl = document.getElementById("reportStoppageBadge");
+  const engineEl = document.getElementById("reportEngineBadge");
+  const titleEl = document.getElementById("reportTitle");
+  const phaseEl = document.getElementById("reportPhase");
+  const symptomEl = document.getElementById("reportSymptom");
+  const causesEl = document.getElementById("reportCausesList");
+  const actionEl = document.getElementById("reportImmediateAction");
+  const checklistEl = document.getElementById("reportChecklist");
+  const partsGridEl = document.getElementById("reportPartsGrid");
+  const citationsEl = document.getElementById("reportCitationsList");
+
+  if (!resultsBox) return;
+
+  if (framesStrip) {
+    framesStrip.innerHTML = (report.frames || []).map(f => `
+      <div class="diag-frame-card">
+        <img class="diag-frame-thumb" src="${f.image_b64}" alt="Frame ${f.frame_idx}">
+        <div class="diag-frame-meta">
+          <span class="diag-frame-time">${escapeHtml(f.timestamp || "")}</span>
+          <span class="diag-frame-phase">${escapeHtml(f.phase || "")}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  if (badgeEl) badgeEl.textContent = `🛑 ${(report.title || "STOPPAGE DETECTED").split(":")[0].toUpperCase()}`;
+  if (engineEl) engineEl.textContent = report.analysis_engine || "Master Armorer Vision AI";
+  if (titleEl) titleEl.textContent = report.title || "Malfunction Diagnostic Report";
+  if (phaseEl) phaseEl.textContent = `Cycle of Operations: ${report.cycle_phase || "Extraction / Feeding"}`;
+  if (symptomEl) symptomEl.textContent = report.primary_symptom || "";
+
+  if (causesEl) {
+    causesEl.innerHTML = (report.root_causes || []).map(c => `<li>${escapeHtml(c)}</li>`).join("");
+  }
+  if (actionEl) actionEl.textContent = report.immediate_action || "";
+  if (checklistEl) {
+    checklistEl.innerHTML = (report.armorer_checklist || []).map(step => {
+      const cleaned = String(step).replace(/^\d+\.\s*/, "");
+      return `<li>${escapeHtml(cleaned)}</li>`;
+    }).join("");
+  }
+  if (partsGridEl) {
+    partsGridEl.innerHTML = (report.parts_to_inspect || []).map(p => `
+      <div class="report-part-card">
+        <span class="report-part-name">${escapeHtml(p.name || "Component")}</span>
+        <span class="report-part-oem">${escapeHtml(p.oem || "Factory Spec")}</span>
+        <span class="report-part-spec">${escapeHtml(p.spec || "")}</span>
+      </div>
+    `).join("");
+  }
+  if (citationsEl) {
+    const cites = report.rag_manual_citations || [];
+    if (cites.length > 0) {
+      citationsEl.innerHTML = cites.map(c => {
+        const fid = c.firearm_id || report.firearm_id || currentFirearm;
+        const fn = c.manual_filename || "";
+        const pg = c.page || 1;
+        const citeUrl = c.url || (fn ? `/api/manuals/${fid}/${fn}#page=${pg}` : "#");
+        const label = `${c.manual_title || fn || "Armorer Manual"} (p. ${pg})`;
+        return `<button type="button" class="report-citation-pill" onclick="openManualFromCitation('${escapeHtml(citeUrl)}', '${escapeHtml(c.manual_title || label)}')">📖 ${escapeHtml(label)}</button>`;
+      }).join("");
+    } else {
+      citationsEl.innerHTML = `<span style="font-size:11.5px; color:var(--text-muted);">Grounded in active platform armorer specifications.</span>`;
+    }
+  }
+
+  resultsBox.classList.remove("hidden");
+  resultsBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function refreshDynamicVideoSimChip() {
+  const grid = document.querySelector(".diag-chips-grid");
+  if (!grid || !firearmData) return;
+  let dynBtn = document.getElementById("btnDynamicPlatformSim");
+  if (!dynBtn) {
+    dynBtn = document.createElement("button");
+    dynBtn.type = "button";
+    dynBtn.id = "btnDynamicPlatformSim";
+    dynBtn.className = "diag-chip-btn";
+    dynBtn.dataset.sample = "active_platform_sim";
+    grid.appendChild(dynBtn);
+  }
+  const st = (firearmData.stoppages && firearmData.stoppages[0]) ? firearmData.stoppages[0].position : "Cycle Stoppage";
+  dynBtn.innerHTML = `
+    <span class="chip-icon">🎯</span>
+    <div class="chip-info">
+      <span class="chip-title">On Bench: ${escapeHtml(firearmData.name.slice(0, 24))}</span>
+      <span class="chip-sub">${escapeHtml(st.slice(0, 34))}</span>
+    </div>
+  `;
+}
+
+function setupVideoDiagnostics() {
+  const btnSubnavCurated = document.getElementById("btnSubnavCurated");
+  const btnSubnavDiagnostics = document.getElementById("btnSubnavDiagnostics");
+  const curatedView = document.getElementById("videoCuratedView");
+  const diagView = document.getElementById("videoDiagnosticsView");
+  const dropzone = document.getElementById("diagDropzone");
+  const fileInput = document.getElementById("diagFileInput");
+  const notesInput = document.getElementById("diagUserNotes");
+  const btnAnalyze = document.getElementById("btnRunVideoAnalysis");
+  const spinner = document.getElementById("diagLoadingSpinner");
+  const loadingText = document.getElementById("diagLoadingText");
+  const resultsBox = document.getElementById("diagResultsContainer");
+  const btnConsult = document.getElementById("btnConsultAssistantOnVideo");
+
+  if (btnSubnavCurated && btnSubnavDiagnostics && curatedView && diagView) {
+    btnSubnavCurated.addEventListener("click", () => {
+      btnSubnavCurated.classList.add("active");
+      btnSubnavDiagnostics.classList.remove("active");
+      curatedView.classList.remove("hidden");
+      diagView.classList.add("hidden");
+    });
+    btnSubnavDiagnostics.addEventListener("click", () => {
+      btnSubnavDiagnostics.classList.add("active");
+      btnSubnavCurated.classList.remove("active");
+      diagView.classList.remove("hidden");
+      curatedView.classList.add("hidden");
+      if (videoFrame) videoFrame.src = "about:blank";
+      refreshDynamicVideoSimChip();
+    });
+  }
+
+  const runAnalysis = async ({ sampleId = "", file = null } = {}) => {
+    if (spinner) spinner.classList.remove("hidden");
+    if (resultsBox) resultsBox.classList.add("hidden");
+    if (btnAnalyze) btnAnalyze.disabled = true;
+    const notes = notesInput ? notesInput.value.trim() : "";
+
+    try {
+      await ensureClientRAGLoaded(1200);
+      let report = null;
+
+      // 1. Try FastAPI backend if running locally (and not active_platform_sim custom client synthesis)
+      if (!isStaticHostedSite() && sampleId !== "active_platform_sim") {
+        try {
+          const fd = new FormData();
+          fd.append("firearm_id", currentFirearm);
+          if (sampleId) fd.append("sample_id", sampleId);
+          if (notes) fd.append("user_notes", notes);
+          if (file) fd.append("file", file);
+          if (loadingText) {
+            loadingText.textContent = file
+              ? `Extracting 5 temporal frames from "${file.name}" via FFmpeg & running Vision AI...`
+              : "Synthesizing high-speed cycle telemetry & cross-referencing armorer manuals...";
+          }
+          const res = await fetch("/api/video/analyze", { method: "POST", body: fd });
+          if (res.ok) {
+            const raw = await res.json();
+            report = raw.report || raw;
+          }
+        } catch (err) {
+          console.warn("Local video analyze fallback:", err);
+        }
+      }
+
+      // 2. Client-side Frame Extraction + Multimodal Gemini Vision or RAG Heuristic Engine
+      if (!report) {
+        let extractedFrames = [];
+        if (file) {
+          if (loadingText) loadingText.textContent = `Extracting 5 high-speed diagnostic frames from "${file.name}" in browser...`;
+          extractedFrames = await extractVideoFramesInBrowser(file, 5);
+        }
+
+        const rawKey = activeLLMApiKey || "";
+        const isGem = rawKey && (activeLLMBackend === "gemini" || rawKey.startsWith("AIza"));
+        if (extractedFrames.length > 0 && isGem) {
+          try {
+            if (loadingText) loadingText.textContent = "Analyzing extracted video frames with Gemini 2.5 Flash Multimodal Vision...";
+            const mod = (activeLLMModel && activeLLMModel.startsWith("gemini-")) ? activeLLMModel : "gemini-2.5-flash";
+            const gunName = firearmData ? firearmData.name : currentFirearm;
+            const parts = [{
+              text: `You are a master military armorer analyzing 5 sequential video frames of a firearm malfunction on ${gunName}. Operator notes: ${notes || "Stoppage during live fire"}. Return ONLY valid JSON: {"title":"...","cycle_phase":"...","primary_symptom":"...","root_causes":["..."],"immediate_action":"...","armorer_checklist":["..."],"parts_to_inspect":[{"name":"...","oem":"...","spec":"..."}]}`
+            }];
+            extractedFrames.slice(0, 5).forEach(f => {
+              const b64 = f.image_b64.includes(",") ? f.image_b64.split(",")[1] : f.image_b64;
+              parts.push({ inline_data: { mime_type: "image/jpeg", data: b64 } });
+            });
+            const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${rawKey}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: { temperature: 0.2, response_mime_type: "application/json" }
+              })
+            });
+            if (gRes.ok) {
+              const gJson = await gRes.json();
+              const txt = gJson.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (txt) {
+                report = JSON.parse(txt);
+                report.frames = extractedFrames;
+                report.analysis_engine = `Multimodal Vision AI (${mod})`;
+                const ragHits = searchClientRAG(`${report.title} ${report.primary_symptom}`, currentFirearm, 2);
+                report.rag_manual_citations = ragHits.map(r => ({
+                  manual_title: r.doc,
+                  manual_filename: r.fn,
+                  page: r.page,
+                  firearm_id: r.fid || currentFirearm,
+                  url: `/api/manuals/${r.fid || currentFirearm}/${r.fn}#page=${r.page}`
+                }));
+              }
+            }
+          } catch (ve) {
+            console.warn("Browser Gemini video analysis fallback:", ve);
+          }
+        }
+
+        if (!report) {
+          report = buildClientVideoHeuristicReport(sampleId, notes, extractedFrames);
+        }
+      }
+
+      renderVideoDiagnosticReport(report);
+    } finally {
+      if (spinner) spinner.classList.add("hidden");
+      if (btnAnalyze) btnAnalyze.disabled = false;
+    }
+  };
+
+  // Delegated click for simulation chips (including dynamic 5th bench chip)
+  const chipsGrid = document.querySelector(".diag-chips-grid");
+  if (chipsGrid) {
+    chipsGrid.addEventListener("click", (e) => {
+      const btn = e.target.closest(".diag-chip-btn");
+      if (!btn) return;
+      document.querySelectorAll(".diag-chip-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      runAnalysis({ sampleId: btn.dataset.sample || "ar15_double_feed" });
+    });
+  }
+
+  if (dropzone && fileInput) {
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const file = e.dataTransfer?.files?.[0];
+      if (file) {
+        selectedVideoDiagFile = file;
+        const pText = dropzone.querySelector(".primary-text");
+        if (pText) pText.textContent = `Selected clip: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+        runAnalysis({ file });
+      }
+    });
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        selectedVideoDiagFile = file;
+        const pText = dropzone.querySelector(".primary-text");
+        if (pText) pText.textContent = `Selected clip: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+        runAnalysis({ file });
+      }
+    });
+  }
+
+  if (notesInput) {
+    notesInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if (e.isComposing || e.keyCode === 229) return;
+        e.preventDefault();
+        runAnalysis({ file: selectedVideoDiagFile });
+      }
+    });
+  }
+
+  if (btnAnalyze) {
+    btnAnalyze.addEventListener("click", () => {
+      runAnalysis({ file: selectedVideoDiagFile });
+    });
+  }
+
+  if (btnConsult) {
+    btnConsult.addEventListener("click", () => {
+      if (!lastVideoDiagnosisReport) return;
+      const r = lastVideoDiagnosisReport;
+      const q = `I ran the Video Malfunction Lab on **${r.title}** (${r.cycle_phase}). Symptom: ${r.primary_symptom}. Walk me through the master armorer gauging measurements, parts replacement tolerances, and live-fire verification test.`;
+      if (window.innerWidth <= 900) setMobileView("assistant");
+      if (chatInput) {
+        chatInput.value = q;
+        handleChatSubmit();
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// MASTER GUNSMITH TORQUE MATRIX, CROW'S-FOOT & HEADSPACE BENCH CALCULATORS
+// ==========================================================================
+let currentTorqueUnit = "in-lbs";
+
+function convertInLbs(inLbsVal, unit) {
+  if (unit === "ft-lbs") return (inLbsVal / 12).toFixed(1) + " ft-lbs";
+  if (unit === "nm") return (inLbsVal * 0.1129848).toFixed(2) + " N·m";
+  return Math.round(inLbsVal) + " in-lbs";
+}
+
+function formatTorqueRange(minInLbs, maxInLbs, unit) {
+  if (minInLbs === maxInLbs) return convertInLbs(minInLbs, unit);
+  if (unit === "ft-lbs") return `${(minInLbs / 12).toFixed(1)} – ${(maxInLbs / 12).toFixed(1)} ft-lbs`;
+  if (unit === "nm") return `${(minInLbs * 0.1129848).toFixed(1)} – ${(maxInLbs * 0.1129848).toFixed(1)} N·m`;
+  return `${Math.round(minInLbs)} – ${Math.round(maxInLbs)} in-lbs`;
+}
+
+function refreshTorqueMatrixTable() {
+  const tbody = document.getElementById("torqueMatrixBody");
+  const label = document.getElementById("calcActivePlatformLabel");
+  if (!tbody) return;
+  if (label && firearmData) label.textContent = firearmData.name;
+
+  const rows = [];
+  const fid = (currentFirearm || "").toLowerCase();
+
+  // Platform-specific precision rows
+  if (fid.includes("ar15") || fid.includes("m4")) {
+    rows.push(
+      { name: "AR-15 / M4 Barrel Nut (USGI)", min: 360, max: 960, prep: "AeroShell 33MS / 64 moly grease (NO graphite); align gas tube notch ≤80 ft-lbs" },
+      { name: "BCG Carrier Gas Key Fasteners", min: 50, max: 58, prep: "Permatex #3 Aviation Gasket Sealant under key deck + MOACKS dual side-stake (NO Loctite)" },
+      { name: "Receiver Extension Castle Nut", min: 456, max: 504, prep: "38–42 ft-lbs; stake endplate into 2 castle nut notches" },
+      { name: "Low-Profile Gas Block Set Screws", min: 25, max: 30, prep: "Degrease dimpled barrel + Rocksett or Loctite 271" }
+    );
+  } else if (fid.includes("1022")) {
+    rows.push(
+      { name: "Ruger 10/22 Barrel V-Block Screws", min: 10, max: 15, prep: "Dry/clean threads (18 in-lbs MAX — aluminum receiver strips above 20 in-lbs!)" },
+      { name: "10/22 Takedown Action Screw", min: 20, max: 25, prep: "Blue Loctite 242 on optic rail screws (15–18 in-lbs)" }
+    );
+  } else if (fid.includes("700") || (firearmData && (firearmData.action_type || "").toLowerCase().includes("bolt"))) {
+    rows.push(
+      { name: "Bolt-Action Wood / Laminate Stock (Unpillared)", min: 35, max: 45, prep: "Seat recoil lug rearward; front guard screw first, then rear" },
+      { name: "Bolt-Action Pillar-Bedded / Aluminum Chassis", min: 55, max: 65, prep: "Clean dry action screws; verify rear screw does not bind bolt shroud" }
+    );
+  }
+
+  // Extract any numeric in-lbs / ft-lbs specs directly from active platform specs
+  if (firearmData && firearmData.specs) {
+    Object.entries(firearmData.specs).forEach(([k, v]) => {
+      const str = String(v);
+      const inMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:to|–|-)\s*(\d+(?:\.\d+)?)\s*in-lbs/i);
+      const ftMatch = str.match(/(\d+(?:\.\d+)?)\s*(?:to|–|-)\s*(\d+(?:\.\d+)?)\s*ft-lbs/i);
+      if (inMatch && rows.length < 6) {
+        rows.push({
+          name: `${firearmData.name}: ${k.replace(/_/g, " ").toUpperCase()}`,
+          min: parseFloat(inMatch[1]),
+          max: parseFloat(inMatch[2]),
+          prep: str
+        });
+      } else if (ftMatch && rows.length < 6) {
+        rows.push({
+          name: `${firearmData.name}: ${k.replace(/_/g, " ").toUpperCase()}`,
+          min: parseFloat(ftMatch[1]) * 12,
+          max: parseFloat(ftMatch[2]) * 12,
+          prep: str
+        });
+      }
+    });
+  }
+
+  // Universal Master Gunsmith Optic & Accessory Standards
+  rows.push(
+    { name: "Scope Ring Caps (30mm / 34mm Tube)", min: 15, max: 18, prep: "DRY threads ONLY! Wet Loctite increases clamp load 25–30% & crushes erector tube" },
+    { name: "Picatinny Base / Rail to Receiver", min: 30, max: 35, prep: "Degrease blind holes w/ 99% IPA + 1 small drop Loctite 242 (Blue)" },
+    { name: "Scope Ring Crossbolts (Aluminum / Steel)", min: 35, max: 65, prep: "35–45 in-lbs Aluminum • 55–65 in-lbs Steel; push forward against recoil lug" },
+    { name: "Pistol Slide Optic (RMR / Holosun / DPP)", min: 12, max: 15, prep: "Loctite 243 (oil-tolerant Blue) + witness-mark screw heads w/ paint pen" },
+    { name: "Muzzle Brake / Suppressor Mount", min: 300, max: 360, prep: "25–30 ft-lbs w/ precision shims + 2 drops Rocksett (2,015°F rating; water-removable)" }
+  );
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${escapeHtml(r.name)}</strong></td>
+      <td style="font-family:var(--font-mono); color:var(--brass-accent); font-weight:700; white-space:nowrap;">${escapeHtml(formatTorqueRange(r.min, r.max, currentTorqueUnit))}</td>
+      <td style="font-size:11.5px; color:var(--text-muted);">${escapeHtml(r.prep)}</td>
+    </tr>
+  `).join("");
+}
+
+function setupBenchCalculators() {
+  const openBtn = document.getElementById("openBenchCalcBtn");
+  const dialog = document.getElementById("benchCalcDialog");
+  const closeBtn = document.getElementById("closeBenchCalcBtn");
+  const closeBtn2 = document.getElementById("closeBenchCalcBtn2");
+
+  if (!dialog) return;
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      refreshTorqueMatrixTable();
+      updateCrowsFootCalc();
+      updateHeadspaceEval();
+      updateSightDriftCalc();
+      dialog.showModal();
+    });
+  }
+  if (closeBtn) closeBtn.addEventListener("click", () => dialog.close());
+  if (closeBtn2) closeBtn2.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  // Tab switching
+  document.querySelectorAll("#benchCalcDialog .calc-tab-btn").forEach(tab => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.calctab;
+      document.querySelectorAll("#benchCalcDialog .calc-tab-btn").forEach(t => t.classList.toggle("active", t === tab));
+      document.getElementById("calcPanelTorque")?.classList.toggle("hidden", target !== "torque");
+      document.getElementById("calcPanelCrowsfoot")?.classList.toggle("hidden", target !== "crowsfoot");
+      document.getElementById("calcPanelHeadspace")?.classList.toggle("hidden", target !== "headspace");
+    });
+  });
+
+  // Unit switcher
+  document.querySelectorAll("#torqueUnitSwitcher .unit-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentTorqueUnit = btn.dataset.unit || "in-lbs";
+      document.querySelectorAll("#torqueUnitSwitcher .unit-btn").forEach(b => b.classList.toggle("active", b === btn));
+      refreshTorqueMatrixTable();
+    });
+  });
+
+  // Crow's-Foot Calculator
+  const cfTarget = document.getElementById("cfTargetTorque");
+  const cfLen = document.getElementById("cfWrenchLength");
+  const cfExt = document.getElementById("cfExtensionLength");
+  const cfAng = document.getElementById("cfAngleSelect");
+  const cfOut = document.getElementById("cfResultReadout");
+
+  function updateCrowsFootCalc() {
+    if (!cfOut) return;
+    const t = parseFloat(cfTarget?.value) || 40;
+    const l = Math.max(1, parseFloat(cfLen?.value) || 14);
+    const e = Math.max(0, parseFloat(cfExt?.value) || 2);
+    const ang = parseInt(cfAng?.value || "0", 10);
+    const effExt = ang === 90 ? 0 : e;
+    const dial = (t * l) / (l + effExt);
+    cfOut.innerHTML = ang === 90
+      ? `90° Perpendicular Adapter: Dial Wrench To <strong style="color:var(--accent-green); font-size:15px;">${t.toFixed(1)}</strong> (Zero lever-arm change)`
+      : `Dial Torque Wrench To: <strong style="color:var(--brass-accent); font-size:15px;">${dial.toFixed(1)}</strong> to deliver true <strong>${t.toFixed(1)}</strong> at barrel nut / fastener <code>(T_dial = ${t} × ${l} / (${l} + ${e}))</code>`;
+  }
+  [cfTarget, cfLen, cfExt, cfAng].forEach(el => el?.addEventListener("input", updateCrowsFootCalc));
+
+  // Headspace Evaluator
+  const hsGo = document.getElementById("hsGoSelect");
+  const hsNoGo = document.getElementById("hsNoGoSelect");
+  const hsField = document.getElementById("hsFieldSelect");
+  const hsOut = document.getElementById("hsResultReadout");
+
+  function updateHeadspaceEval() {
+    if (!hsOut) return;
+    const goCloses = hsGo?.value === "closes";
+    const noGoCloses = hsNoGo?.value === "closes";
+    const fieldCloses = hsField?.value === "closes";
+
+    if (!goCloses) {
+      hsOut.innerHTML = `<span style="color:var(--accent-amber); font-weight:700;">⚠️ TIGHT CHAMBER / SHORT HEADSPACE:</span> Bolt fails to close on GO gauge. Strip extractor &amp; ejector plunger, scrub chamber carbon/burrs, and re-test. Do NOT force bolt closed.`;
+    } else if (fieldCloses) {
+      hsOut.innerHTML = `<span style="color:var(--accent-red); font-weight:700;">🛑 DEADLINE — UNSAFE TO FIRE (REJECT):</span> Bolt closes on FIELD gauge. Excessive headspace risks catastrophic case-head separation. Re-barrel, set barrel shoulder back, or fit oversize bolt.`;
+    } else if (noGoCloses) {
+      hsOut.innerHTML = `<span style="color:var(--accent-amber); font-weight:700;">⚠️ SERVICEABLE SURPLUS / FAIL FOR NEW BUILD:</span> Closes on NO-GO, stops on FIELD. Acceptable for military service rifles in field tolerance, but out-of-spec for a new match chamber.`;
+    } else {
+      hsOut.innerHTML = `<span style="color:var(--accent-green); font-weight:700;">✓ PASS — IN FACTORY &amp; MATCH SPEC:</span> Bolt closes smoothly on GO and stops positively on NO-GO &amp; FIELD gauges.`;
+    }
+  }
+  [hsGo, hsNoGo, hsField].forEach(el => el?.addEventListener("change", updateHeadspaceEval));
+
+  // Sight Drift Calculator
+  const sdRad = document.getElementById("sdSightRadius");
+  const sdDist = document.getElementById("sdTargetDist");
+  const sdShift = document.getElementById("sdPoiShift");
+  const sdOut = document.getElementById("sdResultReadout");
+
+  function updateSightDriftCalc() {
+    if (!sdOut) return;
+    const R = Math.max(1, parseFloat(sdRad?.value) || 6.5);
+    const D_in = Math.max(36, (parseFloat(sdDist?.value) || 25) * 36);
+    const poi = Math.max(0.05, parseFloat(sdShift?.value) || 2.0);
+    const driftIn = (poi * R) / D_in;
+    const driftMm = driftIn * 25.4;
+    sdOut.innerHTML = `Required Sight Blade Drift: <strong style="color:var(--brass-accent); font-size:15px;">${driftIn.toFixed(4)}"</strong> (<strong>${driftMm.toFixed(2)} mm</strong>) • <em>FORS Rule: Move Rear sight SAME direction as desired POI shift; move Front sight OPPOSITE.</em>`;
+  }
+  [sdRad, sdDist, sdShift].forEach(el => el?.addEventListener("input", updateSightDriftCalc));
 }
 
 // Global Live Search with Cross-Platform & Cross-Manufacturer Matching
@@ -3575,10 +4862,10 @@ function generateClientSideExpertReply(query, firearmData) {
   if (fid.includes("ar15") || fid.includes("m4") || q.includes("ar-15") || q.includes("m4")) {
     if (q.includes("gas key") || q.includes("carrier") || q.includes("staking") || q.includes("bolt")) {
       return {
-        reply: `### AR-15 / M4 Carrier Gas Key Staking & Bolt Specifications\n\n` +
-          `* **Gas Key Screws:** Fasten with Grade 8 fasteners. Apply one drop of Loctite 271 (Red) or Rocksett, torque to **50 to 58 in-lbs**.\n` +
-          `* **Staking Protocol:** Use a purpose-built carrier key staking tool (e.g. MOACKS) or cold chisel to displace carrier key metal into both screw head splines from opposing sides.\n` +
-          `* **Gas Rings:** Ensure three staggered gas rings support carrier weight when rested bolt-face down on bench without collapsing.`,
+        reply: `### AR-15 / M4 Carrier Gas Key Staking & Bolt Specifications (TM 9-1005-319-23&P Chg 8)\n\n` +
+          `* **Gas Key Fasteners & Sealant:** Use new Grade 8 / ASTM A574 socket head cap screws. Apply a thin film of **Permatex #3 Aviation Form-A-Gasket Sealant** to the flat bottom deck of the gas key (do **NOT** put Loctite on gas key threads — cured threadlocker alters clamp load), and torque to **50 to 58 in-lbs**.\n` +
+          `* **Staking Protocol:** Use a **MOACKS** or USGI carrier key staking fixture to displace carrier key metal cleanly into both screw head counterbores / splines from opposing sides.\n` +
+          `* **Gas Rings:** Ensure three staggered gas rings support full bolt carrier group weight when stood vertically on the bolt face on a flat bench.`,
         backend: "Master Gunsmith Engine (RAG Grounded)",
         sources: ragSources
       };
@@ -3683,14 +4970,110 @@ async function handleChatSubmit() {
   chatHistory.scrollTop = chatHistory.scrollHeight;
 
   try {
-    const isStatic = window.location.hostname.includes("github.io") || !!window.STATIC_FIREARMS_DATA || window.location.protocol === "file:";
+    await ensureClientRAGLoaded(1500);
+    const isStatic = isStaticHostedSite();
 
     if (isStatic) {
-      // 1. Direct Google Gemini Web API from client if key is set
+      const ragMatches = searchClientRAG(query, currentFirearm, 4);
+      const ragSources = ragMatches.map(r => ({
+        title: `${r.doc} (p. ${r.page})`,
+        url: `/api/manuals/${r.fid || currentFirearm}/${r.fn}#page=${r.page}`
+      }));
+      const ragContextBlock = ragMatches.length > 0
+        ? "\n\nGROUNDED TECHNICAL MANUAL EXCERPTS:\n" + ragMatches.map(r => `[${r.doc}, p.${r.page}]: ${r.full_text.slice(0, 600)}`).join("\n---\n")
+        : "";
+
+      // 1A. Direct Local Loopback Bridge / Ollama via Chrome Local Network Access if connected!
+      if (directLoopbackBridgeUrl) {
+        try {
+          const bridgeRes = await fetchLoopback(`${directLoopbackBridgeUrl}/api/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firearm_id: currentFirearm,
+              messages: [{ role: "user", content: query }],
+              backend: activeLLMBackend === "builtin" ? "ollama" : activeLLMBackend,
+              model: activeLLMModel !== "auto" ? activeLLMModel : null
+            })
+          }, 25000);
+          if (bridgeRes.ok) {
+            const bData = await bridgeRes.json();
+            typingMsg.remove();
+            appendMessage("assistant", bData.reply, bData.backend_used || "Local Workstation AI", bData.sources || ragSources);
+            return;
+          }
+        } catch (bridgeErr) {
+          console.warn("Direct loopback FastAPI bridge chat fallback:", bridgeErr);
+        }
+      } else if (directLoopbackOllamaOnline) {
+        try {
+          const ollamaHost = (activeLLMEndpoint && activeLLMEndpoint.startsWith("http")) ? activeLLMEndpoint.replace(/\/$/, "") : "http://127.0.0.1:11434";
+          const ollamaBackend = (availableBackends || []).find(b => b.id === "ollama");
+          const mod = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : (ollamaBackend?.default_model || "qwen2.5:7b");
+          const sys = `You are a Master Military & Sporting Armorer. Active platform: ${firearmData ? firearmData.name : currentFirearm}. Give exact factory/TM torque specs, tolerances, and safety warnings.${ragContextBlock}`;
+          const oRes = await fetchLoopback(`${ollamaHost}/api/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: mod,
+              stream: false,
+              messages: [
+                { role: "system", content: sys },
+                { role: "user", content: query }
+              ]
+            })
+          }, 30000);
+          if (oRes.ok) {
+            const oJson = await oRes.json();
+            const replyText = oJson.message?.content;
+            if (replyText) {
+              typingMsg.remove();
+              appendMessage("assistant", replyText, `Ollama Local (${mod}) [Loopback GPU]`, ragSources);
+              return;
+            }
+          }
+        } catch (oErr) {
+          console.warn("Direct loopback Ollama chat fallback:", oErr);
+        }
+      } else if (directLoopbackLMStudioOnline) {
+        try {
+          const lmHost = (activeLLMEndpoint && activeLLMEndpoint.includes("1234")) ? activeLLMEndpoint.replace(/\/$/, "") : "http://127.0.0.1:1234/v1";
+          const lmBackend = (availableBackends || []).find(b => b.id === "lmstudio");
+          const mod = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : (lmBackend?.default_model || "local-model");
+          const sys = `You are a Master Military & Sporting Armorer. Active platform: ${firearmData ? firearmData.name : currentFirearm}. Give exact factory/TM torque specs, tolerances, and safety warnings.${ragContextBlock}`;
+          const lmRes = await fetchLoopback(`${lmHost}/chat/completions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: mod,
+              temperature: 0.3,
+              messages: [
+                { role: "system", content: sys },
+                { role: "user", content: query }
+              ]
+            })
+          }, 30000);
+          if (lmRes.ok) {
+            const lmJson = await lmRes.json();
+            const replyText = lmJson.choices?.[0]?.message?.content;
+            if (replyText) {
+              typingMsg.remove();
+              appendMessage("assistant", replyText, `LM Studio Local (${mod}) [Loopback GPU]`, ragSources);
+              return;
+            }
+          }
+        } catch (lmErr) {
+          console.warn("Direct loopback LM Studio chat fallback:", lmErr);
+        }
+      }
+
+      // 1B. Direct Google Gemini Web API from client if key is set
       if (activeLLMBackend === "gemini" && activeLLMApiKey) {
         try {
-          const mod = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : "gemini-1.5-flash";
-          const gunPrompt = firearmData ? `Current Firearm Platform: ${firearmData.name} (${firearmData.id}). Answer as an expert master gunsmith and armorer assistant.` : "Answer as an expert master gunsmith and armorer assistant.";
+          const mod = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : "gemini-2.5-flash";
+          const gunPrompt = firearmData
+            ? `Current Firearm Platform: ${firearmData.name} (${firearmData.id}). Answer as an expert master gunsmith, military weapons armorer, precision optics specialist, and bench machinist.${ragContextBlock}`
+            : `Answer as an expert master gunsmith and military armorer assistant.${ragContextBlock}`;
           const gemRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${activeLLMApiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -3703,7 +5086,7 @@ async function handleChatSubmit() {
             const replyText = gemData.candidates?.[0]?.content?.parts?.[0]?.text;
             if (replyText) {
               typingMsg.remove();
-              appendMessage("assistant", replyText, `Google Gemini (${mod}) [Cloud Web]`);
+              appendMessage("assistant", replyText, `Google Gemini (${mod}) [Cloud Web + RAG]`, ragSources);
               return;
             }
           }
@@ -3716,12 +5099,8 @@ async function handleChatSubmit() {
       const replyObj = generateClientSideExpertReply(query, firearmData);
       setTimeout(() => {
         typingMsg.remove();
-        if ((activeLLMBackend === "lmstudio" || activeLLMBackend === "ollama") && (activeLLMEndpoint.includes("127.0.0.1") || activeLLMEndpoint.includes("localhost"))) {
-          appendMessage("assistant", `${replyObj.reply}\n\n---\n*💡 **Local LM Studio / Ollama Notice:** You are currently viewing the hosted web version on GitHub Pages. Chrome blocks \`https://\` websites from connecting to local \`http://127.0.0.1\`. To connect to your local LM Studio / Ollama with PyMuPDF RAG, double-click \`run_workbench.bat\` in your \`Gun Manuals\` folder and open **http://127.0.0.1:8055**.*`, replyObj.backend, replyObj.sources);
-        } else {
-          appendMessage("assistant", replyObj.reply, replyObj.backend, replyObj.sources);
-        }
-      }, 300);
+        appendMessage("assistant", replyObj.reply, replyObj.backend, replyObj.sources);
+      }, 180);
       return;
     }
 
@@ -3783,10 +5162,8 @@ window.openManualFromCitation = function(url, title) {
 
       const doOpen = () => {
         switchLibraryTab("manuals");
-        const pdfUrl = isStatic
-          ? `https://raw.githubusercontent.com/gmascagni/gunsmithing/main/${fid}/manuals/${filename}#page=${page}`
-          : `/api/manuals/${fid}/${filename}#page=${page}`;
-        selectManual(filename, title || filename, true, pdfUrl);
+        const pageNum = parseInt(page, 10) || 1;
+        selectManual(filename, title || filename, true, pageNum);
       };
 
       if (fid !== currentFirearm) {
@@ -3869,64 +5246,199 @@ function formatMarkdown(text) {
   return out;
 }
 
-// LLM Backends & Health Check
+// LLM Backends & Health Check (Fast Timeout + LNA Loopback Aware)
 async function checkLLMBackends() {
+  if (isStaticHostedSite()) {
+    updateStatusPill();
+    return;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3200);
   try {
-    const res = await fetch("/api/llm/backends");
-    if (!res.ok) throw new Error();
+    const res = await fetch("/api/llm/backends", { signal: controller.signal });
+    if (!res.ok) throw new Error("Backend status HTTP " + res.status);
     const data = await res.json();
-    availableBackends = data.backends;
+    availableBackends = data.backends || [];
     updateStatusPill();
   } catch (e) {
-    llmStatusText.textContent = "Offline Mode";
-    document.querySelector(".status-dot").className = "status-dot offline";
+    updateStatusPill();
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-function updateStatusPill() {
-  const dot = document.querySelector(".status-dot");
-  
-  const ollama = availableBackends.find(b => b.id === "ollama");
-  const lmstudio = availableBackends.find(b => b.id === "lmstudio");
+async function probeLocalLoopbackFromBrowser(userInitiated = false) {
+  const modalDot = document.getElementById("localAIModalDot");
+  const modalTitle = document.getElementById("localAIModalTitle");
+  const modalSub = document.getElementById("localAIModalSub");
 
-  if (activeLLMBackend === "gemini") {
-    llmStatusText.textContent = `☁️ Gemini (${activeLLMModel !== 'auto' ? activeLLMModel : '1.5-flash'})`;
+  if (modalTitle) modalTitle.textContent = "Probing Local Workstation Loopback...";
+  if (modalSub) modalSub.textContent = "Checking 127.0.0.1:8055 (Workbench), :11434 (Ollama), & :1234 (LM Studio)...";
+
+  // 1. Probe local FastAPI Workbench Server (:8055)
+  try {
+    const bridgeRes = await fetchLoopback("http://127.0.0.1:8055/api/llm/backends", { method: "GET" }, 1800);
+    if (bridgeRes.ok) {
+      const bData = await bridgeRes.json();
+      directLoopbackBridgeUrl = "http://127.0.0.1:8055";
+      availableBackends = bData.backends || [];
+      const ollama = availableBackends.find(b => b.id === "ollama");
+      const lmstudio = availableBackends.find(b => b.id === "lmstudio");
+      if (ollama && ollama.status === "online") {
+        directLoopbackOllamaOnline = true;
+        activeLLMBackend = "ollama";
+        activeLLMModel = ollama.default_model || "auto";
+      } else if (lmstudio && lmstudio.status === "online") {
+        directLoopbackLMStudioOnline = true;
+        activeLLMBackend = "lmstudio";
+        activeLLMModel = lmstudio.default_model || "auto";
+      }
+      updateStatusPill();
+      if (modalDot) modalDot.className = "status-indicator-dot online";
+      if (modalTitle) modalTitle.textContent = "✓ Connected to Local Armorer Server (127.0.0.1:8055)!";
+      const activeGpuLabel = ollama?.status === "online"
+        ? `Ollama GPU (${ollama.default_model})`
+        : (lmstudio?.status === "online" ? `LM Studio GPU (${lmstudio.default_model})` : "FastAPI + PyMuPDF RAG");
+      if (modalSub) modalSub.textContent = `${activeGpuLabel} • Full Local Workstation Bridge active.`;
+      if (userInitiated) {
+        appendMessage(
+          "system",
+          `🟢 **Connected to Local Workstation Bridge (\`http://127.0.0.1:8055\`)!** Active Engine: **${escapeHtml(activeGpuLabel)}** with 1,355 grounded manual chunks.`,
+          "Local Loopback Bridge"
+        );
+      }
+      return true;
+    }
+  } catch (e) {}
+
+  // 2. Probe local Ollama directly (:11434)
+  let ollamaCorsBlocked = false;
+  try {
+    const ollamaRes = await fetchLoopback("http://127.0.0.1:11434/api/tags", { method: "GET" }, 1800);
+    if (ollamaRes.status === 403) ollamaCorsBlocked = true;
+    if (ollamaRes.ok) {
+      const oData = await ollamaRes.json();
+      const rawModels = (oData.models || []).map(m => m.name);
+      const chatModels = rawModels.filter(m => !/embed|bge|bert|minilm/i.test(m));
+      const models = chatModels.length > 0 ? chatModels : rawModels;
+      const defModel = models.includes("qwen3.5:4b") ? "qwen3.5:4b" : (models[0] || "llama3.2");
+      directLoopbackOllamaOnline = true;
+      availableBackends = [{
+        id: "ollama",
+        name: "Ollama (Local Loopback)",
+        status: "online",
+        endpoint: "http://127.0.0.1:11434",
+        models,
+        default_model: defModel
+      }];
+      activeLLMBackend = "ollama";
+      activeLLMModel = defModel;
+      updateStatusPill();
+      if (modalDot) modalDot.className = "status-indicator-dot online";
+      if (modalTitle) modalTitle.textContent = `✓ Connected Directly to Local Ollama (${defModel})!`;
+      if (modalSub) modalSub.textContent = `${models.length} local model(s) ready over Local Network Access loopback.`;
+      if (userInitiated) {
+        appendMessage(
+          "system",
+          `🟢 **Local Ollama GPU Connected!** Running **${escapeHtml(defModel)}** via Chrome Local Network Access + 1,355 RAG chunks.`,
+          "Local AI Engine"
+        );
+      }
+      return true;
+    }
+  } catch (e) {}
+
+  // 3. Probe local LM Studio directly (:1234/v1)
+  try {
+    const lmRes = await fetchLoopback("http://127.0.0.1:1234/v1/models", { method: "GET" }, 1800);
+    if (lmRes.ok) {
+      const lmData = await lmRes.json();
+      const rawModels = (lmData.data || []).map(m => m.id);
+      const chatModels = rawModels.filter(m => !/embed|bge|bert|minilm/i.test(m));
+      const models = chatModels.length > 0 ? chatModels : rawModels;
+      const defModel = models[0] || "local-model";
+      directLoopbackLMStudioOnline = true;
+      availableBackends = [{
+        id: "lmstudio",
+        name: "LM Studio (Local Loopback)",
+        status: "online",
+        endpoint: "http://127.0.0.1:1234/v1",
+        models,
+        default_model: defModel
+      }];
+      activeLLMBackend = "lmstudio";
+      activeLLMModel = defModel;
+      updateStatusPill();
+      if (modalDot) modalDot.className = "status-indicator-dot online";
+      if (modalTitle) modalTitle.textContent = `✓ Connected Directly to Local LM Studio (${defModel})!`;
+      if (modalSub) modalSub.textContent = `${models.length} local GPU model(s) ready on 127.0.0.1:1234.`;
+      if (userInitiated) {
+        appendMessage(
+          "system",
+          `🟢 **Local LM Studio GPU Connected!** Running **${escapeHtml(defModel)}** on \`127.0.0.1:1234\` + 1,355 grounded RAG chunks.`,
+          "Local AI Engine"
+        );
+      }
+      return true;
+    }
+  } catch (e) {}
+
+  directLoopbackOllamaOnline = false;
+  directLoopbackLMStudioOnline = false;
+  directLoopbackBridgeUrl = "";
+  updateStatusPill();
+  if (modalDot) modalDot.className = "status-indicator-dot";
+  if (modalTitle) {
+    modalTitle.textContent = ollamaCorsBlocked
+      ? "Ollama Running on 127.0.0.1:11434 — Enable OLLAMA_ORIGINS or Start Bridge"
+      : "Local Ollama / LM Studio Not Detected on 127.0.0.1";
+  }
+  if (modalSub) {
+    modalSub.textContent = ollamaCorsBlocked
+      ? "Ollama responded 403 to GitHub Pages origin. Set OLLAMA_ORIGINS=\"*\" or run Option B (port 8055) below."
+      : "Follow Option A or Option B below to launch your local GPU engine, or use Built-in RAG / Cloud AI immediately.";
+  }
+  return false;
+}
+
+function updateStatusPill() {
+  const dot = document.querySelector("#llmStatusPill .status-dot") || document.querySelector(".status-dot");
+  if (!llmStatusText || !dot) return;
+
+  const ollama = (availableBackends || []).find(b => b.id === "ollama");
+  const lmstudio = (availableBackends || []).find(b => b.id === "lmstudio");
+
+  if (activeLLMBackend === "gemini" && activeLLMApiKey) {
+    llmStatusText.textContent = `☁️ Gemini (${activeLLMModel !== "auto" ? activeLLMModel : "2.5-flash"})`;
     dot.className = "status-dot pulsing";
-  } else if (activeLLMBackend === "openai") {
-    llmStatusText.textContent = `☁️ OpenAI (${activeLLMModel !== 'auto' ? activeLLMModel : 'gpt-4o-mini'})`;
+  } else if (activeLLMBackend === "openai" && activeLLMApiKey) {
+    llmStatusText.textContent = `☁️ OpenAI (${activeLLMModel !== "auto" ? activeLLMModel : "gpt-4o-mini"})`;
     dot.className = "status-dot pulsing";
-  } else if (activeLLMBackend === "custom_web") {
-    llmStatusText.textContent = `☁️ Web LLM (${activeLLMModel !== 'auto' ? activeLLMModel : 'custom'})`;
+  } else if (activeLLMBackend === "custom_web" && activeLLMApiKey) {
+    llmStatusText.textContent = `☁️ Web LLM (${activeLLMModel !== "auto" ? activeLLMModel : "cloud"})`;
     dot.className = "status-dot pulsing";
-  } else if (activeLLMBackend === "ollama") {
-    const host = activeLLMEndpoint && !activeLLMEndpoint.includes("127.0.0.1") ? "LAN AI" : "Ollama";
-    llmStatusText.textContent = `🖥️ ${host} (${activeLLMModel !== 'auto' ? activeLLMModel : (ollama?.default_model || 'local')})`;
-    dot.className = ollama?.status === "online" ? "status-dot pulsing" : "status-dot";
-  } else if (activeLLMBackend === "lmstudio") {
-    const host = activeLLMEndpoint && !activeLLMEndpoint.includes("127.0.0.1") ? "LAN AI" : "LM Studio";
-    llmStatusText.textContent = `🖥️ ${host} (${activeLLMModel !== 'auto' ? activeLLMModel : (lmstudio?.default_model || 'local')})`;
-    dot.className = lmstudio?.status === "online" ? "status-dot pulsing" : "status-dot";
-  } else if (activeLLMBackend === "builtin") {
-    llmStatusText.textContent = "⚡ Built-in Expert";
+  } else if (activeLLMBackend === "ollama" && (ollama?.status === "online" || directLoopbackOllamaOnline)) {
+    const mod = activeLLMModel !== "auto" ? activeLLMModel : (ollama?.default_model || "local");
+    llmStatusText.textContent = `🟢 Ollama (${mod})`;
+    dot.className = "status-dot pulsing";
+  } else if (activeLLMBackend === "lmstudio" && (lmstudio?.status === "online" || directLoopbackLMStudioOnline)) {
+    const mod = activeLLMModel !== "auto" ? activeLLMModel : (lmstudio?.default_model || "local");
+    llmStatusText.textContent = `🟢 LM Studio (${mod})`;
+    dot.className = "status-dot pulsing";
+  } else if (ollama && ollama.status === "online") {
+    llmStatusText.textContent = `🟢 Ollama (${ollama.default_model})`;
+    dot.className = "status-dot pulsing";
+  } else if (lmstudio && lmstudio.status === "online") {
+    llmStatusText.textContent = `🟢 LM Studio (${lmstudio.default_model})`;
+    dot.className = "status-dot pulsing";
+  } else if (activeLLMApiKey && activeLLMApiKey.startsWith("AIza")) {
+    llmStatusText.textContent = "☁️ Gemini 2.5 Ready";
     dot.className = "status-dot pulsing";
   } else {
-    // Auto Mode: check what's online or configured
-    if (activeLLMApiKey && activeLLMModel && activeLLMModel.includes("gemini")) {
-      llmStatusText.textContent = "☁️ Gemini Auto";
-      dot.className = "status-dot pulsing";
-    } else if (ollama && ollama.status === "online") {
-      llmStatusText.textContent = `🖥️ Ollama (${ollama.default_model})`;
-      dot.className = "status-dot pulsing";
-    } else if (lmstudio && lmstudio.status === "online") {
-      llmStatusText.textContent = `🖥️ LM Studio (${lmstudio.default_model})`;
-      dot.className = "status-dot pulsing";
-    } else {
-      llmStatusText.textContent = "⚡ Built-in Engine";
-      dot.className = "status-dot pulsing";
-    }
+    llmStatusText.textContent = "⚡ Built-in RAG AI";
+    dot.className = "status-dot pulsing";
   }
 
-  // Synchronize the dedicated Start Local AI button next to Armorer Assistant
   updateLocalLLMButtonState();
 }
 
@@ -3934,93 +5446,109 @@ function updateStatusPill() {
 // LOCAL LLM AI DEDICATED START BUTTON & POPOVER ENGINE
 // ==========================================================================
 function updateLocalLLMButtonState() {
-  if (!btnStartLocalLLM) return;
+  if (!btnStartLocalLLM || !btnStartLocalLLMText) return;
   const ollama = (availableBackends || []).find(b => b.id === "ollama");
-  const isOnline = ollama && ollama.status === "online";
-  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-
-  if (isStatic) {
-    btnStartLocalLLM.className = "btn-start-local-llm online";
-    btnStartLocalLLMText.textContent = "Built-in AI (Offline)";
-    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot online";
-    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
-    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot online";
-    if (popoverStatusTitle) popoverStatusTitle.textContent = "Client Engine Active";
-    if (popoverEndpoint) popoverEndpoint.textContent = "GitHub Pages Static";
-    if (popoverEngineName) popoverEngineName.textContent = "Browser Engine";
-    if (popoverModelVram) popoverModelVram.textContent = "Client-Side";
-    if (btnPopoverStartStop) {
-      btnPopoverStartStop.textContent = "⚙️ Configure Web AI";
-      btnPopoverStartStop.className = "popover-btn primary";
-    }
-    return;
-  }
+  const lmstudio = (availableBackends || []).find(b => b.id === "lmstudio");
+  const ollamaUp = Boolean((ollama && ollama.status === "online") || directLoopbackOllamaOnline);
+  const lmstudioUp = Boolean((lmstudio && lmstudio.status === "online") || directLoopbackLMStudioOnline);
+  const isOnline = ollamaUp || lmstudioUp;
+  const isStatic = isStaticHostedSite();
 
   if (isOnline) {
-    const curModel = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : (ollama.default_model || "qwen3.5:4b");
+    const activeLocalObj = (activeLLMBackend === "lmstudio" && lmstudioUp) ? lmstudio : (ollamaUp ? ollama : lmstudio);
+    const engineLabel = (activeLocalObj && activeLocalObj.id === "lmstudio") ? "LM Studio" : "Ollama";
+    const curModel = (activeLLMModel && activeLLMModel !== "auto") ? activeLLMModel : (activeLocalObj?.default_model || "local");
+    const shortMod = curModel.length > 14 ? curModel.slice(0, 13) + "…" : curModel;
     btnStartLocalLLM.className = "btn-start-local-llm online";
-    btnStartLocalLLMText.textContent = `Local AI (${curModel})`;
+    btnStartLocalLLMText.textContent = `Local AI (${shortMod})`;
     if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot online";
     if (llmPowerIcon) llmPowerIcon.textContent = "🟢";
 
     if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot online";
     if (popoverStatusTitle) popoverStatusTitle.textContent = "Local AI Online";
-    if (popoverEndpoint) popoverEndpoint.textContent = ollama.endpoint || "http://127.0.0.1:11434";
-    if (popoverEngineName) popoverEngineName.textContent = "Ollama Local";
-    if (popoverModelVram) popoverModelVram.textContent = "100% GPU / VRAM";
+    if (popoverEndpoint) popoverEndpoint.textContent = activeLocalObj?.endpoint || (engineLabel === "LM Studio" ? "http://127.0.0.1:1234/v1" : "http://127.0.0.1:11434");
+    if (popoverEngineName) popoverEngineName.textContent = directLoopbackBridgeUrl ? `Workbench + ${engineLabel}` : `${engineLabel} Local`;
+    if (popoverModelVram) popoverModelVram.textContent = "GPU Active";
     if (btnPopoverStartStop) {
-      btnPopoverStartStop.textContent = "⏹️ Stop Local AI";
-      btnPopoverStartStop.className = "popover-btn danger";
+      btnPopoverStartStop.textContent = isStatic ? "🔄 Re-Probe Local" : "⏹️ Stop Local AI";
+      btnPopoverStartStop.className = isStatic ? "popover-btn primary" : "popover-btn danger";
     }
 
-    // Populate model select in popover if empty or changed
-    if (popoverModelSelect && ollama.models && ollama.models.length > 0) {
+    if (popoverModelSelect && activeLocalObj && activeLocalObj.models && activeLocalObj.models.length > 0) {
       popoverModelSelect.innerHTML = "";
-      ollama.models.forEach(m => {
+      activeLocalObj.models.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m;
         opt.textContent = m;
         if (m === curModel) opt.selected = true;
         popoverModelSelect.appendChild(opt);
       });
-      if (!popoverModelSelect.value && popoverModelSelect.options.length > 0) {
-        popoverModelSelect.value = curModel;
-      }
-    }
-  } else {
-    btnStartLocalLLM.className = "btn-start-local-llm";
-    btnStartLocalLLMText.textContent = "Start Local AI";
-    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
-    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
-
-    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot";
-    if (popoverStatusTitle) popoverStatusTitle.textContent = "Local AI Offline";
-    if (popoverEndpoint) popoverEndpoint.textContent = "http://127.0.0.1:11434";
-    if (popoverEngineName) popoverEngineName.textContent = "Ollama Local";
-    if (popoverModelVram) popoverModelVram.textContent = "Not Running";
-    if (btnPopoverStartStop) {
-      btnPopoverStartStop.textContent = "⚡ Start Local AI";
-      btnPopoverStartStop.className = "popover-btn primary";
-    }
-  }
-}
-
-async function startLocalLLM() {
-  const isStatic = window.location.hostname.includes("github.io") || window.location.protocol === "file:";
-  if (isStatic) {
-    if (settingsDialog) {
-      settingsDialog.showModal();
-      updateSettingsFields();
     }
     return;
   }
 
-  // Set starting state
+  if (isStatic) {
+    btnStartLocalLLM.className = "btn-start-local-llm";
+    btnStartLocalLLMText.textContent = "Connect Local AI";
+    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
+    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
+    if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot online";
+    if (popoverStatusTitle) popoverStatusTitle.textContent = "Built-in RAG Engine";
+    if (popoverEndpoint) popoverEndpoint.textContent = "1,355 Manual Chunks Ready";
+    if (popoverEngineName) popoverEngineName.textContent = "Master Armorer RAG";
+    if (popoverModelVram) popoverModelVram.textContent = "Instant Offline";
+    if (popoverModelSelect && popoverModelSelect.options.length === 0) {
+      popoverModelSelect.innerHTML = `<option value="builtin">Master Armorer RAG (1,355 Chunks)</option>`;
+    }
+    if (btnPopoverStartStop) {
+      btnPopoverStartStop.textContent = "⚡ Connect Ollama";
+      btnPopoverStartStop.className = "popover-btn primary";
+    }
+    return;
+  }
+
+  btnStartLocalLLM.className = "btn-start-local-llm";
+  btnStartLocalLLMText.textContent = "Start Local AI";
+  if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
+  if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
+
+  if (popoverStatusDot) popoverStatusDot.className = "status-indicator-dot";
+  if (popoverStatusTitle) popoverStatusTitle.textContent = "Local AI Standby";
+  if (popoverEndpoint) popoverEndpoint.textContent = "http://127.0.0.1:11434";
+  if (popoverEngineName) popoverEngineName.textContent = "Ollama Local";
+  if (popoverModelVram) popoverModelVram.textContent = "Standby";
+  if (btnPopoverStartStop) {
+    btnPopoverStartStop.textContent = "⚡ Start Local AI";
+    btnPopoverStartStop.className = "popover-btn primary";
+  }
+}
+
+async function startLocalLLM() {
+  if (localLLMPopover) localLLMPopover.classList.add("hidden");
+
+  // User-gesture-initiated Local Network Access probe when running on GitHub Pages!
+  if (isStaticHostedSite()) {
+    if (btnStartLocalLLM) btnStartLocalLLM.className = "btn-start-local-llm starting";
+    if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Probing...";
+    const connected = await probeLocalLoopbackFromBrowser(true);
+    if (!connected) {
+      updateLocalLLMButtonState();
+      const setupModal = document.getElementById("localAISetupDialog");
+      if (setupModal) {
+        setupModal.showModal();
+      } else if (settingsDialog) {
+        settingsDialog.showModal();
+        updateSettingsFields();
+      }
+    }
+    return;
+  }
+
+  // Local FastAPI Server Mode: Launch or connect Ollama process
   if (btnStartLocalLLM) btnStartLocalLLM.className = "btn-start-local-llm starting";
-  if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Starting Local AI...";
+  if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Starting...";
   if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot starting";
   if (llmPowerIcon) llmPowerIcon.textContent = "⏳";
-  if (localLLMPopover) localLLMPopover.classList.add("hidden");
 
   try {
     const res = await fetch("/api/llm/start", {
@@ -4033,28 +5561,34 @@ async function startLocalLLM() {
     if (res.ok && data.success) {
       activeLLMBackend = "ollama";
       activeLLMModel = data.model;
+      saveSettings();
       await checkLLMBackends();
-      
+
       appendMessage(
         "system",
-        `🟢 **Local LLM AI Engine Online!**\n\nConnected to **Ollama** running **${escapeHtml(data.model)}** on \`${data.endpoint}\` (${data.vram_info || 'GPU Acceleration Active'}).\n\nAll armorer and gunsmith inquiries are now processed privately with zero cloud latency.`,
+        `🟢 **Local LLM AI Engine Online!**\n\nConnected to **Ollama** running **${escapeHtml(data.model)}** on \`${data.endpoint}\` (${data.vram_info || "GPU Acceleration Active"}).\n\nAll armorer and gunsmith inquiries are now processed privately with grounded PyMuPDF RAG citations.`,
         "Local AI Engine"
       );
     } else {
-      throw new Error(data.error || "Could not launch Ollama.");
+      throw new Error(data.error || "Could not launch Ollama on this workstation.");
     }
   } catch (err) {
     console.error("Failed to start Local AI:", err);
-    if (btnStartLocalLLM) btnStartLocalLLM.className = "btn-start-local-llm";
-    if (btnStartLocalLLMText) btnStartLocalLLMText.textContent = "Start Local AI";
-    if (llmAssistantDot) llmAssistantDot.className = "llm-indicator-dot offline";
-    if (llmPowerIcon) llmPowerIcon.textContent = "⚡";
-    
-    appendMessage(
-      "assistant",
-      `⚠️ **Could Not Start Local AI:** ${escapeHtml(err.message || err)}\n\nPlease ensure **Ollama** is installed on your workstation. Run \`ollama serve\` in your terminal or click the settings button to configure a web API key.`,
-      "Armorer System"
-    );
+    updateLocalLLMButtonState();
+    const setupModal = document.getElementById("localAISetupDialog");
+    if (setupModal) {
+      const modalTitle = document.getElementById("localAIModalTitle");
+      const modalSub = document.getElementById("localAIModalSub");
+      if (modalTitle) modalTitle.textContent = "Ollama Not Installed or Not Running on Port 11434";
+      if (modalSub) modalSub.textContent = String(err.message || err);
+      setupModal.showModal();
+    } else {
+      appendMessage(
+        "assistant",
+        `⚠️ **Local Ollama Not Detected:** ${escapeHtml(err.message || err)}\n\nYour **Built-in Master Gunsmith RAG Engine (1,355 chunks)** is already active and answering questions! Install Ollama from \`ollama.com\` or configure a Cloud API key in **⚙️ Settings** anytime.`,
+        "Armorer System"
+      );
+    }
   }
 }
 

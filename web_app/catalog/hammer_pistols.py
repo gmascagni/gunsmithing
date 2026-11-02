@@ -342,7 +342,7 @@ HAMMER_PISTOLS: Dict[str, Dict[str, Any]] = {
         "specs": {
             "operating_system": "Straight blowback cylindrical bolt cycling inside fixed tubular steel receiver",
             "mark_iv_takedown": "Single rear recessed push-button releases upper receiver from frame on forward hinge pin",
-            "mark_ii_re为其assembly_rule": "Muzzle must point upward 45° so hammer strut drops freely into mainspring housing cup before latching",
+            "mark_ii_iii_reassembly_rule": "Muzzle must point upward 45° so hammer strut drops freely into mainspring housing cup before latching",
             "trigger_pull_weight": "3.5 to 4.5 lbs (factory) / 1.75 to 2.25 lbs (with Volquartsen target sear and hammer)"
         },
         "stoppages": [
